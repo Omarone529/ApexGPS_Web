@@ -1,0 +1,49 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 24px 64px;
+
+  background: transparent;
+  z-index: 100;
+}
+
+/* SINISTRA */
+.logo {
+  font-size: 18px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  color: white;
+}
+
+/* DESTRA */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.navbar a:hover {
+  opacity: 1;
+}
+
+/* Bottone tipo "CONTATTI" */
+.login-btn {
+  padding: 8px 18px;
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 999px;
+}
