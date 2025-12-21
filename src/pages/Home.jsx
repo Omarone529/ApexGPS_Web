@@ -1,4 +1,5 @@
 import "./Home.css";
+import RouteCarousel from "../components/RouteCarousel";
 
 function Home() {
   return (
@@ -23,6 +24,9 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {/* 🔥 GIRI IN MOTO */}
+      <RouteCarousel />
 
       {/* VALUE PROPOSITION */}
       <section className="value">
