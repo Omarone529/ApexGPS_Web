@@ -1,0 +1,139 @@
+/* =========================
+   SECTION
+   ========================= */
+.routes {
+  padding: 4rem 2rem;
+  background: radial-gradient(circle at top, #1c1c1c, #0e0e0e);
+  color: #fff;
+  overflow: hidden;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.routes-header {
+  margin-bottom: 2.4rem;
+}
+
+.routes-title {
+  font-size: clamp(2.2rem, 3.2vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+  color: #f2f2f2;
+}
+
+/* =========================
+   VIEWPORT
+   ========================= */
+.routes-viewport {
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+}
+
+.routes-viewport:active {
+  cursor: grabbing;
+}
+
+/* =========================
+   TRACK
+   ========================= */
+.routes-track {
+  display: flex;
+  gap: 1.6rem;
+  will-change: transform;
+}
+
+.routes-track.dragging {
+  /* drag raw */
+}
+
+/* =========================
+   CARD
+   ========================= */
+.route-card {
+  position: relative;
+  width: 340px;
+  height: 460px;
+  border-radius: 22px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  transition: transform 0.6s ease, box-shadow 0.6s ease;
+}
+
+.route-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition: transform 0.9s ease;
+}
+
+/* HOVER */
+.route-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.route-card:hover img {
+  transform: scale(1.08);
+}
+
+/* =========================
+   OVERLAY
+   ========================= */
+.route-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0.15)
+  );
+}
+
+/* =========================
+   INFO
+   ========================= */
+.route-info {
+  position: absolute;
+  bottom: 1.4rem;
+  left: 1.4rem;
+  right: 1.4rem;
+
+  opacity: 0;
+  transform: translateY(14px);
+  transition: all 0.5s ease;
+}
+
+.route-card:hover .route-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.route-info h3 {
+  margin: 0.4rem 0;
+  font-size: 1.2rem;
+}
+
+.route-info p {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+/* =========================
+   BADGE & RATING
+   ========================= */
+.badge {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.rating {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
