@@ -15,26 +15,47 @@ const routes = [
   { id: 11, title: "Passo San Marco", area: "Val Brembana", difficulty: "Tecnico", rating: 4.7, image: "/routes/routes11.webp" },
 ];
 
-// 🔁 DUPLICAZIONE
+// doppia copia per anello vero
 const loopRoutes = [...routes, ...routes];
 
 function RouteCarousel() {
   const trackRef = useRef(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
-  const translateX = useRef(0);
+  const offset = useRef(0);
+  const singleWidth = useRef(1);
 
   useEffect(() => {
-    // partiamo a metà
-    const half = trackRef.current.scrollWidth / 2;
-    translateX.current = -half / 2;
-    trackRef.current.style.transform = `translateX(${translateX.current}px)`;
+    const el = trackRef.current;
+
+    const updateWidth = () => {
+      const w = el.scrollWidth / 2;
+      singleWidth.current = w > 1 ? w : 1;
+
+      const wrapped =
+        ((offset.current % singleWidth.current) + singleWidth.current) %
+        singleWidth.current;
+
+      el.style.transform = `translateX(${-wrapped}px)`;
+    };
+
+    updateWidth();
+
+    const ro = new ResizeObserver(updateWidth);
+    ro.observe(el);
+    window.addEventListener("resize", updateWidth);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateWidth);
+    };
   }, []);
 
   const onMouseDown = (e) => {
     isDragging.current = true;
     startX.current = e.clientX;
     trackRef.current.classList.add("dragging");
+    e.preventDefault();
   };
 
   const onMouseUp = () => {
@@ -47,24 +68,21 @@ function RouteCarousel() {
 
     const dx = e.clientX - startX.current;
     startX.current = e.clientX;
-    translateX.current += dx;
 
-    const trackWidth = trackRef.current.scrollWidth / 2;
+    offset.current -= dx;
 
-    // 🔁 RESET INVISIBILE
-    if (translateX.current > 0) {
-      translateX.current = -trackWidth;
-    } else if (translateX.current < -trackWidth * 2) {
-      translateX.current = -trackWidth;
-    }
+    const w = singleWidth.current || 1;
+    const wrapped = ((offset.current % w) + w) % w;
 
-    trackRef.current.style.transform = `translateX(${translateX.current}px)`;
+    trackRef.current.style.transform = `translateX(${-wrapped}px)`;
   };
 
   return (
     <section className="routes">
       <div className="routes-header">
-        <h2>Giri in moto panoramici vicino a te</h2>
+        <h2 className="routes-title">
+          Percorsi panoramici vicino a te
+        </h2>
       </div>
 
       <div

@@ -1,3 +1,6 @@
+/* =========================
+   SECTION
+   ========================= */
 .routes {
   padding: 4rem 2rem;
   background: radial-gradient(circle at top, #1c1c1c, #0e0e0e);
@@ -5,16 +8,24 @@
   overflow: hidden;
 }
 
+/* =========================
+   HEADER
+   ========================= */
 .routes-header {
-  margin-bottom: 1.8rem;
+  margin-bottom: 2.4rem;
 }
 
-.routes-header h2 {
-  font-size: 2rem;
+.routes-title {
+  font-size: clamp(2.2rem, 3.2vw, 2.8rem);
   font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+  color: #f2f2f2;
 }
 
-/* VIEWPORT */
+/* =========================
+   VIEWPORT
+   ========================= */
 .routes-viewport {
   overflow: hidden;
   cursor: grab;
@@ -25,22 +36,25 @@
   cursor: grabbing;
 }
 
-/* TRACK (si muove davvero) */
+/* =========================
+   TRACK
+   ========================= */
 .routes-track {
   display: flex;
   gap: 1.6rem;
   will-change: transform;
-  transition: transform 0.08s linear;
 }
 
 .routes-track.dragging {
-  transition: none;
+  /* drag raw */
 }
 
-/* CARD */
+/* =========================
+   CARD
+   ========================= */
 .route-card {
   position: relative;
-  min-width: 340px;
+  width: 340px;
   height: 460px;
   border-radius: 22px;
   overflow: hidden;
@@ -67,7 +81,9 @@
   transform: scale(1.08);
 }
 
-/* OVERLAY */
+/* =========================
+   OVERLAY
+   ========================= */
 .route-overlay {
   position: absolute;
   inset: 0;
@@ -78,7 +94,9 @@
   );
 }
 
-/* TESTO */
+/* =========================
+   INFO
+   ========================= */
 .route-info {
   position: absolute;
   bottom: 1.4rem;
@@ -105,7 +123,9 @@
   opacity: 0.8;
 }
 
-/* BADGE */
+/* =========================
+   BADGE & RATING
+   ========================= */
 .badge {
   background: rgba(255, 255, 255, 0.18);
   padding: 0.3rem 0.7rem;
