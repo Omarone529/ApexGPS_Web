@@ -6,7 +6,7 @@ const PlannerForm = ({ form, updateForm, handleAddWaypoint, isGenerating, handle
     return (
         <div className="planner-form-card">
             <div className="form-section">
-                <h3><span className="section-number">01</span> Dettagli</h3>
+                <h3><span className="section-number">1</span> Dettagli</h3>
                 <input
                     className="form-input"
                     placeholder="Nome itinerario"
@@ -23,7 +23,7 @@ const PlannerForm = ({ form, updateForm, handleAddWaypoint, isGenerating, handle
             </div>
 
             <div className="form-section">
-                <h3><span className="section-number">02</span> Percorso</h3>
+                <h3><span className="section-number">2</span> Percorso</h3>
                 <input
                     className="form-input"
                     placeholder="Partenza"
@@ -78,7 +78,7 @@ const PlannerForm = ({ form, updateForm, handleAddWaypoint, isGenerating, handle
             </div>
 
             <div className="form-section">
-                <h3><span className="section-number">03</span> Impostazioni</h3>
+                <h3><span className="section-number">3</span> Impostazioni</h3>
                 <label className="checkbox">
                     <input
                         type="checkbox"
