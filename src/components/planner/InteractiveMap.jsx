@@ -121,7 +121,12 @@ const InteractiveMap = ({ routePoints }) => {
         }, 50);
     }, [routePoints]);
 
-    return <div ref={mapRef} className="leaflet-map" />;
+    return (
+        <div className="map-container">
+            <div ref={mapRef} className="leaflet-map" />
+            <div className="zoom-hint">Usa Ctrl + scroll per zoommare sulla mappa</div>
+        </div>
+    );
 };
 
 export default InteractiveMap;

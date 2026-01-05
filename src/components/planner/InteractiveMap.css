@@ -88,6 +88,17 @@
     font-size: 0.875rem;
 }
 
+.zoom-hint {
+    font-size: 13px;
+    color: #4a5568;
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid #e2e8f0;
+    font-style: italic;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     .leaflet-map {
         min-height: 300px;
