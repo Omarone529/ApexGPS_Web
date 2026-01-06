@@ -1,16 +1,13 @@
 import "./Home.css";
 import RouteCarousel from "../components/RouteCarousel";
+import { Link } from "react-router-dom";
 
 function Home() {
   return (
     <>
       {/* HERO */}
       <section className="hero">
-        <img
-          src="/moto.webp"
-          alt="Viaggio in moto"
-          className="hero-img"
-        />
+        <img src="/moto.webp" alt="Viaggio in moto" className="hero-img" />
 
         <div className="hero-overlay" />
 
@@ -19,7 +16,10 @@ function Home() {
           <p>Viaggia meglio. Non più veloce.</p>
 
           <div className="hero-actions">
-            <button className="btn-primary">Pianifica un percorso</button>
+            <Link to="/planner" className="btn-primary">
+              Pianifica un percorso
+            </Link>
+
             <button className="btn-secondary">Scopri ApexGPS</button>
           </div>
         </div>
@@ -31,7 +31,8 @@ function Home() {
       {/* VALUE PROPOSITION */}
       <section className="value">
         <h2>
-          Non il percorso più veloce.<br />
+          Non il percorso più veloce.
+          <br />
           Il percorso più bello.
         </h2>
 
@@ -45,16 +46,12 @@ function Home() {
 
           <div className="value-card">
             <h3>🛣 Curve & dislivelli</h3>
-            <p>
-              Più curve, meno traffico. Percorsi pensati per la moto.
-            </p>
+            <p>Più curve, meno traffico. Percorsi pensati per la moto.</p>
           </div>
 
           <div className="value-card">
             <h3>🏍 Moto-first</h3>
-            <p>
-              ApexGPS è progettato per chi guida, non per chi corre.
-            </p>
+            <p>ApexGPS è progettato per chi guida, non per chi corre.</p>
           </div>
         </div>
       </section>
