@@ -20,13 +20,25 @@ function Home() {
               Pianifica un percorso
             </Link>
 
-            <button className="btn-secondary">Scopri ApexGPS</button>
+            <button
+              className="btn-secondary"
+              type="button"
+              onClick={() => {
+                document
+                  .getElementById("nearby-routes")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              Scopri ApexGPS
+            </button>
           </div>
         </div>
       </section>
 
       {/* 🔥 GIRI IN MOTO */}
-      <RouteCarousel />
+      <section id="nearby-routes">
+        <RouteCarousel />
+      </section>
 
       {/* VALUE PROPOSITION */}
       <section className="value">
