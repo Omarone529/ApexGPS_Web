@@ -1,0 +1,307 @@
+/* =========================
+   TOUR PAGE
+   ========================= */
+h1 {
+    text-align: center;
+    padding: 2rem;
+    margin: 0;
+    font-size: 3rem;
+    color: #2c3e50;
+    background: linear-gradient(to right, #1c1c1c, #0e0e0e);
+    color: white;
+}
+
+/* =========================
+   SECTION
+   ========================= */
+.routes {
+    padding: 4rem 2rem;
+    background: radial-gradient(circle at top, #1c1c1c, #0e0e0e);
+    color: #fff;
+    overflow: hidden;
+}
+
+/* =========================
+   CONTAINER
+   ========================= */
+.routes-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.routes-header {
+    margin-bottom: 2.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.routes-title {
+    font-size: clamp(2.2rem, 3.2vw, 2.8rem);
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0;
+    color: #f2f2f2;
+}
+
+.total-routes {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #f2f2f2;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================
+   GRID
+   ========================= */
+.routes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6rem;
+}
+
+/* =========================
+   CARD
+   ========================= */
+.route-card {
+    position: relative;
+    height: 460px;
+    border-radius: 22px;
+    overflow: hidden;
+    transition: transform 0.6s ease, box-shadow 0.6s ease;
+}
+
+.route-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================
+   IMAGE
+   ========================= */
+.route-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.9s ease;
+}
+
+.route-card:hover .route-image {
+    transform: scale(1.08);
+}
+
+/* =========================
+   OVERLAY
+   ========================= */
+.route-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.85) 0%,
+            rgba(0, 0, 0, 0.7) 30%,
+            rgba(0, 0, 0, 0.15) 70%,
+            transparent 100%
+    );
+}
+
+/* =========================
+   MAIN TITLE (Visible by default)
+   ========================= */
+.route-main-title {
+    position: absolute;
+    bottom: 1.4rem;
+    left: 1.4rem;
+    right: 1.4rem;
+    transition: all 0.5s ease;
+    z-index: 2;
+}
+
+.route-main-title h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.route-card:hover .route-main-title {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+
+/* =========================
+   INFO (Hidden by default, shows on hover)
+   ========================= */
+.route-info {
+    position: absolute;
+    bottom: 1.4rem;
+    left: 1.4rem;
+    right: 1.4rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+    z-index: 3;
+}
+
+.route-card:hover .route-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================
+   BADGE
+   ========================= */
+.badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+/* =========================
+   DETAILS
+   ========================= */
+.route-details h3 {
+    margin: 0.4rem 0 0.6rem 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.route-area {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin: 0 0 1.2rem 0;
+    color: #e0e0e0;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+.route-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* =========================
+   RATING
+   ========================= */
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.stars {
+    display: flex;
+    gap: 0.1rem;
+}
+
+.star {
+    font-size: 1.1rem;
+}
+
+.rating-number {
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+/* =========================
+   VIEW DETAILS BUTTON
+   ========================= */
+.view-details-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+
+.view-details-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+   ========================= */
+@media (max-width: 1200px) {
+    .routes-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.4rem;
+    }
+
+    .route-card {
+        height: 420px;
+    }
+}
+
+@media (max-width: 900px) {
+    .routes {
+        padding: 3rem 1.5rem;
+    }
+
+    .routes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem;
+    }
+
+    .route-card {
+        height: 380px;
+    }
+
+    .routes-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .routes {
+        padding: 2rem 1rem;
+    }
+
+    .routes-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+        gap: 1rem;
+    }
+
+    .route-card {
+        height: 400px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        padding: 1.5rem;
+    }
+}
