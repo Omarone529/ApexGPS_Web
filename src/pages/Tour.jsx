@@ -4,9 +4,11 @@ import './Tour.css';
 function Tour() {
     return (
         <>
-            <h1>TOUR</h1>
-            <section id="nearby-routes" className="routes">
-                <RoutesGrid />
+            <section className="tour">
+                <h1>TOUR</h1>
+                <section id="nearby-routes" className="routes">
+                    <RoutesGrid />
+                </section>
             </section>
         </>
     );
