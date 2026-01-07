@@ -1,11 +1,11 @@
 import React from 'react';
-import styles from './Tour.module.css'; // CSS Module import
+import './Tour.css';
 
 function Tour() {
     return (
         <>
-            <h1 className={styles.pageTitle}>TOUR</h1>
-            <section id="nearby-routes" className={styles.routes}>
+            <h1>TOUR</h1>
+            <section id="nearby-routes" className="routes">
                 <RoutesGrid />
             </section>
         </>
@@ -44,56 +44,56 @@ function RoutesGrid() {
     };
 
     return (
-        <div className={styles.routesContainer}>
+        <div className="routes-container">
             {/* Header */}
-            <div className={styles.routesHeader}>
-                <h2 className={styles.routesTitle}>Mountain Passes</h2>
-                <span className={styles.totalRoutes}>{routes.length} routes</span>
+            <div className="routes-header">
+                <h2 className="routes-title">Mountain Passes</h2>
+                <span className="total-routes">{routes.length} routes</span>
             </div>
 
             {/* Grid */}
-            <div className={styles.routesGrid}>
+            <div className="routes-grid">
                 {routes.map(route => (
-                    <div key={route.id} className={styles.routeCard}>
+                    <div key={route.id} className="route-card">
                         {/* Image */}
                         <img
                             src={route.image}
                             alt={route.title}
-                            className={styles.routeImage}
+                            className="route-image"
                         />
 
                         {/* Overlay */}
-                        <div className={styles.routeOverlay}></div>
+                        <div className="route-overlay"></div>
 
                         {/* Main Title (disappears on hover) */}
-                        <div className={styles.routeMainTitle}>
+                        <div className="route-main-title">
                             <h3>{route.title}</h3>
                         </div>
 
                         {/* Hidden Info (appears on hover) */}
-                        <div className={styles.routeInfo}>
-                            <div className={styles.badge} style={{ backgroundColor: getDifficultyColor(route.difficulty) }}>
+                        <div className="route-info">
+                            <div className="badge" style={{ backgroundColor: getDifficultyColor(route.difficulty) }}>
                                 {route.difficulty}
                             </div>
-                            <div className={styles.routeDetails}>
+                            <div className="route-details">
                                 <h3>{route.title}</h3>
-                                <p className={styles.routeArea}>{route.area}</p>
-                                <div className={styles.routeFooter}>
-                                    <div className={styles.rating}>
-                    <span className={styles.stars}>
+                                <p className="route-area">{route.area}</p>
+                                <div className="route-footer">
+                                    <div className="rating">
+                    <span className="stars">
                       {[...Array(5)].map((_, i) => (
                           <span
                               key={i}
-                              className={styles.star}
+                              className="star"
                               style={{ color: i < Math.floor(route.rating) ? '#FFD700' : '#ffffff80' }}
                           >
                           ★
                         </span>
                       ))}
                     </span>
-                                        <span className={styles.ratingNumber}>{route.rating.toFixed(1)}</span>
+                                        <span className="rating-number">{route.rating.toFixed(1)}</span>
                                     </div>
-                                    <button className={styles.viewDetailsBtn}>
+                                    <button className="view-details-btn">
                                         View Details
                                     </button>
                                 </div>
