@@ -1,4 +1,5 @@
-import React from 'react';
+// import React, {useEffect, useState} from 'react';
+import React from "react";
 import './Tour.css';
 
 function Tour() {
@@ -15,6 +16,11 @@ function Tour() {
 }
 
 function RoutesGrid() {
+
+    // const [routesApi, setRoutes] = useState([]);
+    // const [loading, setLoading] = useState(true);
+    // const [error, setError] = useState(null);
+
     const routes = [
         { id: 1, title: "Passo della Futa", area: "Appennino Tosco-Emiliano", difficulty: "Panoramico", rating: 4.8, image: "/routes/routes1.webp" },
         { id: 2, title: "Passo della Raticosa", area: "Bologna – Firenze", difficulty: "Sportivo", rating: 4.9, image: "/routes/routes2.webp" },
@@ -45,12 +51,59 @@ function RoutesGrid() {
         return colors[difficulty] || '#757575';
     };
 
+    // useEffect(() => {
+    //     const fetchRoutes = async () => {
+    //         try {
+    //             setLoading(true);
+    //
+    //             //FIXME need updated api
+    //             const response = await fetch('http://replaceWithApi.com');
+    //
+    //             if (!response.ok) {
+    //                 throw new Error('HTTP error! status: ' + response.status);
+    //             }
+    //
+    //             const data = await response.json();
+    //             setRoutes(data);
+    //         } catch (err) {
+    //             setError(err.message);
+    //             console.error('error fetching routes', err);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //
+    //     fetchRoutes();
+    // }, []);
+    //
+    // if (loading) {
+    //     return (
+    //         <div className="routes-container">
+    //             <div className="loading-state">
+    //                 <div className="spinner" role="status">
+    //                     <p>In cerca di percorsi interessanti...</p>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
+    // if (error) {
+    //     return (
+    //         <div className="routes-container">
+    //             <div className="error-state">
+    //                 <p>Errore nel caricamento: {error}</p>
+    //                 <button className="button" onClick={() => window.location.reload()}>Prova di nuovo</button>
+    //             </div>
+    //         </div>
+    //     );
+    // }
+
     return (
         <div className="routes-container">
             {/* Header */}
             <div className="routes-header">
-                <h2 className="routes-title">Mountain Passes</h2>
-                <span className="total-routes">{routes.length} routes</span>
+                <h2 className="routes-title">I percorsi più amati dagli utenti</h2>
+                <span className="total-routes">{routes.length} percorsi</span>
             </div>
 
             {/* Grid */}
@@ -82,17 +135,17 @@ function RoutesGrid() {
                                 <p className="route-area">{route.area}</p>
                                 <div className="route-footer">
                                     <div className="rating">
-                    <span className="stars">
-                      {[...Array(5)].map((_, i) => (
-                          <span
-                              key={i}
-                              className="star"
-                              style={{ color: i < Math.floor(route.rating) ? '#FFD700' : '#ffffff80' }}
-                          >
-                          ★
-                        </span>
-                      ))}
-                    </span>
+                                        <span className="stars">
+                                          {[...Array(5)].map((_, i) => (
+                                              <span
+                                                  key={i}
+                                                  className="star"
+                                                  style={{ color: i < Math.floor(route.rating) ? '#FFD700' : '#ffffff80' }}
+                                              >
+                                              ★
+                                            </span>
+                                          ))}
+                                        </span>
                                         <span className="rating-number">{route.rating.toFixed(1)}</span>
                                     </div>
                                     <button className="view-details-btn">
