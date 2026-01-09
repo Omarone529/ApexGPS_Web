@@ -18,8 +18,12 @@ function Tour() {
 function RoutesGrid() {
 
     // const [routesApi, setRoutes] = useState([]);
+    // const [currentPage, setCurrentPage] = useState(1);
+    // const [totalPages, setTotalPages] = useState(1);
+    // const [totalItems, setTotalItems] = useState(0);
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);
+    // const itemsPerPage = 20;
 
     const routes = [
         { id: 1, title: "Passo della Futa", area: "Appennino Tosco-Emiliano", difficulty: "Panoramico", rating: 4.8, image: "/routes/routes1.webp" },
@@ -64,7 +68,10 @@ function RoutesGrid() {
     //             }
     //
     //             const data = await response.json();
-    //             setRoutes(data);
+    //             setRoutes(data.data || data.items || data);
+    //             setTotalPages(data.totalPages || Math.ceil(data.total / itemsPerPage));
+    //             setTotalItems(data.total);
+
     //         } catch (err) {
     //             setError(err.message);
     //             console.error('error fetching routes', err);
@@ -74,8 +81,44 @@ function RoutesGrid() {
     //     };
     //
     //     fetchRoutes();
-    // }, []);
+    // }, [currentPage]);
     //
+
+    // // Paginazoione
+    // const PaginationControls = () => (
+    //     <div className="pagination">
+    //         <button className={`pagination-btn ${currentPage === 1 ? 'disabled' : '' }`}>Precedente</button>
+    //
+    //         <span className="page-numbers">
+    //             {Array.from({ length: Math.min(5, totalPages)}, (_, i) => {
+    //                 let pageNum;
+    //                 if (totalPages <= 5){
+    //                     pageNum = i +1;
+    //                 } else if (currentPage <= 3) {
+    //                     pageNum = i + 1;
+    //                 } else if (currentPage >= totalPages - 2) {
+    //                     pageNum = totalPages - 4 + i;
+    //                 } else {
+    //                     pageNum = currentPage - 2 + i;
+    //                 }
+    //
+    //                 return (
+    //                     <button key={pageNum} className={`pagination-btn ${currentPage === pageNum ? 'active' : '' }`}
+    //                             onClick={() => handlePageChange(pageNum)}>
+    //                         {pageNum}
+    //                     </button>
+    //                 );
+    //             })}
+    //         </span>
+    //
+    //         <button className={`pagination-btn ${currentPage === totalPages ? 'disabled' : '' }`}
+    //                 onClick={() => handlePageChange(currentPage + 1)}
+    //                 disabled={currentPage === totalPages}>
+    //             Successiva
+    //         </button>
+    //     </div>
+    // );
+
     // if (loading) {
     //     return (
     //         <div className="routes-container">
