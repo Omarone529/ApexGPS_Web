@@ -1,6 +1,6 @@
-import "./Home.css";
-import RouteCarousel from "../components/RouteCarousel";
-import { Link } from "react-router-dom";
+import './Home.css';
+import RouteCarousel from '../components/RouteCarousel';
+import { Link } from 'react-router-dom';
 
 function Home() {
   return (
@@ -25,8 +25,8 @@ function Home() {
               type="button"
               onClick={() => {
                 document
-                  .getElementById("nearby-routes")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  .getElementById('nearby-routes')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             >
               Scopri ApexGPS
@@ -51,9 +51,7 @@ function Home() {
         <div className="value-cards">
           <div className="value-card">
             <h3>🏔 Scenic score</h3>
-            <p>
-              Ogni strada viene valutata in base a panorama e contesto naturale.
-            </p>
+            <p>Ogni strada viene valutata in base a panorama e contesto naturale.</p>
           </div>
 
           <div className="value-card">

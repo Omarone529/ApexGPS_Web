@@ -1,11 +1,11 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MainLayout from "./layout/MainLayout";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import MainLayout from './layout/MainLayout';
 
-import Home from "./pages/Home";
-import Planner from "./pages/Planner";
-import Tour from "./pages/Tour";
-import Altro from "./pages/Altro";
-import Login from "./pages/Login";
+import Home from './pages/Home';
+import Planner from './pages/Planner';
+import Tour from './pages/Tour';
+import Altro from './pages/Altro';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -44,14 +44,13 @@ function App() {
           }
         />
         <Route
-  path="/login"
-  element={
-    <MainLayout>
-      <Login />
-    </MainLayout>
-  }
-/>
-
+          path="/login"
+          element={
+            <MainLayout>
+              <Login />
+            </MainLayout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -7,7 +7,12 @@ import Feedback from '../components/planner/Feedback';
 
 function Planner() {
   const [form, setForm] = useState({
-    name: '', description: '', start: '', end: '', waypoints: [''], isPublic: false
+    name: '',
+    description: '',
+    start: '',
+    end: '',
+    waypoints: [''],
+    isPublic: false,
   });
   const [routePoints, setRoutePoints] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -20,7 +25,7 @@ function Planner() {
       setFeedback({
         show: true,
         message: 'Inserisci almeno partenza e arrivo',
-        type: 'error'
+        type: 'error',
       });
       setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 3000);
       return;
@@ -29,11 +34,16 @@ function Planner() {
     setIsGenerating(true);
 
     setTimeout(() => {
-      setRoutePoints([[45.4642, 9.19], [45.5, 9.2], [45.55, 9.25], [45.6, 9.3]]);
+      setRoutePoints([
+        [45.4642, 9.19],
+        [45.5, 9.2],
+        [45.55, 9.25],
+        [45.6, 9.3],
+      ]);
       setFeedback({
         show: true,
         message: 'Percorso generato! Visualizza sulla mappa',
-        type: 'success'
+        type: 'success',
       });
       setIsGenerating(false);
 
@@ -48,36 +58,36 @@ function Planner() {
     setFeedback({
       show: true,
       message: 'Tappa aggiunta con successo!',
-      type: 'waypoint'
+      type: 'waypoint',
     });
     setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 2000);
   };
 
   return (
-      <div className="planner-page">
-        <Feedback feedback={feedback} />
+    <div className="planner-page">
+      <Feedback feedback={feedback} />
 
-        <div className="planner-hero">
-          <h1>Pianifica il tuo percorso</h1>
-          <p>Crea itinerari panoramici personalizzati</p>
-        </div>
+      <div className="planner-hero">
+        <h1>Pianifica il tuo percorso</h1>
+        <p>Crea itinerari panoramici personalizzati</p>
+      </div>
 
-        <div className="planner-content">
-          <PlannerForm
-              form={form}
-              updateForm={updateForm}
-              handleAddWaypoint={handleAddWaypoint}
-              isGenerating={isGenerating}
-              handleGenerateRoute={handleGenerateRoute}
-              routePoints={routePoints}
-          />
+      <div className="planner-content">
+        <PlannerForm
+          form={form}
+          updateForm={updateForm}
+          handleAddWaypoint={handleAddWaypoint}
+          isGenerating={isGenerating}
+          handleGenerateRoute={handleGenerateRoute}
+          routePoints={routePoints}
+        />
 
-          <div className="planner-map-area">
-            <InteractiveMap routePoints={routePoints} />
-            <RouteStats routePoints={routePoints} />
-          </div>
+        <div className="planner-map-area">
+          <InteractiveMap routePoints={routePoints} />
+          <RouteStats routePoints={routePoints} />
         </div>
       </div>
+    </div>
   );
 }
 

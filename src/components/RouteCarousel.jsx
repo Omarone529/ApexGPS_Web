@@ -1,18 +1,95 @@
-import { useRef, useEffect } from "react";
-import "./RouteCarousel.css";
+import { useRef, useEffect } from 'react';
+import './RouteCarousel.css';
 
 const routes = [
-  { id: 1, title: "Passo della Futa", area: "Appennino Tosco-Emiliano", difficulty: "Panoramico", rating: 4.8, image: "/routes/routes1.webp" },
-  { id: 2, title: "Passo della Raticosa", area: "Bologna – Firenze", difficulty: "Sportivo", rating: 4.9, image: "/routes/routes2.webp" },
-  { id: 3, title: "Muraglione", area: "Foreste Casentinesi", difficulty: "Iconico", rating: 4.7, image: "/routes/routes3.webp" },
-  { id: 4, title: "Passo della Cisa", area: "Appennino Parmense", difficulty: "Lungo", rating: 4.6, image: "/routes/routes4.webp" },
-  { id: 5, title: "Passo del Gavia", area: "Alpi Lombarde", difficulty: "Epico", rating: 4.9, image: "/routes/routes5.webp" },
-  { id: 6, title: "Passo dello Stelvio", area: "Alpi Retiche", difficulty: "Leggendario", rating: 5.0, image: "/routes/routes6.webp" },
-  { id: 7, title: "Passo Giau", area: "Dolomiti", difficulty: "Spettacolare", rating: 4.9, image: "/routes/routes7.webp" },
-  { id: 8, title: "Colle delle Finestre", area: "Val di Susa", difficulty: "Epico", rating: 4.8, image: "/routes/routes8.webp" },
-  { id: 9, title: "Passo del Rombo", area: "Alpi Venoste", difficulty: "Panoramico", rating: 4.9, image: "/routes/routes9.webp" },
-  { id: 10, title: "Passo del Tonale", area: "Lombardia – Trentino", difficulty: "Scorrevole", rating: 4.6, image: "/routes/routes10.webp" },
-  { id: 11, title: "Passo San Marco", area: "Val Brembana", difficulty: "Tecnico", rating: 4.7, image: "/routes/routes11.webp" },
+  {
+    id: 1,
+    title: 'Passo della Futa',
+    area: 'Appennino Tosco-Emiliano',
+    difficulty: 'Panoramico',
+    rating: 4.8,
+    image: '/routes/routes1.webp',
+  },
+  {
+    id: 2,
+    title: 'Passo della Raticosa',
+    area: 'Bologna – Firenze',
+    difficulty: 'Sportivo',
+    rating: 4.9,
+    image: '/routes/routes2.webp',
+  },
+  {
+    id: 3,
+    title: 'Muraglione',
+    area: 'Foreste Casentinesi',
+    difficulty: 'Iconico',
+    rating: 4.7,
+    image: '/routes/routes3.webp',
+  },
+  {
+    id: 4,
+    title: 'Passo della Cisa',
+    area: 'Appennino Parmense',
+    difficulty: 'Lungo',
+    rating: 4.6,
+    image: '/routes/routes4.webp',
+  },
+  {
+    id: 5,
+    title: 'Passo del Gavia',
+    area: 'Alpi Lombarde',
+    difficulty: 'Epico',
+    rating: 4.9,
+    image: '/routes/routes5.webp',
+  },
+  {
+    id: 6,
+    title: 'Passo dello Stelvio',
+    area: 'Alpi Retiche',
+    difficulty: 'Leggendario',
+    rating: 5.0,
+    image: '/routes/routes6.webp',
+  },
+  {
+    id: 7,
+    title: 'Passo Giau',
+    area: 'Dolomiti',
+    difficulty: 'Spettacolare',
+    rating: 4.9,
+    image: '/routes/routes7.webp',
+  },
+  {
+    id: 8,
+    title: 'Colle delle Finestre',
+    area: 'Val di Susa',
+    difficulty: 'Epico',
+    rating: 4.8,
+    image: '/routes/routes8.webp',
+  },
+  {
+    id: 9,
+    title: 'Passo del Rombo',
+    area: 'Alpi Venoste',
+    difficulty: 'Panoramico',
+    rating: 4.9,
+    image: '/routes/routes9.webp',
+  },
+  {
+    id: 10,
+    title: 'Passo del Tonale',
+    area: 'Lombardia – Trentino',
+    difficulty: 'Scorrevole',
+    rating: 4.6,
+    image: '/routes/routes10.webp',
+  },
+  {
+    id: 11,
+    title: 'Passo San Marco',
+    area: 'Val Brembana',
+    difficulty: 'Tecnico',
+    rating: 4.7,
+    image: '/routes/routes11.webp',
+  },
 ];
 
 // doppia copia per anello vero
@@ -33,8 +110,7 @@ function RouteCarousel() {
       singleWidth.current = w > 1 ? w : 1;
 
       const wrapped =
-        ((offset.current % singleWidth.current) + singleWidth.current) %
-        singleWidth.current;
+        ((offset.current % singleWidth.current) + singleWidth.current) % singleWidth.current;
 
       el.style.transform = `translateX(${-wrapped}px)`;
     };
@@ -43,27 +119,27 @@ function RouteCarousel() {
 
     const ro = new ResizeObserver(updateWidth);
     ro.observe(el);
-    window.addEventListener("resize", updateWidth);
+    window.addEventListener('resize', updateWidth);
 
     return () => {
       ro.disconnect();
-      window.removeEventListener("resize", updateWidth);
+      window.removeEventListener('resize', updateWidth);
     };
   }, []);
 
-  const onMouseDown = (e) => {
+  const onMouseDown = e => {
     isDragging.current = true;
     startX.current = e.clientX;
-    trackRef.current.classList.add("dragging");
+    trackRef.current.classList.add('dragging');
     e.preventDefault();
   };
 
   const onMouseUp = () => {
     isDragging.current = false;
-    trackRef.current.classList.remove("dragging");
+    trackRef.current.classList.remove('dragging');
   };
 
-  const onMouseMove = (e) => {
+  const onMouseMove = e => {
     if (!isDragging.current) return;
 
     const dx = e.clientX - startX.current;
@@ -80,9 +156,7 @@ function RouteCarousel() {
   return (
     <section className="routes">
       <div className="routes-header">
-        <h2 className="routes-title">
-          Percorsi panoramici vicino a te
-        </h2>
+        <h2 className="routes-title">Percorsi panoramici vicino a te</h2>
       </div>
 
       <div
