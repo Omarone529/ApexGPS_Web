@@ -60,7 +60,9 @@
   overflow: hidden;
   flex-shrink: 0;
 
-  transition: transform 0.6s ease, box-shadow 0.6s ease;
+  transition:
+    transform 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .route-card img {
@@ -87,11 +89,7 @@
 .route-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.85),
-    rgba(0, 0, 0, 0.15)
-  );
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.15));
 }
 
 /* =========================
