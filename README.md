@@ -10,7 +10,7 @@ dei dati e dell’autenticazione.
 
 ---
 
-## Tecnologie utilizzate
+## 🔧 Tecnologie utilizzate
 - React
 - Vite
 - JavaScript (JSX)
@@ -21,7 +21,7 @@ dei dati e dell’autenticazione.
 
 ---
 
-## Struttura del progetto
+## 💾 Struttura del progetto
 Il progetto è organizzato secondo una struttura modulare:
 
 - `src/components/` – componenti riutilizzabili (es. Navbar)
@@ -32,7 +32,7 @@ Il progetto è organizzato secondo una struttura modulare:
 
 ---
 
-## Prerequisiti
+## 📦 Prerequisiti
 Per eseguire il progetto è necessario avere installato:
 - Node.js (versione LTS consigliata)
 - npm
@@ -41,7 +41,7 @@ Per eseguire il progetto è necessario avere installato:
 
 ---
 
-## Esegure il Progetto
+## 🚀 Esegure il Progetto
 
 Per eseguire il progetto in modalità sviluppo utilizza la configurazione di avvio
 nel tuo IDE oppure avvia l'applicazione direttamente da terminale utilizzando uno
