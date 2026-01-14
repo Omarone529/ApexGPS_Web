@@ -130,7 +130,9 @@ const PlannerForm = ({
         >
           {isGenerating ? 'Generazione...' : 'Crea percorso'}
         </button>
-        <button className="btn highlight">Genera percorso panoramico</button>
+        <button className="btn highlight" onClick={handleGenerateRoute} disabled={isGenerating}>
+          Genera percorso panoramico
+        </button>
       </div>
     </div>
   );
