@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './Planner.css';
+// import './Planner.css';
 import PlannerForm from '../components/planner/PlannerForm';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import RouteStats from '../components/planner/RouteStats';
@@ -64,15 +64,25 @@ function Planner() {
   };
 
   return (
-    <div className="planner-page">
+    <div className="bg-[0a0a0a] min-h-screen text-white">
       <Feedback feedback={feedback} />
 
-      <div className="planner-hero">
-        <h1>Pianifica il tuo percorso</h1>
-        <p>Crea itinerari panoramici personalizzati</p>
+      <div
+        className="h-[30vh] min-h-52 flex flex-col justify-center bg-linear-to-br from-[1a1a1a] to-[#2d1b00]
+                      px-6 md:px-8 lg:px-12 xl:px-16"
+      >
+        <h1 className="text-[2rem] md:text-[5vh] lg:text[5vh] xl:text-5xl">
+          Pianifica il tuo percorso
+        </h1>
+        <p className="mt-3 text-base md:text-[2vh] lg:text[2vh] xl:text-lg opacity-80">
+          Crea itinerari panoramici personalizzati
+        </p>
       </div>
 
-      <div className="planner-content">
+      <div
+        className="grid grid-cols-[minmax(320px,380px)_1fr] gap-8 py-8 px-6 md:px-[4vw] lg:px-[4vw] xl:px-12
+                      max-w-[1600px] mx-auto my-0 items-start"
+      >
         <PlannerForm
           form={form}
           updateForm={updateForm}
@@ -82,7 +92,7 @@ function Planner() {
           routePoints={routePoints}
         />
 
-        <div className="planner-map-area">
+        <div className="flex flex-col gap-6 min-w-0">
           <InteractiveMap routePoints={routePoints} />
           <RouteStats routePoints={routePoints} />
         </div>

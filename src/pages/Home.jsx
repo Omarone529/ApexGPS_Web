@@ -1,4 +1,4 @@
-import './Home.css';
+// import './Home.css';
 import RouteCarousel from '../components/RouteCarousel';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ function Home() {
       {/* HERO */}
       <section
         className="flex relative items-center overflow-hidden
-                          min-h-screen w-screen"
+                   min-h-screen w-screen"
       >
         <img
           src="/moto.webp"
@@ -25,9 +25,8 @@ function Home() {
           <div className="mt-8 flex gap-4">
             <Link
               to="/planner"
-              className="
-                                  py-3.5 px-7 rounded-full border-none text-white cursor-pointer
-                                  bg-orange-500 text-base inline-flex items-center justify-center"
+              className="py-3.5 px-7 rounded-full border-none text-white cursor-pointer
+                         bg-orange-500 text-base inline-flex items-center justify-center"
             >
               Pianifica un percorso
             </Link>
