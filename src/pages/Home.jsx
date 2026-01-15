@@ -16,11 +16,11 @@ function Home() {
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
 
-        <div className="absolute inset-0 bg-linear-to-r from-[#00000006] to-[#00000002]" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/60 to-black/20" />
 
-        <div className="relative z-1 pl-16 max-w-xl">
-          <h1 className="text-6xl m-0">Scopri percorsi panoramici</h1>
-          <p className="mt-4 text-2xl opacity-85">Viaggia meglio. Non più veloce.</p>
+        <div className="relative z-10 pl-16 md:pl-24 lg:pl-32 max-w-2xl">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl m-0">Scopri percorsi panoramici</h1>
+          <p className="mt-4 text-xl md:text-2xl opacity-85">Viaggia meglio. Non più veloce.</p>
 
           <div className="mt-8 flex gap-4">
             <Link
@@ -61,17 +61,17 @@ function Home() {
         </h2>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-8">
-          <div className="p-8 rounded-2xl bg-white/4">
+          <div className="p-8 rounded-2xl bg-white/4 backdrop-blur-sm">
             <h3 className="mb-3">🏔 Scenic score</h3>
             <p>Ogni strada viene valutata in base a panorama e contesto naturale.</p>
           </div>
 
-          <div className="p-8 rounded-2xl bg-white/4">
+          <div className="p-8 rounded-2xl bg-white/4 backdrop-blur-sm">
             <h3 className="mb-3">🛣 Curve & dislivelli</h3>
             <p>Più curve, meno traffico. Percorsi pensati per la moto.</p>
           </div>
 
-          <div className="p-8 rounded-2xl bg-white/4">
+          <div className="p-8 rounded-2xl bg-white/4 backdrop-blur-sm">
             <h3 className="mb-3">🏍 Moto-first</h3>
             <p>ApexGPS è progettato per chi guida, non per chi corre.</p>
           </div>
