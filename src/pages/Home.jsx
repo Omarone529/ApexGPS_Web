@@ -32,9 +32,8 @@ function Home() {
             </Link>
 
             <button
-              className="
-                  py-3.5 px-7 rounded-full bg-transparent border border-white/60
-                  text-white cursor-pointer"
+              className="py-3.5 px-7 rounded-full bg-transparent border border-white/60
+                         text-white cursor-pointer"
               type="button"
               onClick={() => {
                 document
