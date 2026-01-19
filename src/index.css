@@ -1,23 +1,13 @@
-/*html,*/
-/*body {*/
-/*  margin: 0;*/
-/*  padding: 0;*/
-/*}*/
-
-/*body {*/
-/*  background: #0e0e0e;*/
-/*  color: white;*/
-/*  font-family: system-ui, sans-serif;*/
-/*}*/
-
 @import 'tailwindcss';
 
 @layer base {
   html,
-  body {
-    @apply m-0 p-0;
+  body,
+  #root {
+    @apply m-0 p-0 h-full;
   }
+
   body {
-    @apply text-white bg-[#0e0e0e] font-sans;
+    @apply bg-[#0e0e0e] text-white font-sans;
   }
 }
