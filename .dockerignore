@@ -1,0 +1,11 @@
+Dockerfile
+.husky/
+.idea/
+node_modules/
+.git/
+.vscode/
+
+.dockerignore
+.gitignore
+.prettierrc.json
+eslint.config.js
