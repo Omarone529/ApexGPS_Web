@@ -10,48 +10,50 @@ import Login from './pages/Login';
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <MainLayout>
-              <Home />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/planner"
-          element={
-            <MainLayout>
-              <Planner />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/tour"
-          element={
-            <MainLayout>
-              <Tour />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/altro"
-          element={
-            <MainLayout>
-              <Altro />
-            </MainLayout>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <MainLayout>
-              <Login />
-            </MainLayout>
-          }
-        />
-      </Routes>
+      <div className="min-h-screen w-full">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <MainLayout>
+                <Home />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/planner"
+            element={
+              <MainLayout>
+                <Planner />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/tour"
+            element={
+              <MainLayout>
+                <Tour />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/altro"
+            element={
+              <MainLayout>
+                <Altro />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <MainLayout>
+                <Login />
+              </MainLayout>
+            }
+          />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }
