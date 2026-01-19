@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import './RouteCarousel.css';
+// import './RouteCarousel.css';
 
 const routes = [
   {
@@ -154,28 +154,44 @@ function RouteCarousel() {
   };
 
   return (
-    <section className="routes">
-      <div className="routes-header">
-        <h2 className="routes-title">Percorsi panoramici vicino a te</h2>
+    <section className="py-16 px-8 bg-[radial-gradient(circle_at_top,#1c1c1c,#0e0e0e)] text-white overflow-hidden">
+      <div className="mb-10">
+        <h2 className="m-0 text-[clamp(2.2rem,3.2vw,2.8rem)] font-semibold leading-tight text-[#f2f2f2]">
+          Percorsi panoramici vicino a te
+        </h2>
       </div>
 
       <div
-        className="routes-viewport"
+        className="overflow-hidden cursor-grab select-none active:cursor-grabbing"
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
-        <div className="routes-track" ref={trackRef}>
+        <div className="flex gap-7 will-change-transform p-4" ref={trackRef}>
           {loopRoutes.map((r, i) => (
-            <div className="route-card" key={`${r.id}-${i}`}>
-              <img src={r.image} alt={r.title} draggable="false" />
-              <div className="route-overlay" />
-              <div className="route-info">
-                <span className="badge">{r.difficulty}</span>
-                <h3>{r.title}</h3>
-                <p>{r.area}</p>
-                <span className="rating">⭐ {r.rating}</span>
+            <div
+              className="group relative w-85 h-115 rounded-3xl overflow-hidden shrink-0
+                            transition-all duration-600 ease hover:-translate-y-2.5
+                            hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+              key={`${r.id}-${i}`}
+            >
+              <img
+                className="w-full h-full object-cover pointer-events-none transition-transform duration-900 ease
+                              group-hover:scale-110"
+                src={r.image}
+                alt={r.title}
+                draggable="false"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 to-black/15" />
+              <div
+                className="absolute bottom-6 left-6 right-6 opacity-0 translate-y-3.5 transition-all
+                              duration-500 ease group-hover:opacity-100 group-hover:translate-y-0"
+              >
+                <span className="bg-white/18 py-1 px-3 rounded-full">{r.difficulty}</span>
+                <h3 className="my-2 mx-0">{r.title}</h3>
+                <p className="text-base opacity-80">{r.area}</p>
+                <span className="text-base opacity-90">⭐ {r.rating}</span>
               </div>
             </div>
           ))}
