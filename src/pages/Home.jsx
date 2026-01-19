@@ -1,4 +1,4 @@
-import RouteCarousel from '../components/RouteCarousel';
+import RouteCarousel from '../components/home/RouteCarousel';
 import { Link } from 'react-router-dom';
 
 function Home() {
