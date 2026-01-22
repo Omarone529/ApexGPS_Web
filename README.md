@@ -16,8 +16,10 @@ dei dati e dell’autenticazione.
 - JavaScript (JSX)
 - HTML5
 - CSS3
+- TailWind
+- Docker
 
-[![My Skills](https://skillicons.dev/icons?i=react,vite,js,html,css)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=react,vite,js,html,css,tailwind,docker)](https://skillicons.dev)
 
 ---
 
@@ -83,3 +85,20 @@ revisioni del codice.
     ```shell
         npm run format
     ```
+  
+
+### Containerizzazione
+Questi comandi permettono di creare un'immagine di docker ed eseguirla, al fine di
+containerizzare il progetto ed eseguirlo in una sorta di ambiente protetto.
+- **Creare l'immagine**
+    ```shell
+        docker build -t apex .
+    ```
+  
+- **Eseguire l'immagine**
+    ```shell
+        docker run -d -p 5173:5173 --name apex_web apex
+    ```
+  
+N.B. Nel caso in cui vengano fatte delle modifiche al processo sarà necessario creare
+nuovamente l'immagine
