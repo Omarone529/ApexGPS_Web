@@ -68,14 +68,12 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* DESKTOP: colonne link */}
         <div className="hidden lg:grid lg:grid-cols-4 gap-x-28">
           {columns.map(c => (
             <FooterColumn key={c.key} title={c.title} items={c.items} />
           ))}
         </div>
 
-        {/* MOBILE: accordion */}
         <div className="lg:hidden">
           <div className="divide-y divide-white/10">
             {columns.map(c => (
@@ -101,9 +99,7 @@ export default function Footer() {
 
         <div className="mt-12" />
 
-        {/* DESKTOP: Download + Social ALLINEATO A COMUNITÀ */}
         <div className="hidden lg:grid lg:grid-cols-4 gap-x-28 items-start">
-          {/* Download sotto Esplora (col 1-2) */}
           <div className="col-span-2">
             <h4 className="text-2xl font-semibold tracking-tight">Scarica l’app</h4>
 
@@ -136,10 +132,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* colonna 3 vuota */}
           <div />
 
-          {/* Social sotto Comunità (STESSA X) */}
           <div>
             <h4 className="text-2xl font-semibold tracking-tight">Seguici sui social</h4>
 
@@ -155,7 +149,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* MOBILE: social (una sola volta) */}
         <div className="mt-12 lg:hidden">
           <h4 className="text-2xl font-semibold tracking-tight">Seguici sui social</h4>
 
