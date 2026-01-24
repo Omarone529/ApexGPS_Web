@@ -156,7 +156,7 @@ function RoutesGrid() {
   //             setRoutes(data.data || data.items || data);
   //             setTotalPages(data.totalPages || Math.ceil(data.total / itemsPerPage));
   //             setTotalItems(data.total);
-
+  //
   //         } catch (err) {
   //             setError(err.message);
   //             console.error('error fetching routes', err);
@@ -168,11 +168,17 @@ function RoutesGrid() {
   //     fetchRoutes();
   // }, [currentPage]);
   //
-
+  //
   // // Paginazoione
   // const PaginationControls = () => (
-  //     <div className="pagination">
-  //         <button className={`pagination-btn ${currentPage === 1 ? 'disabled' : '' }`}>Precedente</button>
+  //     <div className="flex flex-wrap justify-center gap-2">
+  //         <button
+  //             className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg cursor-pointer
+  //                         font-bold transition-all duration-200 ease min-w-10 hover:bg-white/25
+  //                         hover:border-white/40 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' }`}
+  //         >
+  //           Precedente
+  //         </button>
   //
   //         <span className="page-numbers">
   //             {Array.from({ length: Math.min(5, totalPages)}, (_, i) => {
@@ -188,7 +194,12 @@ function RoutesGrid() {
   //                 }
   //
   //                 return (
-  //                     <button key={pageNum} className={`pagination-btn ${currentPage === pageNum ? 'active' : '' }`}
+  //                     <button
+  //                         key={pageNum}
+  //                         className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg
+  //                                     cursor-pointer font-bold transition-all duration-200 ease min-w-10
+  //                                     hover:bg-white/25 hover:border-white/40  ${currentPage === pageNum ?
+  //                                   'text-white border-[#3498db] bg-[#3498db]' : '' }`}
   //                             onClick={() => handlePageChange(pageNum)}>
   //                         {pageNum}
   //                     </button>
@@ -196,19 +207,25 @@ function RoutesGrid() {
   //             })}
   //         </span>
   //
-  //         <button className={`pagination-btn ${currentPage === totalPages ? 'disabled' : '' }`}
+  //         <button className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg cursor-pointer
+  //                             font-bold transition-all duration-200 ease min-w-10 hover:bg-white/25
+  //                           hover:border-white/40 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed'
+  //                           :'' }`}
   //                 onClick={() => handlePageChange(currentPage + 1)}
   //                 disabled={currentPage === totalPages}>
   //             Successiva
   //         </button>
   //     </div>
   // );
-
+  //
   // if (loading) {
   //     return (
-  //         <div className="routes-container">
-  //             <div className="loading-state">
-  //                 <div className="spinner" role="status">
+  //         <div className="max-w-350 mx-auto my-0
+  //                         font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,sans-serif]">
+  //             <div className="text-center p-16 text-white">
+  //                 <div className="border-4 border-white rounded-full border-t-4 border-t-[#3498db] w-10 h-10
+  //                                 animate-spin mx-auto mt-0 mb-4"
+  //                      role="status">
   //                     <p>In cerca di percorsi interessanti...</p>
   //                 </div>
   //             </div>
@@ -217,12 +234,15 @@ function RoutesGrid() {
   // }
   // if (error) {
   //     return (
-  //         <div className="routes-container">
-  //             <div className="error-state">
+  //         <div className="max-w-350 mx-auto my-0
+  //                         font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,sans-serif]">
+  //             <div className="text-center p-16 text-white">
   //                 <p>
   //                      Errore nel caricamento: {error}
   //                     </p>
-  //                 <button className="button" onClick={() => window.location.reload()}>
+  //                 <button className="bg-red-500 text-white border-none px-4 rounded-lg cursor-pointer mt-4 mx-0
+  //                                    mb-0 font-bold"
+  //                         onClick={() => window.location.reload()}>
   //                      Prova di nuovo
   //                 </button>
   //             </div>
