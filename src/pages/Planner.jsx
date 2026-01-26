@@ -1,96 +1,70 @@
 import { useState } from 'react';
-// import './Planner.css';
-import PlannerForm from '../components/planner/PlannerForm';
 import InteractiveMap from '../components/planner/InteractiveMap';
-import RouteStats from '../components/planner/RouteStats';
-import Feedback from '../components/planner/Feedback';
+import PlannerForm from '../components/planner/PlannerForm';
 
-function Planner() {
-  const [form, setForm] = useState({
-    name: '',
-    description: '',
-    start: '',
-    end: '',
-    waypoints: [''],
-    isPublic: false,
-  });
-  const [routePoints, setRoutePoints] = useState([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [feedback, setFeedback] = useState({ show: false, message: '', type: '' });
+const Planner = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [calculatedRoute, setCalculatedRoute] = useState([]);
+    const [isScenicRoute, setIsScenicRoute] = useState(false);
 
-  const updateForm = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+    const handleMenuToggle = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
 
-  const handleGenerateRoute = () => {
-    if (!form.start || !form.end) {
-      setFeedback({
-        show: true,
-        message: 'Inserisci almeno partenza e arrivo',
-        type: 'error',
-      });
-      setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 3000);
-      return;
-    }
+    const handleCalculateRoute = formData => {
+        console.log('Calcolo percorso standard con:', formData);
+        setIsScenicRoute(false);
 
-    setIsGenerating(true);
+        //TODO andrà messa la chiamata API qui
+        const mockRoute = [
+            [45.4642, 9.19],
+            [45.4742, 9.2],
+            [45.4842, 9.21],
+        ];
+        setCalculatedRoute(mockRoute);
+    };
 
-    setTimeout(() => {
-      setRoutePoints([
-        [45.4642, 9.19],
-        [45.5, 9.2],
-        [45.55, 9.25],
-        [45.6, 9.3],
-      ]);
-      setFeedback({
-        show: true,
-        message: 'Percorso generato! Visualizza sulla mappa',
-        type: 'success',
-      });
-      setIsGenerating(false);
+    const handleCalculateScenicRoute = formData => {
+        console.log('Calcolo percorso panoramico con:', formData);
+        setIsScenicRoute(true);
 
-      setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 3000);
-    }, 1500);
-  };
+        const scenicRoute = [
+            [45.4642, 9.19],
+            [45.4692, 9.195],
+            [45.4742, 9.1975],
+            [45.4792, 9.205],
+            [45.4842, 9.21],
+        ];
+        setCalculatedRoute(scenicRoute);
 
-  const handleAddWaypoint = () => {
-    updateForm('waypoints', [...form.waypoints, '']);
-    setFeedback({
-      show: true,
-      message: 'Tappa aggiunta con successo!',
-      type: 'waypoint',
-    });
-    setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 2000);
-  };
+        // TODO: Implementare qui la chiamata al backend per il percorso panoramico
+    };
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <Feedback feedback={feedback} />
+    const handleSaveRoute = formData => {
+        console.log('Salvataggio percorso:', formData);
+        const routeType = isScenicRoute ? 'panoramico' : 'standard';
+        alert(
+            `Percorso ${routeType} salvato!\nPartenza: ${formData.startPoint}\nArrivo: ${formData.endPoint}\nTappe: ${formData.waypoints.filter(w => w).length}`
+        );
+    };
 
-      <div className="flex min-h-52 h-[30vh] flex-col justify-center bg-linear-to-br from-[#1a1a1a] to-[#2d1b00] px-6 md:px-8 lg:px-12 xl:px-16">
-        <h1 className="m-0 text-[2rem] font-semibold md:text-[5vh] lg:text-[5vh] xl:text-5xl">
-          Pianifica il tuo percorso
-        </h1>
-        <p className="mt-3 text-base opacity-80 md:text-[2vh] lg:text-[2vh] xl:text-lg">
-          Crea itinerari panoramici personalizzati
-        </p>
-      </div>
+    return (
+        <div className="relative h-screen">
+            <InteractiveMap
+                onMenuToggle={handleMenuToggle}
+                routePoints={[]}
+                calculatedRoute={calculatedRoute}
+            />
 
-      <div className="mx-auto grid max-w-400 grid-cols-[minmax(320px,380px)_1fr] items-start gap-8 px-6 py-8 md:px-[4vw] lg:px-[4vw] xl:px-12 max-[1200px]:grid-cols-1 max-[1200px]:gap-6 max-[1200px]:p-6 max-[768px]:gap-4 max-[768px]:p-4">
-        <PlannerForm
-          form={form}
-          updateForm={updateForm}
-          handleAddWaypoint={handleAddWaypoint}
-          isGenerating={isGenerating}
-          handleGenerateRoute={handleGenerateRoute}
-          routePoints={routePoints}
-        />
-
-        <div className="flex min-w-0 flex-col gap-6">
-          <InteractiveMap routePoints={routePoints} />
-          <RouteStats routePoints={routePoints} />
+            <PlannerForm
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                onCalculateRoute={handleCalculateRoute}
+                onCalculateScenicRoute={handleCalculateScenicRoute} // Nuova prop
+                onSaveRoute={handleSaveRoute}
+            />
         </div>
-      </div>
-    </div>
-  );
-}
+    );
+};
 
 export default Planner;
