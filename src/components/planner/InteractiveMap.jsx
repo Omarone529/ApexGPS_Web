@@ -7,7 +7,7 @@ import L from 'leaflet';
 import MapUserLocation from './MapComponents/MapUserLocation';
 import MapRoutePoints from './MapComponents/MapRoutePoints';
 import MapPolyline from './MapComponents/MapPolyline';
-import MapPOIs from './MapComponents/MapPOIs';
+import MapPOIs from './MapComponents/MapPOIs.jsx';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
