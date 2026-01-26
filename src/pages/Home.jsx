@@ -10,7 +10,6 @@ function Home() {
 
   return (
     <>
-      {/* HERO */}
       <section className="relative min-h-screen w-full overflow-hidden flex items-center">
         <img
           src="/moto.webp"
@@ -18,7 +17,6 @@ function Home() {
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
 
-        {/* overlay */}
         <div className="absolute inset-0 bg-linear-to-r from-black/65 via-black/35 to-black/15" />
 
         <div className="relative z-10 px-6 sm:px-10 md:px-16 max-w-2xl">
@@ -50,12 +48,10 @@ function Home() {
         </div>
       </section>
 
-      {/* CAROUSEL */}
       <section id="nearby-routes" className="scroll-mt-24">
         <RouteCarousel />
       </section>
 
-      {/* FEATURE 1 */}
       <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
         <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
           <div>
@@ -90,7 +86,6 @@ function Home() {
           </div>
 
           <div className="grid gap-4 justify-items-start lg:justify-items-end">
-            {/* mock map */}
             <div className="w-full max-w-105 rounded-2xl border border-white/10 bg-white/6 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -131,7 +126,6 @@ function Home() {
               </div>
             </div>
 
-            {/* mock photo */}
             <div
               className="w-full max-w-90 h-56 rounded-2xl border border-white/10 bg-white/6
                             shadow-2xl shadow-black/40 overflow-hidden opacity-90
@@ -141,10 +135,8 @@ function Home() {
         </div>
       </section>
 
-      {/* FEATURE 2 (reverse) */}
       <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
         <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
-          {/* media first on desktop */}
           <div className="order-2 lg:order-1 grid gap-4 justify-items-start">
             <div className="w-full max-w-105 rounded-2xl border border-white/10 bg-white/6 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
               <div className="p-4">
@@ -214,7 +206,6 @@ function Home() {
         </div>
       </section>
 
-      {/* FEATURE 3 */}
       <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
         <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
           <div>

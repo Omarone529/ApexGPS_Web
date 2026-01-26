@@ -92,7 +92,6 @@ const routes = [
   },
 ];
 
-// doppia copia per anello vero
 const loopRoutes = [...routes, ...routes];
 
 function RouteCarousel() {
