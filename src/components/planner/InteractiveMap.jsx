@@ -1,8 +1,13 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { FiMenu, FiNavigation, FiMapPin } from 'react-icons/fi';
+import { useState } from 'react';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { FiMenu, FiNavigation } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+import MapUserLocation from './MapComponents/MapUserLocation';
+import MapRoutePoints from './MapComponents/MapRoutePoints';
+import MapPolyline from './MapComponents/MapPolyline';
+import MapPOIs from './MapComponents/MapPOIs';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,11 +18,9 @@ L.Icon.Default.mergeOptions({
 
 function CenterMap({ position }) {
   const map = useMap();
-  useEffect(() => {
-    if (position && map) {
-      map.flyTo(position, 15);
-    }
-  }, [position, map]);
+  if (position && map) {
+    map.flyTo(position, 13);
+  }
   return null;
 }
 
@@ -25,25 +28,13 @@ const InteractiveMap = ({
   onMenuToggle,
   routePoints = [],
   calculatedRoute = [],
+  pois = [],
   isScenicRoute = false,
+  loading = false,
+  routeStats,
 }) => {
-  const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState([45.4642, 9.19]);
-  const zoom = 13;
-
-  // Get user position
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const loc = [position.coords.latitude, position.coords.longitude];
-          setUserLocation(loc);
-          setMapCenter(loc);
-        },
-        () => console.log('Geolocation non disponibile')
-      );
-    }
-  }, []);
+  const [userLocation, setUserLocation] = useState(null);
 
   const centerOnUser = () => {
     if (userLocation) {
@@ -52,19 +43,24 @@ const InteractiveMap = ({
   };
 
   const calculateDistance = () => {
-    if (calculatedRoute.length < 2) return 0;
+    if (routeStats?.distance) return routeStats.distance;
+    if (calculatedRoute.length < 2) return '0 km';
     let total = 0;
     for (let i = 1; i < calculatedRoute.length; i++) {
       const [lat1, lon1] = calculatedRoute[i - 1];
       const [lat2, lon2] = calculatedRoute[i];
       total += Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lon2 - lon1, 2));
     }
-    return (total * 111).toFixed(1);
+    return `${(total * 111).toFixed(1)} km`;
+  };
+
+  const handleUserLocation = location => {
+    setUserLocation(location);
+    setMapCenter(location);
   };
 
   return (
     <div className="relative w-full h-screen">
-      {/* Hamburger Menu Button */}
       <button
         onClick={onMenuToggle}
         className="absolute top-4 left-4 z-[1000] bg-black/90 text-orange-500 p-3 rounded-xl shadow-2xl hover:bg-black transition-all duration-300 border border-orange-500/30 hover:border-orange-500"
@@ -73,10 +69,14 @@ const InteractiveMap = ({
         <FiMenu size={24} />
       </button>
 
-      {/* User Location Button */}
       <button
         onClick={centerOnUser}
-        className="absolute top-20 left-4 z-[1000] bg-black/90 text-orange-500 p-3 rounded-xl shadow-2xl hover:bg-black transition-all duration-300 border border-orange-500/30 hover:border-orange-500"
+        disabled={!userLocation}
+        className={`absolute top-20 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
+          userLocation
+            ? 'bg-black/90 text-orange-500 hover:bg-black border-orange-500/30 hover:border-orange-500'
+            : 'bg-gray-800/70 text-gray-400 border-gray-600/30 cursor-not-allowed'
+        }`}
         aria-label="Centra sulla mia posizione"
       >
         <FiNavigation size={24} />
@@ -84,65 +84,23 @@ const InteractiveMap = ({
 
       <MapContainer
         center={mapCenter}
-        zoom={zoom}
+        zoom={13}
         className="h-full w-full z-0"
         scrollWheelZoom={true}
       >
         <CenterMap position={mapCenter} />
 
-        {/* TileLayer CHIARO (OpenStreetMap standard) */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
 
-        {/*Position Marker*/}
-        {userLocation && (
-          <Marker position={userLocation}>
-            <Popup>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-                <span className="font-semibold text-gray-900">La tua posizione</span>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Marker punti del percorso */}
-        {routePoints.map((point, index) => (
-          <Marker key={index} position={point.position || [45.4642, 9.19]}>
-            <Popup>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <FiMapPin className="text-orange-500" />
-                  <span className="font-bold text-gray-900">
-                    {point.label || `Punto ${index + 1}`}
-                  </span>
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {point.description || 'Punto del percorso'}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-
-        {/* Polyline*/}
-        {calculatedRoute.length > 0 && (
-          <Polyline
-            pathOptions={{
-              color: isScenicRoute ? '#f59e0b' : '#f97316',
-              weight: 5,
-              opacity: 0.8,
-              lineCap: 'round',
-              lineJoin: 'round',
-            }}
-            positions={calculatedRoute}
-          />
-        )}
+        <MapUserLocation onLocationFound={handleUserLocation} />
+        <MapRoutePoints routePoints={routePoints} />
+        <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
+        <MapPOIs pois={pois} />
       </MapContainer>
 
-      {/* Status Bar */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/90 backdrop-blur-sm text-white px-6 py-3 rounded-2xl border border-orange-500/30 shadow-2xl">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -151,12 +109,37 @@ const InteractiveMap = ({
           </div>
           <div className="h-4 w-px bg-orange-500/50"></div>
           <div className="text-sm">
-            {calculatedRoute.length > 0
-              ? `Distanza: ${calculateDistance()} km`
-              : 'Nessun percorso calcolato'}
+            {routeStats?.distance
+              ? `Distanza: ${routeStats.distance}`
+              : calculatedRoute.length > 0
+                ? `Distanza: ${calculateDistance()}`
+                : 'Nessun percorso calcolato'}
           </div>
+          {routeStats?.duration && (
+            <>
+              <div className="h-4 w-px bg-orange-500/50"></div>
+              <div className="text-sm">Durata: {routeStats.duration}</div>
+            </>
+          )}
+          {routeStats?.poiCount && routeStats.poiCount > 0 && (
+            <>
+              <div className="h-4 w-px bg-orange-500/50"></div>
+              <div className="text-sm">POI: {routeStats.poiCount}</div>
+            </>
+          )}
         </div>
       </div>
+
+      {loading && (
+        <div className="absolute inset-0 z-[2000] bg-black/50 flex items-center justify-center">
+          <div className="bg-black/90 text-white p-6 rounded-2xl border border-orange-500/30">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+              <span>Calcolo percorso in corso...</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
