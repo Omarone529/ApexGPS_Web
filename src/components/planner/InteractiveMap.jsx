@@ -70,6 +70,8 @@ const InteractiveMap = ({
     }
   };
 
+  const totalPoints = routePoints.length + pois.length;
+
   return (
     <div className="relative w-full h-screen">
       <button
@@ -116,7 +118,7 @@ const InteractiveMap = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">Punti: {routePoints.length}</span>
+            <span className="text-sm">Punti: {totalPoints}</span>
           </div>
           <div className="h-4 w-px bg-orange-500/50"></div>
           <div className="text-sm">
@@ -130,12 +132,6 @@ const InteractiveMap = ({
             <>
               <div className="h-4 w-px bg-orange-500/50"></div>
               <div className="text-sm">Durata: {routeStats.duration}</div>
-            </>
-          )}
-          {routeStats?.poiCount && routeStats.poiCount > 0 && (
-            <>
-              <div className="h-4 w-px bg-orange-500/50"></div>
-              <div className="text-sm">POI: {routeStats.poiCount}</div>
             </>
           )}
         </div>
