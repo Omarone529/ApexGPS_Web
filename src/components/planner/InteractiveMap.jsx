@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { FiMenu, FiNavigation } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
@@ -16,11 +16,17 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function CenterMap({ position }) {
+function CenterMap({ position, centerTrigger }) {
   const map = useMap();
-  if (position && map) {
-    map.flyTo(position, 13);
-  }
+  const lastTriggerRef = useRef(0);
+
+  useEffect(() => {
+    if (position && map && centerTrigger > lastTriggerRef.current) {
+      map.flyTo(position, 13);
+      lastTriggerRef.current = centerTrigger;
+    }
+  }, [position, map, centerTrigger]);
+
   return null;
 }
 
@@ -33,12 +39,13 @@ const InteractiveMap = ({
   loading = false,
   routeStats,
 }) => {
-  const [mapCenter, setMapCenter] = useState([45.4642, 9.19]);
   const [userLocation, setUserLocation] = useState(null);
+  const [centerTrigger, setCenterTrigger] = useState(0);
+  const hasCenteredOnPermissionRef = useRef(false);
 
   const centerOnUser = () => {
     if (userLocation) {
-      setMapCenter(userLocation);
+      setCenterTrigger(prev => prev + 1);
     }
   };
 
@@ -56,7 +63,11 @@ const InteractiveMap = ({
 
   const handleUserLocation = location => {
     setUserLocation(location);
-    setMapCenter(location);
+
+    if (!hasCenteredOnPermissionRef.current) {
+      hasCenteredOnPermissionRef.current = true;
+      setCenterTrigger(1);
+    }
   };
 
   return (
@@ -83,12 +94,12 @@ const InteractiveMap = ({
       </button>
 
       <MapContainer
-        center={mapCenter}
+        center={[45.4642, 9.19]}
         zoom={13}
         className="h-full w-full z-0"
         scrollWheelZoom={true}
       >
-        <CenterMap position={mapCenter} />
+        <CenterMap position={userLocation} centerTrigger={centerTrigger} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
