@@ -30,6 +30,55 @@ function CenterMap({ position, centerTrigger }) {
   return null;
 }
 
+function CenterOnRoute({ route }) {
+  const map = useMap();
+  const hasCenteredRef = useRef(false);
+
+  useEffect(() => {
+    if (route && route.length > 0 && map && !hasCenteredRef.current) {
+      let minLat = 90,
+        maxLat = -90,
+        minLng = 180,
+        maxLng = -180;
+
+      route.forEach(coord => {
+        const [lat, lng] = coord;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+      });
+
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+
+      // Distance in km
+      const latDiff = (maxLat - minLat) * 111; // 1 grado ≈ 111 km
+      const lngDiff = (maxLng - minLng) * 111 * Math.cos((centerLat * Math.PI) / 180);
+      const maxDiff = Math.max(latDiff, lngDiff);
+
+      // Calculate zoom
+      let zoom;
+      if (maxDiff > 100) zoom = 8;
+      else if (maxDiff > 50) zoom = 9;
+      else if (maxDiff > 20) zoom = 10;
+      else if (maxDiff > 10) zoom = 11;
+      else if (maxDiff > 5) zoom = 12;
+      else if (maxDiff > 2) zoom = 13;
+      else if (maxDiff > 1) zoom = 14;
+      else if (maxDiff > 0.5) zoom = 15;
+      else zoom = 16;
+
+      const paddedZoom = Math.max(zoom - 1, 8);
+
+      map.flyTo([centerLat, centerLng], paddedZoom);
+      hasCenteredRef.current = true;
+    }
+  }, [route, map]);
+
+  return null;
+}
+
 const InteractiveMap = ({
   onMenuToggle,
   routePoints = [],
@@ -71,7 +120,6 @@ const InteractiveMap = ({
   };
 
   const totalPoints = routePoints.length + pois.length;
-
   return (
     <div className="relative w-full h-screen">
       <button
@@ -102,6 +150,7 @@ const InteractiveMap = ({
         scrollWheelZoom={true}
       >
         <CenterMap position={userLocation} centerTrigger={centerTrigger} />
+        <CenterOnRoute route={calculatedRoute} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
