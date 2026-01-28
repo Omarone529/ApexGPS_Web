@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { FiMenu, FiNavigation } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
@@ -92,6 +92,28 @@ const InteractiveMap = ({
   const [centerTrigger, setCenterTrigger] = useState(0);
   const hasCenteredOnPermissionRef = useRef(false);
 
+  const generatedRoutePoints = useMemo(() => {
+    const points = [];
+
+    if (calculatedRoute.length > 0) {
+      // Start point
+      points.push({
+        label: 'Partenza',
+        description: 'Punto di partenza del percorso',
+        position: calculatedRoute[0],
+      });
+
+      // End point
+      points.push({
+        label: 'Arrivo',
+        description: 'Punto di arrivo del percorso',
+        position: calculatedRoute[calculatedRoute.length - 1],
+      });
+    }
+
+    return [...points, ...routePoints];
+  }, [calculatedRoute, routePoints]);
+
   const centerOnUser = () => {
     if (userLocation) {
       setCenterTrigger(prev => prev + 1);
@@ -119,7 +141,7 @@ const InteractiveMap = ({
     }
   };
 
-  const totalPoints = routePoints.length + pois.length;
+  const totalPoints = generatedRoutePoints.length + pois.length;
   return (
     <div className="relative w-full h-screen">
       <button
@@ -158,7 +180,7 @@ const InteractiveMap = ({
         />
 
         <MapUserLocation onLocationFound={handleUserLocation} />
-        <MapRoutePoints routePoints={routePoints} />
+        <MapRoutePoints routePoints={generatedRoutePoints} />
         <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
         <MapPOIs pois={pois} />
       </MapContainer>
