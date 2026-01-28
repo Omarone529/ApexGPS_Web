@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { FiMenu, FiNavigation } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
@@ -16,11 +16,66 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function CenterMap({ position }) {
+function CenterMap({ position, centerTrigger }) {
   const map = useMap();
-  if (position && map) {
-    map.flyTo(position, 13);
-  }
+  const lastTriggerRef = useRef(0);
+
+  useEffect(() => {
+    if (position && map && centerTrigger > lastTriggerRef.current) {
+      map.flyTo(position, 13);
+      lastTriggerRef.current = centerTrigger;
+    }
+  }, [position, map, centerTrigger]);
+
+  return null;
+}
+
+function CenterOnRoute({ route }) {
+  const map = useMap();
+  const hasCenteredRef = useRef(false);
+
+  useEffect(() => {
+    if (route && route.length > 0 && map && !hasCenteredRef.current) {
+      let minLat = 90,
+        maxLat = -90,
+        minLng = 180,
+        maxLng = -180;
+
+      route.forEach(coord => {
+        const [lat, lng] = coord;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+      });
+
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+
+      // Distance in km
+      const latDiff = (maxLat - minLat) * 111; // 1 grado ≈ 111 km
+      const lngDiff = (maxLng - minLng) * 111 * Math.cos((centerLat * Math.PI) / 180);
+      const maxDiff = Math.max(latDiff, lngDiff);
+
+      // Calculate zoom
+      let zoom;
+      if (maxDiff > 100) zoom = 8;
+      else if (maxDiff > 50) zoom = 9;
+      else if (maxDiff > 20) zoom = 10;
+      else if (maxDiff > 10) zoom = 11;
+      else if (maxDiff > 5) zoom = 12;
+      else if (maxDiff > 2) zoom = 13;
+      else if (maxDiff > 1) zoom = 14;
+      else if (maxDiff > 0.5) zoom = 15;
+      else zoom = 16;
+
+      const paddedZoom = Math.max(zoom - 1, 8);
+
+      map.flyTo([centerLat, centerLng], paddedZoom);
+      hasCenteredRef.current = true;
+    }
+  }, [route, map]);
+
   return null;
 }
 
@@ -33,12 +88,13 @@ const InteractiveMap = ({
   loading = false,
   routeStats,
 }) => {
-  const [mapCenter, setMapCenter] = useState([45.4642, 9.19]);
   const [userLocation, setUserLocation] = useState(null);
+  const [centerTrigger, setCenterTrigger] = useState(0);
+  const hasCenteredOnPermissionRef = useRef(false);
 
   const centerOnUser = () => {
     if (userLocation) {
-      setMapCenter(userLocation);
+      setCenterTrigger(prev => prev + 1);
     }
   };
 
@@ -56,9 +112,14 @@ const InteractiveMap = ({
 
   const handleUserLocation = location => {
     setUserLocation(location);
-    setMapCenter(location);
+
+    if (!hasCenteredOnPermissionRef.current) {
+      hasCenteredOnPermissionRef.current = true;
+      setCenterTrigger(1);
+    }
   };
 
+  const totalPoints = routePoints.length + pois.length;
   return (
     <div className="relative w-full h-screen">
       <button
@@ -83,12 +144,13 @@ const InteractiveMap = ({
       </button>
 
       <MapContainer
-        center={mapCenter}
+        center={[45.4642, 9.19]}
         zoom={13}
         className="h-full w-full z-0"
         scrollWheelZoom={true}
       >
-        <CenterMap position={mapCenter} />
+        <CenterMap position={userLocation} centerTrigger={centerTrigger} />
+        <CenterOnRoute route={calculatedRoute} />
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -105,7 +167,7 @@ const InteractiveMap = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <span className="text-sm">Punti: {routePoints.length}</span>
+            <span className="text-sm">Punti: {totalPoints}</span>
           </div>
           <div className="h-4 w-px bg-orange-500/50"></div>
           <div className="text-sm">
@@ -119,12 +181,6 @@ const InteractiveMap = ({
             <>
               <div className="h-4 w-px bg-orange-500/50"></div>
               <div className="text-sm">Durata: {routeStats.duration}</div>
-            </>
-          )}
-          {routeStats?.poiCount && routeStats.poiCount > 0 && (
-            <>
-              <div className="h-4 w-px bg-orange-500/50"></div>
-              <div className="text-sm">POI: {routeStats.poiCount}</div>
             </>
           )}
         </div>

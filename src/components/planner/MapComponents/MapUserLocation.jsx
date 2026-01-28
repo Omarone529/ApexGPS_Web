@@ -1,21 +1,24 @@
 import { Marker, Popup } from 'react-leaflet';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const MapUserLocation = ({ onLocationFound }) => {
   const [userLocation, setUserLocation] = useState(null);
+  const hasFetchedLocationRef = useRef(false);
 
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (navigator.geolocation && !hasFetchedLocationRef.current) {
       navigator.geolocation.getCurrentPosition(
         position => {
           const location = [position.coords.latitude, position.coords.longitude];
           setUserLocation(location);
+          hasFetchedLocationRef.current = true;
           if (onLocationFound) {
             onLocationFound(location);
           }
         },
         error => {
           console.log('Geolocation non disponibile o permesso negato:', error.message);
+          hasFetchedLocationRef.current = true;
         }
       );
     }

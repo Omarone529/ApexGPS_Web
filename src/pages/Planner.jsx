@@ -86,34 +86,34 @@ const Planner = () => {
   const [pois, setPois] = useState([]);
   const [loading, setLoading] = useState(false);
   const [routeDetails, setRouteDetails] = useState(null);
-  const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  const showFeedback = (type, message, duration = 4000) => {
-    setFeedback({ show: true, type, message });
+  const showError = message => {
+    setErrorMessage(message);
     setTimeout(() => {
-      setFeedback(prev => (prev.show ? { show: false, type: '', message: '' } : prev));
-    }, duration);
+      setErrorMessage(null);
+    }, 5000);
   };
 
   const handleCalculateRoute = formData => {
     console.log('Percorso manuale richiesto:', formData);
-    showFeedback('info', 'Usa il percorso panoramico per calcoli automatici.');
+    // Non mostrare feedback per il percorso manuale
   };
 
   const handleCalculateScenicRoute = async formData => {
     console.log('Calcolo percorso panoramico:', formData);
 
     if (!formData.startPoint || !formData.endPoint) {
-      showFeedback('error', 'Inserisci punto di partenza e arrivo');
+      showError('Inserisci punto di partenza e arrivo');
       return;
     }
 
     if (loading) {
-      showFeedback('info', 'Calcolo già in corso, attendi...');
-      return;
+      return; // Non mostrare feedback duplicato
     }
 
     setLoading(true);
+    setErrorMessage(null);
 
     try {
       setIsScenicRoute(true);
@@ -121,8 +121,6 @@ const Planner = () => {
       setRouteStats(null);
       setPois([]);
       setRouteDetails(null);
-
-      showFeedback('info', 'Il sistema sta trovando il percorso più suggestivo...');
 
       const payload = {
         start_location_name: formData.startPoint.trim(),
@@ -150,7 +148,7 @@ const Planner = () => {
         const errorText = await response.text();
         console.error('Response error:', errorText);
 
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        let errorMessage = `Errore ${response.status}: ${response.statusText}`;
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.start_location_name) {
@@ -178,10 +176,6 @@ const Planner = () => {
 
       const scenicRoute = result.scenic_route;
       console.log('Dati percorso panoramico:', scenicRoute);
-      console.log(
-        'Polyline ricevuta (primi 100 caratteri):',
-        scenicRoute.polyline?.substring(0, 100)
-      );
 
       const routeCoords = decodePolyline(scenicRoute.polyline);
       console.log('Coordinate decodificate:', routeCoords.length);
@@ -238,12 +232,6 @@ const Planner = () => {
         endAddress: result.locations?.end?.name || formData.endPoint,
         formData: formData,
       });
-
-      const message = scenicRoute.time_constraint?.is_within_constraint
-        ? `Percorso panoramico calcolato! Il sistema ha trovato il percorso più suggestivo.`
-        : `Percorso panoramico calcolato! Il sistema ha trovato il percorso più suggestivo (tempo eccede il limite).`;
-
-      showFeedback('success', message);
     } catch (error) {
       console.error('Errore nel calcolo del percorso:', error);
 
@@ -258,7 +246,7 @@ const Planner = () => {
         errorMessage = error.message;
       }
 
-      showFeedback('error', errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -266,13 +254,14 @@ const Planner = () => {
 
   const handleSaveRoute = async formData => {
     if (!routeDetails) {
-      showFeedback('error', 'Calcola un percorso prima di salvarlo');
+      showError('Calcola un percorso prima di salvarlo');
       return;
     }
 
     if (loading) return;
 
     setLoading(true);
+    setErrorMessage(null);
 
     try {
       const payload = {
@@ -314,15 +303,9 @@ const Planner = () => {
 
         throw new Error(errorMessage);
       }
-
-      const data = await response.json();
-      showFeedback(
-        'success',
-        data.message || `Percorso "${data.route?.name || 'senza nome'}" salvato con successo!`
-      );
     } catch (error) {
       console.error('Errore nel salvataggio:', error);
-      showFeedback('error', `Errore nel salvataggio: ${error.message}`);
+      showError(`Errore nel salvataggio: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -350,106 +333,41 @@ const Planner = () => {
         hasRoute={calculatedRoute.length > 0}
       />
 
-      {feedback.show && (
-        <div
-          className={`
-                    fixed top-4 right-4 z-[3000] 
-                    p-4 rounded-xl shadow-2xl backdrop-blur-md
-                    animate-[fadeIn_0.25s_cubic-bezier(0.4,0,0.2,1)]
-                    transition-all duration-300 ease-out
-                    ${
-                      feedback.type === 'success'
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 border border-green-400/30'
-                        : feedback.type === 'error'
-                          ? 'bg-gradient-to-r from-red-500 to-red-600 border border-red-400/30'
-                          : 'bg-gradient-to-r from-blue-500 to-blue-600 border border-blue-400/30'
-                    } 
-                    text-white max-w-sm
-                    transform hover:scale-[1.02] hover:shadow-2xl
-                    overflow-hidden
-                `}
-        >
-          <div className="absolute top-0 left-0 w-full h-1 bg-white/30"></div>
+      {/* Loading overlay - già presente in InteractiveMap */}
 
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              {feedback.type === 'success' && (
-                <div className="w-8 h-8 rounded-full bg-green-400/20 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
-              {feedback.type === 'error' && (
-                <div className="w-8 h-8 rounded-full bg-red-400/20 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
-              {feedback.type === 'info' && (
-                <div className="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
+      {/* Error message overlay */}
+      {errorMessage && (
+        <div className="fixed inset-0 z-[3000] bg-black/50 flex items-center justify-center">
+          <div className="bg-black/90 text-white p-6 rounded-2xl border border-orange-500/30 shadow-2xl max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-red-400">Errore</h3>
             </div>
-
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium leading-snug tracking-tight">{feedback.message}</p>
-            </div>
-
+            <p className="text-gray-300 text-sm mb-4">{errorMessage}</p>
             <button
-              onClick={() => setFeedback({ show: false, type: '', message: '' })}
-              className="flex-shrink-0 text-white/60 hover:text-white transition-colors duration-200 ml-1"
-              aria-label="Chiudi notifica"
+              onClick={() => setErrorMessage(null)}
+              className="w-full py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border border-gray-700"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              Chiudi
             </button>
-          </div>
-
-          <div className="mt-3 h-1 bg-white/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-white/60 rounded-full"
-              style={{
-                animation: 'progress 4s linear',
-                width: '100%',
-                transformOrigin: 'left',
-              }}
-            />
           </div>
         </div>
       )}
 
       <style>{`
-                @keyframes progress {
-                    from {
-                        transform: scaleX(1);
-                    }
-                    to {
-                        transform: scaleX(0);
-                    }
-                }
-            `}</style>
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
