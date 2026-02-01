@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layout/MainLayout';
+import TestAuth from './pages/TestAuth';
 
 import Home from './pages/Home';
 import Planner from './pages/Planner';
@@ -49,6 +50,14 @@ function App() {
             element={
               <MainLayout>
                 <Login />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/test-auth"
+            element={
+              <MainLayout>
+                <TestAuth />
               </MainLayout>
             }
           />
