@@ -170,6 +170,7 @@ const InteractiveMap = ({
         zoom={13}
         className="h-full w-full z-0"
         scrollWheelZoom={true}
+        zoomControl={false}
       >
         <CenterMap position={userLocation} centerTrigger={centerTrigger} />
         <CenterOnRoute route={calculatedRoute} />
