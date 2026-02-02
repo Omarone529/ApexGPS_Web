@@ -146,7 +146,7 @@ const InteractiveMap = ({
     <div className="relative w-full h-screen">
       <button
         onClick={onMenuToggle}
-        className="absolute top-4 left-4 z-[1000] bg-black/90 text-orange-500 p-3 rounded-xl shadow-2xl hover:bg-black transition-all duration-300 border border-orange-500/30 hover:border-orange-500"
+        className="absolute top-28 left-4 z-[1000] bg-black/90 text-orange-500 p-3 rounded-xl shadow-2xl hover:bg-black transition-all duration-300 border border-orange-500/30 hover:border-orange-500"
         aria-label="Apri menu pianificazione"
       >
         <FiMenu size={24} />
@@ -155,7 +155,7 @@ const InteractiveMap = ({
       <button
         onClick={centerOnUser}
         disabled={!userLocation}
-        className={`absolute top-20 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
+        className={`absolute top-44 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
           userLocation
             ? 'bg-black/90 text-orange-500 hover:bg-black border-orange-500/30 hover:border-orange-500'
             : 'bg-gray-800/70 text-gray-400 border-gray-600/30 cursor-not-allowed'
