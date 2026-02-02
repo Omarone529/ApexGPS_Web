@@ -7,6 +7,7 @@ import Planner from './pages/Planner';
 import Tour from './pages/Tour';
 import Altro from './pages/Altro';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
               </MainLayout>
             }
           />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </div>
     </BrowserRouter>

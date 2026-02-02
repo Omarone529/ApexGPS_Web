@@ -10,8 +10,14 @@ export async function login(identifier, password) {
   return data;
 }
 
+export async function register(payload) {
+  return apiFetch('/auth/register/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function me() {
-  // Presuppone che nel backend tu abbia /api/auth/me/
   return apiFetch('/auth/me/');
 }
 

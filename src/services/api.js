@@ -75,8 +75,8 @@ export async function apiFetch(path, options = {}) {
 
   let { res, data } = await doRequest();
 
-  // Se token scaduto → prova refresh UNA volta e ritenta
-  if (res.status === 401 && getRefresh()) {
+  // Refresh SOLO se la request era autenticata (cioè avevamo un access da inviare)
+  if (res.status === 401 && access && getRefresh()) {
     const newAccess = await ensureRefreshedAccess();
     headers.Authorization = `Bearer ${newAccess}`;
     ({ res, data } = await doRequest());

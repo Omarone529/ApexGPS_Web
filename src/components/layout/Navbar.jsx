@@ -38,7 +38,7 @@ function Navbar() {
     >
       <div>
         <Link to="/" className="flex items-center gap-3 -ml-20">
-          <img src="/ApexGPS_logo.png" alt="ApexGPS Logo" className="h-32 w-auto -my-14 " />
+          <img src="/ApexGPS_logo.png" alt="ApexGPS Logo" className="h-32 w-auto -my-14" />
         </Link>
       </div>
 
@@ -61,13 +61,33 @@ function Navbar() {
         >
           Altro
         </Link>
-        <Link
-          to="/login"
-          className="text-white text-sm tracking-[1px] opacity-85 py-2 px-4.5
-                                     border border-white/60 rounded-full hover:opacity-100"
-        >
-          Login
-        </Link>
+
+        {isAuthenticated ? (
+          <>
+            <span className="text-white text-sm tracking-[1px] opacity-90">
+              Ciao, <span className="font-semibold">{displayName}</span>
+            </span>
+
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="text-white text-sm tracking-[1px] py-2 px-4.5
+                         border border-white/60 rounded-full hover:opacity-100"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link
+            to="/login"
+            className="text-white text-sm tracking-[1px] opacity-85 py-2 px-4.5
+                       border border-white/60 rounded-full hover:opacity-100"
+          >
+            Login
+          </Link>
+        )}
       </div>
     </nav>
   );

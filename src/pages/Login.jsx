@@ -36,6 +36,7 @@ function Login() {
           value={identifier}
           onChange={e => setIdentifier(e.target.value)}
           className="border p-2 rounded"
+          autoComplete="username"
         />
 
         <input
@@ -44,6 +45,7 @@ function Login() {
           value={password}
           onChange={e => setPassword(e.target.value)}
           className="border p-2 rounded"
+          autoComplete="current-password"
         />
 
         <button
@@ -54,6 +56,14 @@ function Login() {
         </button>
 
         {error && <p className="text-red-500">{error}</p>}
+
+        {/* Link registrazione */}
+        <p className="text-sm opacity-80 mt-2">
+          Non hai un account?{' '}
+          <button type="button" className="underline" onClick={() => navigate('/register')}>
+            Registrati
+          </button>
+        </p>
       </form>
     </div>
   );

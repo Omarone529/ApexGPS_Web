@@ -40,14 +40,21 @@ export function AuthProvider({ children }) {
       status,
       isAuthenticated: status === 'authed',
       login: async (identifier, password) => {
-        await auth.login(identifier, password);
-        // dopo login, prova a prendere user (se /me esiste)
+        const data = await auth.login(identifier, password);
+
+        // se il backend ritorna già l'utente, usalo
+        if (data?.user) {
+          setUser(data.user);
+          setStatus('authed');
+          return;
+        }
+
+        // fallback (se un giorno togli user dalla response login)
         try {
           const u = await auth.me();
           setUser(u);
           setStatus('authed');
         } catch {
-          // se /me non esiste ancora, consideriamo authed comunque
           setUser(null);
           setStatus('authed');
         }
