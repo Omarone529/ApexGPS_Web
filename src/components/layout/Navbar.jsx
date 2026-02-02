@@ -1,8 +1,41 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
 function Navbar() {
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const isPlannerPage = window.location.pathname === '/planner';
+
+  useEffect(() => {
+    if (isPlannerPage) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 0) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY.current) {
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isPlannerPage]);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 flex justify-between items-center py-6 px-16 bg-transparent z-50">
+    <nav
+      className={`fixed top-0 left-0 right-0 flex justify-between items-center py-6 px-16 z-50 transition-transform ${
+        isPlannerPage ? 'bg-black' : 'bg-transparent'
+      } ${isVisible ? '' : '-translate-y-full'}`}
+    >
       <div>
         <Link to="/" className="flex items-center gap-3 -ml-20">
           <img src="/ApexGPS_logo.png" alt="ApexGPS Logo" className="h-32 w-auto -my-14 " />
