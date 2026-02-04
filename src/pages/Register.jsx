@@ -30,7 +30,6 @@ function Register() {
         password,
       });
 
-      // auto-login dopo registrazione (UX top)
       await login(email || username, password);
       navigate('/planner');
     } catch (err) {

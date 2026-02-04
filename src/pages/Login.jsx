@@ -57,7 +57,6 @@ function Login() {
 
         {error && <p className="text-red-500">{error}</p>}
 
-        {/* Link registrazione */}
         <p className="text-sm opacity-80 mt-2">
           Non hai un account?{' '}
           <button type="button" className="underline" onClick={() => navigate('/register')}>

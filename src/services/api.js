@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api';
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 function getAccess() {
   return localStorage.getItem('access');
@@ -34,7 +34,6 @@ async function refreshAccessToken() {
     throw new Error(data?.detail || 'Refresh failed');
   }
 
-  // SimpleJWT normalmente ritorna { access: "..." }
   setTokens({ access: data.access });
   return data.access;
 }
@@ -56,7 +55,6 @@ export async function apiFetch(path, options = {}) {
     ...(options.headers || {}),
   };
 
-  // aggiungi JSON header solo se stai mandando un body e non è FormData
   const hasBody = options.body !== undefined && options.body !== null;
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
 
@@ -75,7 +73,6 @@ export async function apiFetch(path, options = {}) {
 
   let { res, data } = await doRequest();
 
-  // Refresh SOLO se la request era autenticata (cioè avevamo un access da inviare)
   if (res.status === 401 && access && getRefresh()) {
     const newAccess = await ensureRefreshedAccess();
     headers.Authorization = `Bearer ${newAccess}`;

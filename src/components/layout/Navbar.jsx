@@ -1,10 +1,46 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { tokenStore } from '../../services/api';
 
 function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
   const isPlannerPage = window.location.pathname === '/planner';
+
+  const navigate = useNavigate();
+
+  const [isAuthenticated, setIsAuthenticated] = useState(!!tokenStore.getAccess());
+  const [displayName, setDisplayName] = useState('utente');
+
+  useEffect(() => {
+    const syncAuth = () => {
+      setIsAuthenticated(!!tokenStore.getAccess());
+
+      const name = localStorage.getItem('displayName') || localStorage.getItem('username');
+      setDisplayName(name || 'utente');
+    };
+
+    syncAuth();
+
+    const onStorage = e => {
+      if (
+        e.key === 'access' ||
+        e.key === 'refresh' ||
+        e.key === 'displayName' ||
+        e.key === 'username'
+      ) {
+        syncAuth();
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const logout = () => {
+    tokenStore.clearTokens();
+    setIsAuthenticated(false);
+  };
 
   useEffect(() => {
     if (isPlannerPage) {
