@@ -5,13 +5,14 @@ import { useLocation } from 'react-router-dom';
 export default function MainLayout({ children }) {
   //get current path
   const location = useLocation();
-  const isPlannerPage = location.pathname === '/planner';
+  const pagesWithoutFooter = ['/planner', '/login', '/register'];
+  const hideFooter = pagesWithoutFooter.includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">{children}</main>
-      {!isPlannerPage && <Footer />}
+      {!hideFooter && <Footer />}
     </div>
   );
 }
