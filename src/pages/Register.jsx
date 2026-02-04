@@ -40,16 +40,19 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl mb-6 text-center font-semibold">Registrati</h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url('/register_login/background.webp')` }}
+    >
+      <div className="w-full max-w-md bg-black/80 backdrop-blur-sm p-8 rounded-2xl border border-white/10 shadow-2xl">
+        <h1 className="text-2xl mb-6 text-center font-semibold text-white">Registrati</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-white/60"
             autoComplete="email"
           />
 
@@ -57,7 +60,7 @@ function Register() {
             placeholder="Username"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-white/60"
             autoComplete="username"
           />
 
@@ -66,14 +69,14 @@ function Register() {
               placeholder="Nome"
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
-              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 w-1/2"
+              className="bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 w-1/2 placeholder:text-white/60"
               autoComplete="given-name"
             />
             <input
               placeholder="Cognome"
               value={lastName}
               onChange={e => setLastName(e.target.value)}
-              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 w-1/2"
+              className="bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 w-1/2 placeholder:text-white/60"
               autoComplete="family-name"
             />
           </div>
@@ -83,7 +86,7 @@ function Register() {
             placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="bg-white/10 border border-white/20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-white/60"
             autoComplete="new-password"
           />
 
@@ -94,13 +97,13 @@ function Register() {
             {loading ? 'Creazione...' : 'Crea account'}
           </button>
 
-          {error && <p className="text-red-500 text-center text-sm">{error}</p>}
+          {error && <p className="text-red-400 text-center text-sm">{error}</p>}
 
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-white/80 text-center">
             Hai già un account?{' '}
             <button
               type="button"
-              className="text-orange-500 font-medium hover:underline"
+              className="text-orange-400 font-medium hover:underline"
               onClick={() => navigate('/login')}
             >
               Vai al login
