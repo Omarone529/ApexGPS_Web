@@ -37,7 +37,7 @@ function Register() {
   };
 
   const passwordStrength = Object.values(passwordCriteria).filter(Boolean).length;
-  const isPasswordValid = passwordStrength >= 4; // Richiede tutti i criteri
+  const isPasswordValid = passwordStrength >= 4;
   const passwordsMatch = password === confirmPassword;
   const isConfirmPasswordValid = passwordsMatch && confirmPassword.length > 0;
 
