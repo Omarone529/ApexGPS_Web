@@ -123,14 +123,10 @@ function Register() {
               type="email"
             />
             {touched.email && isEmailValid && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400">
-                ✓
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400"></span>
             )}
             {touched.email && !isEmailValid && email && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400">
-                ✗
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400"></span>
             )}
           </div>
 
@@ -150,14 +146,10 @@ function Register() {
               autoComplete="username"
             />
             {touched.username && isUsernameValid && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400">
-                ✓
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400"></span>
             )}
             {touched.username && !isUsernameValid && username && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400">
-                ✗
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400"></span>
             )}
           </div>
 
@@ -201,9 +193,7 @@ function Register() {
                 autoComplete="new-password"
               />
               {touched.password && isPasswordValid && (
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400">
-                  ✓
-                </span>
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400"></span>
               )}
             </div>
 
@@ -279,14 +269,10 @@ function Register() {
               autoComplete="new-password"
             />
             {touched.confirmPassword && isConfirmPasswordValid && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400">
-                ✓
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400"></span>
             )}
             {touched.confirmPassword && !isConfirmPasswordValid && confirmPassword && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400">
-                ✗
-              </span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400"></span>
             )}
           </div>
 
