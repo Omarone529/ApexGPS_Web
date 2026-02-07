@@ -59,10 +59,12 @@ const PlannerForm = ({
 
   const handleCalculate = async () => {
     if (!formData.startPoint || !formData.endPoint) {
-      return; // Non mostrare alert
+      return;
     }
 
     setIsSubmitting(true);
+    onClose();
+
     try {
       await onCalculateRoute?.(formData);
     } catch (error) {
@@ -74,13 +76,15 @@ const PlannerForm = ({
 
   const handleCalculateScenic = async () => {
     if (!formData.startPoint || !formData.endPoint) {
-      return; // Non mostrare alert
+      return;
     }
 
     setIsSubmitting(true);
+    setIsScenicMode(true);
+    onClose();
+
     try {
       await onCalculateScenicRoute?.(formData);
-      setIsScenicMode(true);
     } catch (error) {
       console.error('Errore nel calcolo del percorso panoramico:', error);
     } finally {
@@ -90,7 +94,7 @@ const PlannerForm = ({
 
   const handleSave = async () => {
     if (!formData.startPoint || !formData.endPoint) {
-      return; // Non mostrare alert
+      return;
     }
 
     setIsSubmitting(true);
@@ -124,7 +128,6 @@ const PlannerForm = ({
         },
         () => {
           console.log('Impossibile ottenere la posizione corrente');
-          // Non mostrare alert
         }
       );
     }
