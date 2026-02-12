@@ -1,20 +1,37 @@
 import RouteCarousel from '../components/home/RouteCarousel';
 import { Link } from 'react-router-dom';
+import { useRef, useEffect } from 'react';
 
 function Home() {
+  const videoRef = useRef(null);
+
   const scrollToNearby = () => {
     document
       .getElementById('nearby-routes')
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.play();
+    }
+  }, []);
+
   return (
     <>
       <section className="relative min-h-screen w-full overflow-hidden flex items-center">
-        <img
-          src="/moto.webp"
-          alt="Viaggio in moto"
-          className="absolute inset-0 h-full w-full object-cover object-center"
+        <video
+          ref={videoRef}
+          src="/header-video.mp4"
+          muted
+          playsInline
+          autoPlay
+          loop
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          className="absolute inset-0 h-full w-full object-cover object-center pointer-events-none"
         />
 
         <div className="absolute inset-0 bg-linear-to-r from-black/65 via-black/35 to-black/15" />
