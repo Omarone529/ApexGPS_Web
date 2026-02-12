@@ -1,6 +1,4 @@
-// import React, {useEffect, useState} from 'react';
 import React from 'react';
-// import './Tour.css';
 
 function Tour() {
   return (
@@ -25,20 +23,11 @@ function Tour() {
 }
 
 function RoutesGrid() {
-  // const [routesApi, setRoutes] = useState([]);
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const [totalPages, setTotalPages] = useState(1);
-  // const [totalItems, setTotalItems] = useState(0);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState(null);
-  // const itemsPerPage = 20;
-
   const routes = [
     {
       id: 1,
       title: 'Passo della Futa',
       area: 'Appennino Tosco-Emiliano',
-      difficulty: 'Panoramico',
       rating: 4.8,
       image: '/routes/routes1.webp',
     },
@@ -46,7 +35,6 @@ function RoutesGrid() {
       id: 2,
       title: 'Passo della Raticosa',
       area: 'Bologna – Firenze',
-      difficulty: 'Sportivo',
       rating: 4.9,
       image: '/routes/routes2.webp',
     },
@@ -54,7 +42,6 @@ function RoutesGrid() {
       id: 3,
       title: 'Muraglione',
       area: 'Foreste Casentinesi',
-      difficulty: 'Iconico',
       rating: 4.7,
       image: '/routes/routes3.webp',
     },
@@ -62,7 +49,6 @@ function RoutesGrid() {
       id: 4,
       title: 'Passo della Cisa',
       area: 'Appennino Parmense',
-      difficulty: 'Lungo',
       rating: 4.6,
       image: '/routes/routes4.webp',
     },
@@ -70,7 +56,6 @@ function RoutesGrid() {
       id: 5,
       title: 'Passo del Gavia',
       area: 'Alpi Lombarde',
-      difficulty: 'Epico',
       rating: 4.9,
       image: '/routes/routes5.webp',
     },
@@ -78,7 +63,6 @@ function RoutesGrid() {
       id: 6,
       title: 'Passo dello Stelvio',
       area: 'Alpi Retiche',
-      difficulty: 'Leggendario',
       rating: 5.0,
       image: '/routes/routes6.webp',
     },
@@ -86,7 +70,6 @@ function RoutesGrid() {
       id: 7,
       title: 'Passo Giau',
       area: 'Dolomiti',
-      difficulty: 'Spettacolare',
       rating: 4.9,
       image: '/routes/routes7.webp',
     },
@@ -94,7 +77,6 @@ function RoutesGrid() {
       id: 8,
       title: 'Colle delle Finestre',
       area: 'Val di Susa',
-      difficulty: 'Epico',
       rating: 4.8,
       image: '/routes/routes8.webp',
     },
@@ -102,7 +84,6 @@ function RoutesGrid() {
       id: 9,
       title: 'Passo del Rombo',
       area: 'Alpi Venoste',
-      difficulty: 'Panoramico',
       rating: 4.9,
       image: '/routes/routes9.webp',
     },
@@ -110,7 +91,6 @@ function RoutesGrid() {
       id: 10,
       title: 'Passo del Tonale',
       area: 'Lombardia – Trentino',
-      difficulty: 'Scorrevole',
       rating: 4.6,
       image: '/routes/routes10.webp',
     },
@@ -118,137 +98,10 @@ function RoutesGrid() {
       id: 11,
       title: 'Passo San Marco',
       area: 'Val Brembana',
-      difficulty: 'Tecnico',
       rating: 4.7,
       image: '/routes/routes11.webp',
     },
   ];
-
-  // Get difficulty color
-  const getDifficultyColor = difficulty => {
-    const colors = {
-      Panoramico: '#4CAF50', // Green
-      Sportivo: '#2196F3', // Blue
-      Iconico: '#9C27B0', // Purple
-      Lungo: '#FF9800', // Orange
-      Epico: '#F44336', // Red
-      Leggendario: '#FF4081', // Pink
-      Spettacolare: '#00BCD4', // Cyan
-      Scorrevole: '#3F51B5', // Indigo
-      Tecnico: '#795548', // Brown
-    };
-    return colors[difficulty] || '#757575';
-  };
-
-  // useEffect(() => {
-  //     const fetchRoutes = async () => {
-  //         try {
-  //             setLoading(true);
-  //
-  //             //FIXME need updated api
-  //             const response = await fetch('http://replaceWithApi.com');
-  //
-  //             if (!response.ok) {
-  //                 throw new Error('HTTP error! status: ' + response.status);
-  //             }
-  //
-  //             const data = await response.json();
-  //             setRoutes(data.data || data.items || data);
-  //             setTotalPages(data.totalPages || Math.ceil(data.total / itemsPerPage));
-  //             setTotalItems(data.total);
-  //
-  //         } catch (err) {
-  //             setError(err.message);
-  //             console.error('error fetching routes', err);
-  //         } finally {
-  //             setLoading(false);
-  //         }
-  //     };
-  //
-  //     fetchRoutes();
-  // }, [currentPage]);
-  //
-  //
-  // // Paginazoione
-  // const PaginationControls = () => (
-  //     <div className="flex flex-wrap justify-center gap-2">
-  //         <button
-  //             className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg cursor-pointer
-  //                         font-bold transition-all duration-200 ease min-w-10 hover:bg-white/25
-  //                         hover:border-white/40 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' }`}
-  //         >
-  //           Precedente
-  //         </button>
-  //
-  //         <span className="page-numbers">
-  //             {Array.from({ length: Math.min(5, totalPages)}, (_, i) => {
-  //                 let pageNum;
-  //                 if (totalPages <= 5){
-  //                     pageNum = i +1;
-  //                 } else if (currentPage <= 3) {
-  //                     pageNum = i + 1;
-  //                 } else if (currentPage >= totalPages - 2) {
-  //                     pageNum = totalPages - 4 + i;
-  //                 } else {
-  //                     pageNum = currentPage - 2 + i;
-  //                 }
-  //
-  //                 return (
-  //                     <button
-  //                         key={pageNum}
-  //                         className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg
-  //                                     cursor-pointer font-bold transition-all duration-200 ease min-w-10
-  //                                     hover:bg-white/25 hover:border-white/40  ${currentPage === pageNum ?
-  //                                   'text-white border-[#3498db] bg-[#3498db]' : '' }`}
-  //                             onClick={() => handlePageChange(pageNum)}>
-  //                         {pageNum}
-  //                     </button>
-  //                 );
-  //             })}
-  //         </span>
-  //
-  //         <button className={`py-2 px-4 border border-white/25 bg-white/10 text-white rounded-lg cursor-pointer
-  //                             font-bold transition-all duration-200 ease min-w-10 hover:bg-white/25
-  //                           hover:border-white/40 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed'
-  //                           :'' }`}
-  //                 onClick={() => handlePageChange(currentPage + 1)}
-  //                 disabled={currentPage === totalPages}>
-  //             Successiva
-  //         </button>
-  //     </div>
-  // );
-  //
-  // if (loading) {
-  //     return (
-  //         <div className="max-w-350 mx-auto my-0
-  //                         font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,sans-serif]">
-  //             <div className="text-center p-16 text-white">
-  //                 <div className="border-4 border-white rounded-full border-t-4 border-t-[#3498db] w-10 h-10
-  //                                 animate-spin mx-auto mt-0 mb-4"
-  //                      role="status">
-  //                     <p>In cerca di percorsi interessanti...</p>
-  //                 </div>
-  //             </div>
-  //         </div>
-  //     );
-  // }
-  // if (error) {
-  //     return (
-  //         <div className="max-w-350 mx-auto my-0
-  //                         font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,sans-serif]">
-  //             <div className="text-center p-16 text-white">
-  //                 <p>
-  //                      Errore nel caricamento: {error}
-  //                     </p>
-  //                 <button className="bg-red-500 text-white border-none px-4 rounded-lg cursor-pointer mt-4 mx-0
-  //                                    mb-0 font-bold"
-  //                         onClick={() => window.location.reload()}>
-  //                      Prova di nuovo
-  //                 </button>
-  //             </div>
-  //         </div>
-  //     );
-  // }
 
   return (
     <div
@@ -258,7 +111,7 @@ function RoutesGrid() {
       {/* Header */}
       <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h2 className="text-[clamp(2.2rem,3.2vw,2.8rem)] font-semibold leading-[1.15] m-0 text-[#f2f2f2]">
-          I percorsi più amati dagli utenti
+          Scopri i percorsi degli utenti
         </h2>
         <span
           className="bg-white/10 py-2 px-4 rounded-2xl text-base text-[#f2f2f2] font-medium
@@ -273,84 +126,81 @@ function RoutesGrid() {
         {routes.map(route => (
           <div
             key={route.id}
-            className="group relative h-115 rounded-3xl overflow-hidden
-                                    [transition:transform_0.6s_ease,box-shadow_0.6s_ease]
-                                    hover:-translate-y-2.5 ease hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+            className="group relative aspect-[3/4] rounded-3xl overflow-hidden
+                      bg-white/5 backdrop-blur-sm border border-white/10
+                      transition-all duration-500 ease-out
+                      hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
           >
             {/* Image */}
             <img
               src={route.image}
               alt={route.title}
-              className="w-full h-full object-cover transition-transform duration-900 ease
-                                       group-hover:scale-110"
+              className="absolute inset-0 w-full h-full object-cover
+                       transition-transform duration-700 ease-out
+                       group-hover:scale-110"
             />
 
-            {/* Overlay */}
             <div
-              className="absolute inset-0
-                                        bg-[linear-gradient(to_top,rgba(0,0,0,0.85)_0%,rgba(0,0,0,0.7)_30%,rgba(0,0,0,0.15)_70%,transparent_100%)]"
-            ></div>
+              className="absolute inset-0 bg-gradient-to-t
+                          from-black/90 via-black/50 to-transparent
+                          opacity-90 transition-opacity duration-500
+                          group-hover:opacity-95"
+            />
 
-            {/* Main Title (disappears on hover) */}
             <div
-              className="group absolute bottom-6 left-6 right-6 transition-all duration-500 ease z-10
-                                        opacity-100 group-hover:opacity-0 group-hover:translate-y-2.5
-                                        group-hover:pointer-events-none"
+              className="absolute bottom-0 left-0 right-0 p-6
+                         transition-all duration-500 ease-out
+                         translate-y-0 group-hover:translate-y-[-8px]"
             >
-              <h3
-                className="m-0 text-2xl font-semibold text-white
-                                           drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-              >
-                {route.title}
-              </h3>
-            </div>
-
-            {/* Hidden Info (appears on hover) */}
-            <div
-              className="absolute bottom-6 left-6 right-6 opacity-0 translate-y-5 transition-all
-                                        duration-500 ease z-10 group-hover:opacity-100 group-hover:translate-y-0"
-            >
-              <span
-                className="inline-block px-3 py-1 text-white text-xs font-semibold uppercase
-                                             tracking-wider rounded-full mb-3"
-                style={{ backgroundColor: getDifficultyColor(route.difficulty) }}
-              >
-                {route.difficulty}
-              </span>
-
-              <h3
-                className="text-xl font-semibold text-white mb-1
-                                               [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]"
-              >
-                {route.title}
-              </h3>
-              <p className="text-gray-300 text-sm mb-3 opacity-90">{route.area}</p>
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className="text-lg"
-                        style={{ color: i < Math.floor(route.rating) ? '#FFD700' : '#ffffff80' }}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span className="text-white font-semibold text-sm">
-                    {route.rating.toFixed(1)}
-                  </span>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className="text-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                      style={{ color: i < Math.floor(route.rating) ? '#FFD700' : '#ffffff80' }}
+                    >
+                      ★
+                    </span>
+                  ))}
                 </div>
-                <button
-                  className="bg-white/20 text-white py-2 rounded-lg text-sm font-semibold
-                                                       border border-white/30 backdrop-blur-md hover:bg-white/30
-                                                       hover:border-white/40 transition-all duration-300 ease
-                                                       hover:-translate-y-0.5"
+                <span
+                  className="text-white font-bold text-sm
+                             drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
                 >
-                  View Details
-                </button>
+                  {route.rating.toFixed(1)}
+                </span>
               </div>
+
+              <h3
+                className="text-2xl font-bold text-white mb-1
+                         drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
+                         transition-all duration-500"
+              >
+                {route.title}
+              </h3>
+
+              <p
+                className="text-gray-200 text-sm mb-4 opacity-90
+                         drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]
+                         transition-all duration-500"
+              >
+                {route.area}
+              </p>
+
+              <button
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold
+                         bg-white/10 text-white
+                         border border-white/30
+                         backdrop-blur-md
+                         transition-all duration-300 ease-out
+                         hover:bg-orange-500 hover:border-orange-400
+                         hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]
+                         hover:scale-105
+                         active:scale-95"
+              >
+                View Details
+              </button>
             </div>
           </div>
         ))}
