@@ -84,13 +84,13 @@ const Planner = () => {
   const [calculatedRoute, setCalculatedRoute] = useState([]);
   const [isScenicRoute, setIsScenicRoute] = useState(false);
   const [routeStats, setRouteStats] = useState(null);
-  const [pois, setPois] = useState([]); // POI del percorso calcolato
-  const [allPois, setAllPois] = useState([]); // Tutti i POI del database
+  const [pois, setPois] = useState([]);
+  const [allPois, setAllPois] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingPois, setLoadingPois] = useState(false); // Loading separato per i POI
+  const [loadingPois, setLoadingPois] = useState(false);
   const [routeDetails, setRouteDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('all'); // Filtro categorie
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     const loadAllPOIs = async () => {
@@ -153,7 +153,7 @@ const Planner = () => {
     }
 
     if (loading) {
-      return;
+      return; // Non mostrare feedback duplicato
     }
 
     setLoading(true);
