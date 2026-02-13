@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
-import { poiService } from '../components/planner/MapServices/POIService';
+import { poiService } from '../components/planner/MapServices/POIService.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Decode polyline
 const decodePolyline = encoded => {
   if (!encoded || typeof encoded !== 'string' || encoded.trim() === '') {
-    console.log('Polyline vuota o non valida');
     return [];
   }
 
@@ -47,39 +47,34 @@ const decodePolyline = encoded => {
       coordinates.push([lat * 1e-5, lng * 1e-5]);
     }
 
-    console.log(`Decodificate ${coordinates.length} coordinate`);
     return coordinates;
   } catch (error) {
-    console.error('Errore nella decodifica della polyline:', error);
+    console.error('Error decoding polyline:', error);
     return [];
   }
 };
 
+// Format time
 const formatTime = minutes => {
   if (!minutes || minutes <= 0) return '0 min';
-
   if (minutes >= 60) {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
     return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
   }
-
   return `${Math.round(minutes)} min`;
 };
 
+// Format distance
 const formatDistance = km => {
   if (!km || km <= 0) return '0 km';
-
-  if (km >= 100) {
-    return `${Math.round(km)} km`;
-  } else if (km >= 10) {
-    return `${km.toFixed(1)} km`;
-  }
-
+  if (km >= 100) return `${Math.round(km)} km`;
+  if (km >= 10) return `${km.toFixed(1)} km`;
   return `${km.toFixed(2)} km`;
 };
 
 const Planner = () => {
+  // State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [calculatedRoute, setCalculatedRoute] = useState([]);
   const [isScenicRoute, setIsScenicRoute] = useState(false);
@@ -90,8 +85,9 @@ const Planner = () => {
   const [loadingPois, setLoadingPois] = useState(false);
   const [routeDetails, setRouteDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeFilters, setActiveFilters] = useState(new Set(['all']));
 
+  // Load POIs on mount
   useEffect(() => {
     const loadAllPOIs = async () => {
       setLoadingPois(true);
@@ -99,10 +95,9 @@ const Planner = () => {
         const poisData = await poiService.getAllPOIs();
         const formattedPois = poiService.formatPOIsForMap(poisData);
         setAllPois(formattedPois);
-        console.log(`Caricati ${formattedPois.length} POI dal database`);
       } catch (error) {
-        console.error('Errore nel caricamento dei POI:', error);
-        showError('Impossibile caricare i punti di interesse');
+        console.error('Error loading POIs:', error);
+        showError('Unable to load points of interest');
       } finally {
         setLoadingPois(false);
       }
@@ -111,51 +106,67 @@ const Planner = () => {
     loadAllPOIs();
   }, []);
 
-  // Filter POIs by category
-  const getFilteredPois = () => {
-    if (selectedCategory === 'all') {
-      return allPois;
-    }
-    return allPois.filter(poi => poi.category === selectedCategory);
+  // Toggle filter
+  const toggleFilter = categoryId => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+
+      if (newFilters.has(categoryId)) {
+        newFilters.delete(categoryId);
+      } else {
+        newFilters.add(categoryId);
+      }
+
+      return newFilters;
+    });
   };
 
+  // Get filtered POIs
+  const getFilteredPois = () => {
+    if (activeFilters.size === 0) return [];
+    return allPois.filter(poi => activeFilters.has(poi.category) || activeFilters.has('all'));
+  };
+
+  // Get display POIs
   const getDisplayPois = () => {
     const filteredPois = getFilteredPois();
-
-    // Se ci sono POI del percorso, li includiamo (evitando duplicati)
     if (pois.length > 0) {
       const routePoiIds = new Set(pois.map(p => p.id));
       const uniqueFilteredPois = filteredPois.filter(p => !routePoiIds.has(p.id));
       return [...pois, ...uniqueFilteredPois];
     }
-
     return filteredPois;
   };
 
+  // Get category counts
+  const getCategoryCounts = () => {
+    const counts = { all: allPois.length };
+    allPois.forEach(poi => {
+      const cat = poi.category;
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  };
+
+  // Show error
   const showError = message => {
     setErrorMessage(message);
-    setTimeout(() => {
-      setErrorMessage(null);
-    }, 5000);
+    setTimeout(() => setErrorMessage(null), 5000);
   };
 
+  // Handle calculate route
   const handleCalculateRoute = formData => {
-    console.log('Percorso manuale richiesto:', formData);
-    // Non mostrare feedback per il percorso manuale
+    console.log('Manual route requested:', formData);
   };
 
+  // Handle calculate scenic route
   const handleCalculateScenicRoute = async formData => {
-    console.log('Calcolo percorso panoramico:', formData);
-
     if (!formData.startPoint || !formData.endPoint) {
-      showError('Inserisci punto di partenza e arrivo');
+      showError('Enter start and end points');
       return;
     }
 
-    if (loading) {
-      return; // Non mostrare feedback duplicato
-    }
-
+    if (loading) return;
     setLoading(true);
     setErrorMessage(null);
 
@@ -173,9 +184,6 @@ const Planner = () => {
         preference: formData.preference || 'balanced',
       };
 
-      console.log('Invio richiesta al backend:', payload);
-      console.log('URL:', `${API_BASE_URL}/api/routes/calculate-scenic/`);
-
       const response = await fetch(`${API_BASE_URL}/api/routes/calculate-scenic/`, {
         method: 'POST',
         headers: {
@@ -186,53 +194,31 @@ const Planner = () => {
         mode: 'cors',
       });
 
-      console.log('Response status:', response.status, response.statusText);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
-
-        let errorMessage = `Errore ${response.status}: ${response.statusText}`;
+        let errorMessage = `Error ${response.status}`;
         try {
           const errorData = JSON.parse(errorText);
-          if (errorData.start_location_name) {
-            errorMessage = errorData.start_location_name[0];
-          } else if (errorData.end_location_name) {
-            errorMessage = errorData.end_location_name[0];
-          } else if (errorData.error) {
-            errorMessage = errorData.error;
-          } else if (errorData.details) {
-            errorMessage = errorData.details;
-          }
+          errorMessage = errorData.error || errorData.details || errorMessage;
         } catch (parseError) {
-          console.error('Errore nel parsing della risposta:', parseError);
+          console.error('Error parsing response:', parseError);
         }
-
         throw new Error(errorMessage);
       }
 
       const result = await response.json();
-      console.log('API Response completo:', result);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Errore nel calcolo del percorso');
-      }
+      if (!result.success) throw new Error(result.error || 'Route calculation failed');
 
       const scenicRoute = result.scenic_route;
-      console.log('Dati percorso panoramico:', scenicRoute);
-
       const routeCoords = decodePolyline(scenicRoute.polyline);
-      console.log('Coordinate decodificate:', routeCoords.length);
 
       if (routeCoords.length === 0) {
-        console.log('Nessuna coordinata dalla polyline, usando fallback');
         if (result.locations?.start) {
           routeCoords.push([result.locations.start.lat, result.locations.start.lon]);
         }
         if (result.locations?.end) {
           routeCoords.push([result.locations.end.lat, result.locations.end.lon]);
         }
-
         if (scenicRoute.poi_stops?.length > 0) {
           scenicRoute.poi_stops.forEach(poi => {
             routeCoords.push([poi.location.lat, poi.location.lon]);
@@ -249,12 +235,9 @@ const Planner = () => {
           ? `${scenicRoute.scenic_score.toFixed(1)}/100`
           : 'N/A',
         poiCount: scenicRoute.poi_count || 0,
-        isWithinConstraint: scenicRoute.time_constraint?.is_within_constraint || false,
         fastestDuration: result.fastest_route?.total_time_minutes
           ? formatTime(result.fastest_route.total_time_minutes)
           : 'N/A',
-        totalScenicScore: scenicRoute.scenic_score,
-        avgScenicRating: scenicRoute.avg_scenic_rating,
       };
 
       setRouteStats(stats);
@@ -279,30 +262,27 @@ const Planner = () => {
         formData: formData,
       });
     } catch (error) {
-      console.error('Errore nel calcolo del percorso:', error);
-
-      let errorMessage = 'Errore nel calcolo del percorso panoramico';
-
-      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        errorMessage = 'Connessione al server fallita. Verifica che il backend sia in esecuzione.';
+      console.error('Error calculating route:', error);
+      let errorMessage = 'Error calculating scenic route';
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Connection failed. Is the backend running?';
       } else if (error.message.includes('cors')) {
-        errorMessage = 'Errore CORS. Il backend deve consentire richieste dal frontend.';
+        errorMessage = 'CORS error. Backend must allow frontend requests.';
       } else {
         errorMessage = error.message;
       }
-
       showError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle save route
   const handleSaveRoute = async formData => {
     if (!routeDetails) {
-      showError('Calcola un percorso prima di salvarlo');
+      showError('Calculate a route before saving');
       return;
     }
-
     if (loading) return;
 
     setLoading(true);
@@ -310,7 +290,7 @@ const Planner = () => {
 
     try {
       const payload = {
-        name: formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
+        name: formData.routeName || `Scenic route ${new Date().toLocaleDateString()}`,
         visibility: formData.isPublic ? 'public' : 'private',
         calculation_data: routeDetails.calculation_data || {
           start_location: routeDetails.locations?.start || { lat: 0, lon: 0 },
@@ -336,109 +316,84 @@ const Planner = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Errore salvataggio:', errorText);
-
-        let errorMessage = 'Errore nel salvataggio';
+        let errorMessage = 'Error saving route';
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.detail || errorMessage;
         } catch (parseError) {
-          console.error('Errore nel parsing della risposta di salvataggio:', parseError);
+          console.error('Error parsing save response:', parseError);
         }
-
         throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Errore nel salvataggio:', error);
-      showError(`Errore nel salvataggio: ${error.message}`);
+      console.error('Error saving route:', error);
+      showError(`Save error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const displayPois = getDisplayPois();
+  const categoryCounts = getCategoryCounts();
+
+  // Categories with icons
+  const categories = [
+    { id: 'all', label: 'All', icon: '📍', color: 'text-white' },
+    { id: 'restaurant', label: 'Restaurants', icon: '🍽️', color: 'text-orange-400' },
+    { id: 'food', label: 'Food', icon: '🍕', color: 'text-orange-400' },
+    { id: 'church', label: 'Churches', icon: '⛪', color: 'text-purple-400' },
+    { id: 'historic', label: 'Historic', icon: '🏛️', color: 'text-amber-400' },
+    { id: 'monument', label: 'Monuments', icon: '🗿', color: 'text-amber-400' },
+    { id: 'viewpoint', label: 'Viewpoints', icon: '👁️', color: 'text-emerald-400' },
+    { id: 'castle', label: 'Castles', icon: '🏰', color: 'text-amber-400' },
+    { id: 'lake', label: 'Lakes', icon: '💧', color: 'text-blue-400' },
+    { id: 'nature', label: 'Nature', icon: '🌲', color: 'text-emerald-400' },
+    { id: 'mountain_pass', label: 'Passes', icon: '⛰️', color: 'text-gray-400' },
+    { id: 'waterfall', label: 'Waterfalls', icon: '💦', color: 'text-blue-400' },
+    { id: 'vineyard', label: 'Vineyards', icon: '🍇', color: 'text-purple-400' },
+  ].filter(cat => cat.id === 'all' || categoryCounts[cat.id] > 0);
 
   return (
     <div className="relative h-screen">
+      {/* Loading indicator */}
       {loadingPois && (
         <div className="absolute top-4 right-4 z-[1500] bg-black/90 text-white px-4 py-2 rounded-xl border border-orange-500/30 flex items-center gap-2">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
-          <span className="text-sm">Caricamento POI...</span>
+          <span className="text-sm">Loading POIs...</span>
         </div>
       )}
 
-      {/* category filter */}
-      <div className="absolute top-28 right-4 z-[1000] bg-black/90 backdrop-blur-sm rounded-xl border border-orange-500/30 shadow-2xl overflow-hidden">
-        <div className="p-3 border-b border-orange-500/20">
-          <h3 className="text-white text-sm font-semibold">Filtra POI</h3>
-        </div>
-        <div className="p-2 max-h-96 overflow-y-auto">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
-              selectedCategory === 'all'
-                ? 'bg-orange-500 text-white'
-                : 'text-gray-300 hover:bg-white/10'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <span>📍</span>
-              <span>Tutti ({allPois.length})</span>
-            </span>
-          </button>
-
-          {Object.entries(
-            allPois.reduce((acc, poi) => {
-              acc[poi.category] = (acc[poi.category] || 0) + 1;
-              return acc;
-            }, {})
-          )
-            .sort((a, b) => b[1] - a[1])
-            .map(([category, count]) => (
+      {/* Filter buttons */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000]">
+        <div className="flex flex-wrap justify-center gap-2 max-w-[90vw]">
+          {categories.map(cat => {
+            const isActive = activeFilters.has(cat.id);
+            return (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-orange-500 text-white'
-                    : 'text-gray-300 hover:bg-white/10'
+                key={cat.id}
+                onClick={() => toggleFilter(cat.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg ${
+                  isActive
+                    ? 'bg-orange-500 text-white shadow-orange-500/30 scale-105'
+                    : `${cat.color} bg-black/80 border border-gray-700 hover:bg-black/90 hover:border-orange-500/50`
                 }`}
               >
-                <span className="flex items-center gap-2">
-                  <span>
-                    {category === 'restaurant' && '🍽️'}
-                    {category === 'food' && '🍕'}
-                    {category === 'church' && '⛪'}
-                    {category === 'historic' && '🏛️'}
-                    {category === 'monument' && '🗿'}
-                    {category === 'viewpoint' && '👁️'}
-                    {category === 'panoramic' && '🏞️'}
-                    {category === 'castle' && '🏰'}
-                    {category === 'lake' && '💧'}
-                    {category === 'nature' && '🌲'}
-                    {category === 'mountain_pass' && '⛰️'}
-                    {![
-                      'restaurant',
-                      'food',
-                      'church',
-                      'historic',
-                      'monument',
-                      'viewpoint',
-                      'panoramic',
-                      'castle',
-                      'lake',
-                      'nature',
-                      'mountain_pass',
-                    ].includes(category) && '📍'}
-                  </span>
-                  <span className="capitalize">{category}</span>
-                  <span className="text-xs opacity-75">({count})</span>
+                <span className={isActive ? 'text-white' : cat.color}>{cat.icon}</span>
+                <span>{cat.label}</span>
+                <span
+                  className={`text-xs ml-1 px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-gray-800 text-gray-400'
+                  }`}
+                >
+                  {categoryCounts[cat.id]}
                 </span>
               </button>
-            ))}
+            );
+          })}
         </div>
       </div>
 
+      {/* Map */}
       <InteractiveMap
         onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
         routePoints={[]}
@@ -449,6 +404,7 @@ const Planner = () => {
         loading={loading}
       />
 
+      {/* Planner form */}
       <PlannerForm
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
@@ -459,9 +415,9 @@ const Planner = () => {
         hasRoute={calculatedRoute.length > 0}
       />
 
-      {/* Error message overlay */}
+      {/* Error message */}
       {errorMessage && (
-        <div className="fixed inset-0 z-[3000] bggit -black/50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[3000] bg-black/50 flex items-center justify-center">
           <div className="bg-black/90 text-white p-6 rounded-2xl border border-orange-500/30 shadow-2xl max-w-md mx-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
@@ -473,14 +429,14 @@ const Planner = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-red-400">Errore</h3>
+              <h3 className="text-lg font-semibold text-red-400">Error</h3>
             </div>
             <p className="text-gray-300 text-sm mb-4">{errorMessage}</p>
             <button
               onClick={() => setErrorMessage(null)}
               className="w-full py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border border-gray-700"
             >
-              Chiudi
+              Close
             </button>
           </div>
         </div>
