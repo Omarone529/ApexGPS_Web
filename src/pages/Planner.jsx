@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
+import { poiService } from '../components/planner/MapServices/POIService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -83,10 +84,53 @@ const Planner = () => {
   const [calculatedRoute, setCalculatedRoute] = useState([]);
   const [isScenicRoute, setIsScenicRoute] = useState(false);
   const [routeStats, setRouteStats] = useState(null);
-  const [pois, setPois] = useState([]);
+  const [pois, setPois] = useState([]); // POI del percorso calcolato
+  const [allPois, setAllPois] = useState([]); // Tutti i POI del database
   const [loading, setLoading] = useState(false);
+  const [loadingPois, setLoadingPois] = useState(false); // Loading separato per i POI
   const [routeDetails, setRouteDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all'); // Filtro categorie
+
+  useEffect(() => {
+    const loadAllPOIs = async () => {
+      setLoadingPois(true);
+      try {
+        const poisData = await poiService.getAllPOIs();
+        const formattedPois = poiService.formatPOIsForMap(poisData);
+        setAllPois(formattedPois);
+        console.log(`Caricati ${formattedPois.length} POI dal database`);
+      } catch (error) {
+        console.error('Errore nel caricamento dei POI:', error);
+        showError('Impossibile caricare i punti di interesse');
+      } finally {
+        setLoadingPois(false);
+      }
+    };
+
+    loadAllPOIs();
+  }, []);
+
+  // Filter POIs by category
+  const getFilteredPois = () => {
+    if (selectedCategory === 'all') {
+      return allPois;
+    }
+    return allPois.filter(poi => poi.category === selectedCategory);
+  };
+
+  const getDisplayPois = () => {
+    const filteredPois = getFilteredPois();
+
+    // Se ci sono POI del percorso, li includiamo (evitando duplicati)
+    if (pois.length > 0) {
+      const routePoiIds = new Set(pois.map(p => p.id));
+      const uniqueFilteredPois = filteredPois.filter(p => !routePoiIds.has(p.id));
+      return [...pois, ...uniqueFilteredPois];
+    }
+
+    return filteredPois;
+  };
 
   const showError = message => {
     setErrorMessage(message);
@@ -109,7 +153,7 @@ const Planner = () => {
     }
 
     if (loading) {
-      return; // Non mostrare feedback duplicato
+      return;
     }
 
     setLoading(true);
@@ -215,16 +259,18 @@ const Planner = () => {
 
       setRouteStats(stats);
 
-      const poiMarkers =
+      const routePoiMarkers =
         scenicRoute.poi_stops?.map(poi => ({
-          id: poi.poi_id,
+          id: `route-${poi.poi_id}`,
+          originalId: poi.poi_id,
           name: poi.name,
           category: poi.category,
           coordinates: [poi.location.lat, poi.location.lon],
           scenic_value: poi.scenic_value,
+          isRoutePoi: true,
         })) || [];
 
-      setPois(poiMarkers);
+      setPois(routePoiMarkers);
 
       setRouteDetails({
         ...result,
@@ -238,8 +284,7 @@ const Planner = () => {
       let errorMessage = 'Errore nel calcolo del percorso panoramico';
 
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        errorMessage =
-          'Connessione al server fallita. Verifica: 1) Il backend è in esecuzione? 2) CORS è abilitato?';
+        errorMessage = 'Connessione al server fallita. Verifica che il backend sia in esecuzione.';
       } else if (error.message.includes('cors')) {
         errorMessage = 'Errore CORS. Il backend deve consentire richieste dal frontend.';
       } else {
@@ -311,13 +356,94 @@ const Planner = () => {
     }
   };
 
+  const displayPois = getDisplayPois();
+
   return (
     <div className="relative h-screen">
+      {loadingPois && (
+        <div className="absolute top-4 right-4 z-[1500] bg-black/90 text-white px-4 py-2 rounded-xl border border-orange-500/30 flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+          <span className="text-sm">Caricamento POI...</span>
+        </div>
+      )}
+
+      {/* category filter */}
+      <div className="absolute top-28 right-4 z-[1000] bg-black/90 backdrop-blur-sm rounded-xl border border-orange-500/30 shadow-2xl overflow-hidden">
+        <div className="p-3 border-b border-orange-500/20">
+          <h3 className="text-white text-sm font-semibold">Filtra POI</h3>
+        </div>
+        <div className="p-2 max-h-96 overflow-y-auto">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
+              selectedCategory === 'all'
+                ? 'bg-orange-500 text-white'
+                : 'text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <span>📍</span>
+              <span>Tutti ({allPois.length})</span>
+            </span>
+          </button>
+
+          {Object.entries(
+            allPois.reduce((acc, poi) => {
+              acc[poi.category] = (acc[poi.category] || 0) + 1;
+              return acc;
+            }, {})
+          )
+            .sort((a, b) => b[1] - a[1])
+            .map(([category, count]) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-orange-500 text-white'
+                    : 'text-gray-300 hover:bg-white/10'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span>
+                    {category === 'restaurant' && '🍽️'}
+                    {category === 'food' && '🍕'}
+                    {category === 'church' && '⛪'}
+                    {category === 'historic' && '🏛️'}
+                    {category === 'monument' && '🗿'}
+                    {category === 'viewpoint' && '👁️'}
+                    {category === 'panoramic' && '🏞️'}
+                    {category === 'castle' && '🏰'}
+                    {category === 'lake' && '💧'}
+                    {category === 'nature' && '🌲'}
+                    {category === 'mountain_pass' && '⛰️'}
+                    {![
+                      'restaurant',
+                      'food',
+                      'church',
+                      'historic',
+                      'monument',
+                      'viewpoint',
+                      'panoramic',
+                      'castle',
+                      'lake',
+                      'nature',
+                      'mountain_pass',
+                    ].includes(category) && '📍'}
+                  </span>
+                  <span className="capitalize">{category}</span>
+                  <span className="text-xs opacity-75">({count})</span>
+                </span>
+              </button>
+            ))}
+        </div>
+      </div>
+
       <InteractiveMap
         onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
         routePoints={[]}
         calculatedRoute={calculatedRoute}
-        pois={pois}
+        pois={displayPois}
         routeStats={routeStats}
         isScenicRoute={isScenicRoute}
         loading={loading}
@@ -333,11 +459,9 @@ const Planner = () => {
         hasRoute={calculatedRoute.length > 0}
       />
 
-      {/* Loading overlay - già presente in InteractiveMap */}
-
       {/* Error message overlay */}
       {errorMessage && (
-        <div className="fixed inset-0 z-[3000] bg-black/50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[3000] bggit -black/50 flex items-center justify-center">
           <div className="bg-black/90 text-white p-6 rounded-2xl border border-orange-500/30 shadow-2xl max-w-md mx-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
@@ -361,13 +485,6 @@ const Planner = () => {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 };
