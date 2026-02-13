@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import { FiMenu, FiNavigation } from 'react-icons/fi';
+import { FiMenu, FiNavigation, FiFilter } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -81,16 +81,23 @@ function CenterOnRoute({ route }) {
 
 const InteractiveMap = ({
   onMenuToggle,
+  onFilterToggle,
   routePoints = [],
   calculatedRoute = [],
   pois = [],
   isScenicRoute = false,
   loading = false,
   routeStats,
+  showFilter = false,
 }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [centerTrigger, setCenterTrigger] = useState(0);
+  const [poiCount, setPoiCount] = useState(0);
   const hasCenteredOnPermissionRef = useRef(false);
+
+  useEffect(() => {
+    setPoiCount(pois.length);
+  }, [pois]);
 
   const generatedRoutePoints = useMemo(() => {
     const points = [];
@@ -142,6 +149,7 @@ const InteractiveMap = ({
   };
 
   const totalPoints = generatedRoutePoints.length + pois.length;
+
   return (
     <div className="relative w-full h-screen">
       <button
@@ -152,10 +160,24 @@ const InteractiveMap = ({
         <FiMenu size={24} />
       </button>
 
+      {onFilterToggle && (
+        <button
+          onClick={onFilterToggle}
+          className={`absolute top-44 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
+            showFilter
+              ? 'bg-orange-500 text-white border-orange-500'
+              : 'bg-black/90 text-orange-500 border-orange-500/30 hover:bg-black hover:border-orange-500'
+          }`}
+          aria-label="Filtra POI"
+        >
+          <FiFilter size={24} />
+        </button>
+      )}
+
       <button
         onClick={centerOnUser}
         disabled={!userLocation}
-        className={`absolute top-44 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
+        className={`absolute top-60 left-4 z-[1000] p-3 rounded-xl shadow-2xl transition-all duration-300 border ${
           userLocation
             ? 'bg-black/90 text-orange-500 hover:bg-black border-orange-500/30 hover:border-orange-500'
             : 'bg-gray-800/70 text-gray-400 border-gray-600/30 cursor-not-allowed'
@@ -164,6 +186,13 @@ const InteractiveMap = ({
       >
         <FiNavigation size={24} />
       </button>
+
+      <div className="absolute top-28 right-4 z-[1000] bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-orange-500/30 shadow-2xl">
+        <div className="flex items-center gap-2">
+          <span className="text-orange-500">📍</span>
+          <span className="text-sm font-medium">{poiCount} POI</span>
+        </div>
+      </div>
 
       <MapContainer
         center={[45.4642, 9.19]}
@@ -204,6 +233,15 @@ const InteractiveMap = ({
             <>
               <div className="h-4 w-px bg-orange-500/50"></div>
               <div className="text-sm">Durata: {routeStats.duration}</div>
+            </>
+          )}
+          {routeStats?.scenicScore && routeStats.scenicScore !== 'N/A' && (
+            <>
+              <div className="h-4 w-px bg-orange-500/50"></div>
+              <div className="text-sm flex items-center gap-1">
+                <span>🏞️</span>
+                <span>Score: {routeStats.scenicScore}</span>
+              </div>
             </>
           )}
         </div>
