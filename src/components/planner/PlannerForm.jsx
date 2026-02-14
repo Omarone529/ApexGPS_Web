@@ -10,6 +10,7 @@ import {
   FiTarget,
   FiUser,
 } from 'react-icons/fi';
+import LocationInput from './LocationInput';
 
 const PlannerForm = ({
   isOpen,
@@ -157,6 +158,7 @@ const PlannerForm = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Start Point */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="flex items-center gap-2 text-sm font-semibold text-orange-500">
@@ -173,18 +175,16 @@ const PlannerForm = ({
                   Usa mia posizione
                 </button>
               </div>
-              <input
-                type="text"
-                name="startPoint"
+              <LocationInput
                 value={formData.startPoint}
                 onChange={handleInputChange}
-                placeholder="Es: Via Roma 1, Milano"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
-                disabled={isSubmitting}
-                required
+                name="startPoint"
+                placeholder="Es: Roma, Milano, Firenze..."
+                onUseCurrentLocation={() => getCurrentLocation('startPoint')}
               />
             </div>
 
+            {/* Waypoints */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="flex items-center gap-2 text-sm font-semibold text-orange-500">
@@ -234,23 +234,22 @@ const PlannerForm = ({
               </div>
             </div>
 
+            {/* End Point */}
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-orange-500 mb-2">
                 <FiMapPin />
                 Punto di Arrivo *
               </label>
-              <input
-                type="text"
-                name="endPoint"
+              <LocationInput
                 value={formData.endPoint}
                 onChange={handleInputChange}
-                placeholder="Es: Piazza Duomo, Milano"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
-                disabled={isSubmitting}
-                required
+                name="endPoint"
+                placeholder="Es: Napoli, Torino, Venezia..."
+                onUseCurrentLocation={() => getCurrentLocation('endPoint')}
               />
             </div>
 
+            {/* Notes */}
             <div>
               <label className="block text-sm font-semibold text-orange-500 mb-2">
                 Note o preferenze
@@ -266,6 +265,7 @@ const PlannerForm = ({
               />
             </div>
 
+            {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3 pt-4">
               <button
                 type="button"
@@ -292,6 +292,7 @@ const PlannerForm = ({
               </button>
             </div>
 
+            {/* Save Button */}
             <div className="pt-2">
               <button
                 type="button"
@@ -313,6 +314,7 @@ const PlannerForm = ({
               </button>
             </div>
 
+            {/* Clear Form */}
             <button
               type="button"
               onClick={clearForm}
@@ -323,6 +325,7 @@ const PlannerForm = ({
             </button>
           </form>
 
+          {/* Info Footer */}
           <div className="mt-8 pt-6 border-t border-gray-800">
             <div className="space-y-3">
               <div className="flex items-start gap-3 text-sm text-gray-400">
