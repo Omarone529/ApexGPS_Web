@@ -1,7 +1,6 @@
-import { Marker, Popup, useMap } from 'react-leaflet';
+import { Marker, useMap } from 'react-leaflet';
 import { useState, useEffect } from 'react';
 import L from 'leaflet';
-import { FiStar, FiMapPin } from 'react-icons/fi';
 
 const categoryConfig = {
   // Ristoranti e cibo
@@ -94,7 +93,7 @@ const POIMarkers = ({ pois, onPoiClick }) => {
     <>
       {visiblePois.map(poi => {
         const isRoutePoi = poi.isRoutePoi;
-        const { icon, color, bgColor } = getCategoryStyle(poi.category);
+        const { icon, bgColor } = getCategoryStyle(poi.category);
 
         return (
           <Marker
@@ -114,7 +113,7 @@ const POIMarkers = ({ pois, onPoiClick }) => {
                   border: 2px solid white;
                   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                   font-size: ${isRoutePoi ? '18px' : '14px'};
-                  color: ${color};
+                  color: #ffffff;
                   transition: all 0.2s ease;
                   cursor: pointer;
                   transform: ${isRoutePoi ? 'scale(1.1)' : 'scale(1)'};
@@ -130,49 +129,7 @@ const POIMarkers = ({ pois, onPoiClick }) => {
             eventHandlers={{
               click: () => onPoiClick(poi),
             }}
-          >
-            <Popup>
-              <div className="min-w-[200px] p-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
-                    style={{ backgroundColor: bgColor, color: 'white' }}
-                  >
-                    {icon}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 text-sm">{poi.name}</h3>
-                </div>
-
-                <div className="mb-2">
-                  <span className="text-xs text-gray-500 capitalize">{poi.category}</span>
-                </div>
-
-                {poi.description && <p className="text-xs text-gray-600 mb-2">{poi.description}</p>}
-
-                {poi.scenic_value && (
-                  <div className="flex items-center gap-1 mb-2">
-                    <FiStar size={12} className="text-amber-400" />
-                    <span className="text-xs font-medium text-amber-600">
-                      {typeof poi.scenic_value === 'number'
-                        ? poi.scenic_value.toFixed(1)
-                        : poi.scenic_value}
-                    </span>
-                  </div>
-                )}
-
-                {isRoutePoi && (
-                  <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
-                    <FiMapPin size={12} className="text-orange-500" />
-                    <span className="text-xs text-orange-600 font-medium">Tappa del percorso</span>
-                  </div>
-                )}
-
-                <div className="mt-2 text-[10px] text-gray-400 font-mono">
-                  {poi.coordinates[0].toFixed(4)}, {poi.coordinates[1].toFixed(4)}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
+          />
         );
       })}
     </>
