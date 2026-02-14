@@ -1,87 +1,121 @@
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useEffect } from 'react';
 import L from 'leaflet';
-import { FiStar } from 'react-icons/fi';
+import { FiStar, FiMapPin } from 'react-icons/fi';
 
-const getCategoryIcon = category => {
-  const iconMap = {
-    restaurant: { icon: '🍽️', color: '#ef4444' },
-    food: { icon: '🍕', color: '#ef4444' },
-    church: { icon: '⛪', color: '#8b5cf6' },
-    historic: { icon: '🏛️', color: '#f59e0b' },
-    monument: { icon: '🗿', color: '#f59e0b' },
-    viewpoint: { icon: '👁️', color: '#10b981' },
-    panoramic: { icon: '🏞️', color: '#10b981' },
-    castle: { icon: '🏰', color: '#f59e0b' },
-    lake: { icon: '💧', color: '#3b82f6' },
-    nature: { icon: '🌲', color: '#10b981' },
-    mountain_pass: { icon: '⛰️', color: '#6b7280' },
-    waterfall: { icon: '💦', color: '#3b82f6' },
-    vineyard: { icon: '🍇', color: '#a855f7' },
-  };
-
-  const defaultIcon = { icon: '📍', color: '#9ca3af' };
-  return iconMap[category] || defaultIcon;
+const categoryConfig = {
+  restaurant: { icon: '🍽️', color: '#ffffff', bgColor: '#f97316' },
+  food: { icon: '🍕', color: '#ffffff', bgColor: '#f97316' },
+  church: { icon: '⛪', color: '#ffffff', bgColor: '#8b5cf6' },
+  historic: { icon: '🏛️', color: '#ffffff', bgColor: '#f59e0b' },
+  monument: { icon: '🗿', color: '#ffffff', bgColor: '#f59e0b' },
+  viewpoint: { icon: '👁️', color: '#ffffff', bgColor: '#10b981' },
+  panoramic: { icon: '🏞️', color: '#ffffff', bgColor: '#10b981' },
+  castle: { icon: '🏰', color: '#ffffff', bgColor: '#f59e0b' },
+  lake: { icon: '💧', color: '#ffffff', bgColor: '#3b82f6' },
+  nature: { icon: '🌲', color: '#ffffff', bgColor: '#10b981' },
+  mountain_pass: { icon: '⛰️', color: '#ffffff', bgColor: '#6b7280' },
+  waterfall: { icon: '💦', color: '#ffffff', bgColor: '#3b82f6' },
+  vineyard: { icon: '🍇', color: '#ffffff', bgColor: '#a855f7' },
 };
 
-const createCustomIcon = category => {
-  const { icon, color } = getCategoryIcon(category);
-
-  return L.divIcon({
-    className: 'custom-poi-marker',
-    html: `
-      <div style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        background-color: ${color}20;
-        border-radius: 50%;
-        border: 2px solid ${color};
-        font-size: 16px;
-        color: ${color};
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        transition: transform 0.2s;
-      ">
-        ${icon}
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -16],
-  });
+const getCategoryStyle = category => {
+  return (
+    categoryConfig[category] || {
+      icon: '📍',
+      color: '#ffffff',
+      bgColor: '#9ca3af',
+    }
+  );
 };
 
-const MapPOIs = ({ pois }) => {
-  if (!pois || pois.length === 0) return null;
+// Inner component with access to map zoom level
+const POIMarkers = ({ pois }) => {
+  const map = useMap();
+  const [visiblePois, setVisiblePois] = useState([]);
+
+  useEffect(() => {
+    const updateVisiblePois = () => {
+      const zoom = map.getZoom();
+      const ZOOM_THRESHOLD = 13; // Show POIs from zoom level 13
+
+      const filtered = pois.filter(poi => {
+        // Route POIs are always visible
+        if (poi.isRoutePoi) return true;
+        return zoom >= ZOOM_THRESHOLD;
+      });
+
+      setVisiblePois(filtered);
+    };
+
+    updateVisiblePois();
+    map.on('zoomend', updateVisiblePois);
+
+    return () => {
+      map.off('zoomend', updateVisiblePois);
+    };
+  }, [map, pois]);
 
   return (
     <>
-      {pois.map(poi => (
-        <Marker
-          key={poi.id || `poi-${poi.coordinates[0]}-${poi.coordinates[1]}`}
-          position={poi.coordinates}
-          icon={createCustomIcon(poi.category)}
-        >
-          <Popup>
-            <div className="flex flex-col max-w-xs">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{getCategoryIcon(poi.category).icon}</span>
-                <span className="font-bold text-gray-900">{poi.name}</span>
-              </div>
+      {visiblePois.map(poi => {
+        const isRoutePoi = poi.isRoutePoi;
+        const { icon, color, bgColor } = getCategoryStyle(poi.category);
 
-              <div className="space-y-1">
-                <p className="text-sm text-gray-600">
-                  Categoria: <span className="font-medium">{poi.category}</span>
-                </p>
+        return (
+          <Marker
+            key={poi.id || `poi-${poi.coordinates[0]}-${poi.coordinates[1]}`}
+            position={poi.coordinates}
+            icon={L.divIcon({
+              className: 'poi-marker',
+              html: `
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: ${isRoutePoi ? '36px' : '28px'};
+                  height: ${isRoutePoi ? '36px' : '28px'};
+                  background-color: ${bgColor};
+                  border-radius: 50%;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                  font-size: ${isRoutePoi ? '18px' : '14px'};
+                  color: ${color};
+                  transition: all 0.2s ease;
+                  cursor: pointer;
+                  transform: ${isRoutePoi ? 'scale(1.1)' : 'scale(1)'};
+                  opacity: ${isRoutePoi ? 1 : 0.9};
+                ">
+                  ${icon}
+                </div>
+              `,
+              iconSize: [isRoutePoi ? 36 : 28, isRoutePoi ? 36 : 28],
+              iconAnchor: [isRoutePoi ? 18 : 14, isRoutePoi ? 18 : 14],
+              popupAnchor: [0, -18],
+            })}
+          >
+            <Popup>
+              <div className="min-w-[200px] p-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                    style={{ backgroundColor: bgColor, color: 'white' }}
+                  >
+                    {icon}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 text-sm">{poi.name}</h3>
+                </div>
 
-                {poi.description && <p className="text-sm text-gray-500 mt-2">{poi.description}</p>}
+                <div className="mb-2">
+                  <span className="text-xs text-gray-500 capitalize">{poi.category}</span>
+                </div>
+
+                {poi.description && <p className="text-xs text-gray-600 mb-2">{poi.description}</p>}
 
                 {poi.scenic_value && (
-                  <div className="flex items-center gap-1 mt-2">
-                    <FiStar className="text-yellow-500" size={14} />
-                    <span className="text-sm font-medium text-yellow-600">
-                      Valore:{' '}
+                  <div className="flex items-center gap-1 mb-2">
+                    <FiStar size={12} className="text-amber-400" />
+                    <span className="text-xs font-medium text-amber-600">
                       {typeof poi.scenic_value === 'number'
                         ? poi.scenic_value.toFixed(1)
                         : poi.scenic_value}
@@ -89,20 +123,28 @@ const MapPOIs = ({ pois }) => {
                   </div>
                 )}
 
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-400">
-                    Lat: {poi.coordinates[0].toFixed(6)}
-                    <br />
-                    Lng: {poi.coordinates[1].toFixed(6)}
-                  </p>
+                {isRoutePoi && (
+                  <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
+                    <FiMapPin size={12} className="text-orange-500" />
+                    <span className="text-xs text-orange-600 font-medium">Route stop</span>
+                  </div>
+                )}
+
+                <div className="mt-2 text-[10px] text-gray-400 font-mono">
+                  {poi.coordinates[0].toFixed(4)}, {poi.coordinates[1].toFixed(4)}
                 </div>
               </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        );
+      })}
     </>
   );
+};
+
+const MapPOIs = ({ pois }) => {
+  if (!pois || pois.length === 0) return null;
+  return <POIMarkers pois={pois} />;
 };
 
 export default MapPOIs;
