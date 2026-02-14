@@ -8,6 +8,7 @@ import MapUserLocation from './MapComponents/MapUserLocation';
 import MapRoutePoints from './MapComponents/MapRoutePoints';
 import MapPolyline from './MapComponents/MapPolyline';
 import MapPOIs from './MapComponents/MapPOIs';
+import POICard from './POICard';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -16,13 +17,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Map center component
+// Componente per il centraggio della mappa
 const MapController = ({ center, route, centerTrigger }) => {
   const map = useMap();
   const lastTriggerRef = useRef(0);
   const hasCenteredOnRouteRef = useRef(false);
 
-  // Map center on actual position
   useEffect(() => {
     if (center && centerTrigger > lastTriggerRef.current) {
       map.flyTo(center, 15, {
@@ -56,6 +56,9 @@ const InteractiveMap = ({
   isScenicRoute = false,
   loading = false,
   routeStats,
+  selectedPoi,
+  onPoiClick,
+  onAddPoiToRoute,
 }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [centerTrigger, setCenterTrigger] = useState(0);
@@ -107,7 +110,7 @@ const InteractiveMap = ({
     for (let i = 1; i < calculatedRoute.length; i++) {
       const [lat1, lon1] = calculatedRoute[i - 1];
       const [lat2, lon2] = calculatedRoute[i];
-      const R = 6371; // earth radius in km
+      const R = 6371;
       const dLat = ((lat2 - lat1) * Math.PI) / 180;
       const dLon = ((lon2 - lon1) * Math.PI) / 180;
       const a =
@@ -126,6 +129,7 @@ const InteractiveMap = ({
 
   return (
     <div className="relative w-full h-screen bg-gray-900">
+      {/* Overlay Controls */}
       <div className="absolute top-24 left-6 z-[1000] flex flex-col gap-3">
         <button
           onClick={onMenuToggle}
@@ -137,7 +141,6 @@ const InteractiveMap = ({
           <FiMenu size={22} className="group-hover:scale-110 transition-transform" />
         </button>
 
-        {/* Layer Toggle Button */}
         <button
           onClick={() => setMapLayer(prev => (prev === 'standard' ? 'satellite' : 'standard'))}
           className="group w-12 h-12 bg-gray-900/90 backdrop-blur-sm text-gray-300 rounded-2xl shadow-2xl
@@ -148,7 +151,6 @@ const InteractiveMap = ({
           <FiLayers size={20} className="group-hover:scale-110 transition-transform" />
         </button>
 
-        {/* Location Button */}
         <button
           onClick={centerOnUser}
           disabled={!userLocation}
@@ -208,20 +210,18 @@ const InteractiveMap = ({
 
       {/* Map Container */}
       <MapContainer
-        center={[45.4642, 9.19]} // Milano as default
+        center={[45.4642, 9.19]}
         zoom={13}
         className="h-full w-full z-0"
         scrollWheelZoom={true}
         zoomControl={false}
       >
-        {/* Map Controller */}
         <MapController
           center={userLocation}
           route={calculatedRoute}
           centerTrigger={centerTrigger}
         />
 
-        {/* Tile Layer */}
         <TileLayer
           url={
             mapLayer === 'standard'
@@ -231,12 +231,21 @@ const InteractiveMap = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
 
-        {/* Map Components */}
         <MapUserLocation onLocationFound={handleUserLocation} />
         <MapRoutePoints routePoints={routePointsWithLabels} />
         <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
-        <MapPOIs pois={pois} />
+        <MapPOIs pois={pois} onPoiClick={onPoiClick} />
       </MapContainer>
+
+      {/* POI Card */}
+      {selectedPoi && (
+        <POICard
+          poi={selectedPoi}
+          onClose={() => onPoiClick(null)}
+          onAddToRoute={onAddPoiToRoute}
+        />
+      )}
+
       {/* Loading Overlay */}
       {loading && (
         <div

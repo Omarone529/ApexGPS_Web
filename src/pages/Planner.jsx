@@ -81,6 +81,7 @@ const Planner = () => {
   const [loadingPois, setLoadingPois] = useState(false);
   const [routeDetails, setRouteDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [selectedPoi, setSelectedPoi] = useState(null);
 
   useEffect(() => {
     const loadAllPOIs = async () => {
@@ -91,7 +92,7 @@ const Planner = () => {
         setAllPois(formattedPois);
       } catch (error) {
         console.error('Error loading POIs:', error);
-        showError('Unable to load points of interest');
+        showError('Impossibile caricare i punti di interesse');
       } finally {
         setLoadingPois(false);
       }
@@ -114,13 +115,58 @@ const Planner = () => {
     setTimeout(() => setErrorMessage(null), 5000);
   };
 
+  const handlePoiClick = async poi => {
+    if (!poi) {
+      setSelectedPoi(null);
+      return;
+    }
+
+    // If it's a route POI, use it directly
+    if (poi.isRoutePoi) {
+      setSelectedPoi(poi);
+      return;
+    }
+
+    // Otherwise fetch full details from backend
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/gis_data/points-of-interest/${poi.originalId}/`,
+        {
+          headers: { Accept: 'application/json' },
+        }
+      );
+
+      if (response.ok) {
+        const fullPoiData = await response.json();
+        setSelectedPoi({
+          ...poi,
+          description: fullPoiData.description,
+          scenic_value: fullPoiData.importance_score,
+          elevation: fullPoiData.elevation,
+          region: fullPoiData.region,
+        });
+      } else {
+        setSelectedPoi(poi);
+      }
+    } catch (error) {
+      console.error('Error fetching POI details:', error);
+      setSelectedPoi(poi);
+    }
+  };
+
+  const handleAddPoiToRoute = poi => {
+    console.log('Add POI to route:', poi);
+    // Here you would add the POI as a waypoint
+    setSelectedPoi(null);
+  };
+
   const handleCalculateRoute = formData => {
     console.log('Manual route requested:', formData);
   };
 
   const handleCalculateScenicRoute = async formData => {
     if (!formData.startPoint || !formData.endPoint) {
-      showError('Enter start and end points');
+      showError('Inserisci punto di partenza e arrivo');
       return;
     }
 
@@ -154,7 +200,7 @@ const Planner = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = `Error ${response.status}`;
+        let errorMessage = `Errore ${response.status}`;
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.details || errorMessage;
@@ -165,7 +211,7 @@ const Planner = () => {
       }
 
       const result = await response.json();
-      if (!result.success) throw new Error(result.error || 'Route calculation failed');
+      if (!result.success) throw new Error(result.error || 'Calcolo percorso fallito');
 
       const scenicRoute = result.scenic_route;
       const routeCoords = decodePolyline(scenicRoute.polyline);
@@ -221,11 +267,11 @@ const Planner = () => {
       });
     } catch (error) {
       console.error('Error calculating route:', error);
-      let errorMessage = 'Error calculating scenic route';
+      let errorMessage = 'Errore nel calcolo del percorso panoramico';
       if (error.message.includes('Failed to fetch')) {
-        errorMessage = 'Connection failed. Is the backend running?';
+        errorMessage = 'Connessione fallita. Il backend è in esecuzione?';
       } else if (error.message.includes('cors')) {
-        errorMessage = 'CORS error. Backend must accept frontend requests.';
+        errorMessage = 'Errore CORS. Il backend deve accettare richieste dal frontend.';
       } else {
         errorMessage = error.message;
       }
@@ -237,7 +283,7 @@ const Planner = () => {
 
   const handleSaveRoute = async formData => {
     if (!routeDetails) {
-      showError('Calculate a route before saving');
+      showError('Calcola un percorso prima di salvarlo');
       return;
     }
     if (loading) return;
@@ -247,7 +293,7 @@ const Planner = () => {
 
     try {
       const payload = {
-        name: formData.routeName || `Scenic route ${new Date().toLocaleDateString()}`,
+        name: formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
         visibility: formData.isPublic ? 'public' : 'private',
         calculation_data: routeDetails.calculation_data || {
           start_location: routeDetails.locations?.start || { lat: 0, lon: 0 },
@@ -273,7 +319,7 @@ const Planner = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = 'Error saving route';
+        let errorMessage = 'Errore nel salvataggio del percorso';
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.detail || errorMessage;
@@ -284,7 +330,7 @@ const Planner = () => {
       }
     } catch (error) {
       console.error('Error saving route:', error);
-      showError(`Save error: ${error.message}`);
+      showError(`Errore salvataggio: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -297,7 +343,7 @@ const Planner = () => {
       {loadingPois && (
         <div className="absolute top-4 right-4 z-[1500] bg-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-gray-800 flex items-center gap-2">
           <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
-          <span className="text-sm">Loading POIs...</span>
+          <span className="text-sm">Caricamento POI...</span>
         </div>
       )}
 
@@ -309,6 +355,9 @@ const Planner = () => {
         routeStats={routeStats}
         isScenicRoute={isScenicRoute}
         loading={loading}
+        selectedPoi={selectedPoi}
+        onPoiClick={handlePoiClick}
+        onAddPoiToRoute={handleAddPoiToRoute}
       />
 
       <PlannerForm
@@ -334,14 +383,14 @@ const Planner = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-red-400">Error</h3>
+              <h3 className="text-lg font-semibold text-red-400">Errore</h3>
             </div>
             <p className="text-gray-300 text-sm mb-4">{errorMessage}</p>
             <button
               onClick={() => setErrorMessage(null)}
               className="w-full py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border border-gray-700"
             >
-              Close
+              Chiudi
             </button>
           </div>
         </div>
