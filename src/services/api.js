@@ -1,18 +1,22 @@
-const API_BASE = import.meta.env.VITE_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 function getAccess() {
-  return localStorage.getItem('access');
+  return localStorage.getItem('access_token');
 }
+
 function getRefresh() {
-  return localStorage.getItem('refresh');
+  return localStorage.getItem('refresh_token');
 }
+
 function setTokens({ access, refresh }) {
-  if (access) localStorage.setItem('access', access);
-  if (refresh) localStorage.setItem('refresh', refresh);
+  if (access) localStorage.setItem('access_token', access);
+  if (refresh) localStorage.setItem('refresh_token', refresh);
 }
+
 function clearTokens() {
-  localStorage.removeItem('access');
-  localStorage.removeItem('refresh');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user');
 }
 
 let refreshPromise = null;
@@ -21,7 +25,7 @@ async function refreshAccessToken() {
   const refresh = getRefresh();
   if (!refresh) throw new Error('Missing refresh token');
 
-  const res = await fetch(`${API_BASE}/auth/refresh/`, {
+  const res = await fetch(`${API_BASE}/api/users/refresh/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh }),
@@ -48,7 +52,10 @@ async function ensureRefreshedAccess() {
 }
 
 export async function apiFetch(path, options = {}) {
-  const url = `${API_BASE}${path}`;
+  // Costruisci l'URL completo con /api/
+  const url = `${API_BASE}/api${path}`;
+  console.log('🌐 Chiamata API:', url);
+
   const method = options.method || 'GET';
 
   const headers = {
@@ -74,14 +81,23 @@ export async function apiFetch(path, options = {}) {
   let { res, data } = await doRequest();
 
   if (res.status === 401 && access && getRefresh()) {
-    const newAccess = await ensureRefreshedAccess();
-    headers.Authorization = `Bearer ${newAccess}`;
-    ({ res, data } = await doRequest());
+    try {
+      const newAccess = await ensureRefreshedAccess();
+      headers.Authorization = `Bearer ${newAccess}`;
+      ({ res, data } = await doRequest());
+    } catch (refreshError) {
+      clearTokens();
+      window.location.href = '/login';
+      throw refreshError;
+    }
   }
 
   if (!res.ok) {
-    const msg = data?.detail || `HTTP ${res.status}`;
-    throw new Error(msg);
+    const msg = data?.detail || data?.message || `HTTP ${res.status}`;
+    const error = new Error(msg);
+    error.status = res.status;
+    error.data = data;
+    throw error;
   }
 
   return data;
@@ -90,6 +106,8 @@ export async function apiFetch(path, options = {}) {
 export const tokenStore = {
   setTokens,
   clearTokens,
+  getAccessToken: getAccess,
+  getRefreshToken: getRefresh,
   getAccess,
   getRefresh,
   API_BASE,
