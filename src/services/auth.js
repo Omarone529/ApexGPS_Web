@@ -25,6 +25,26 @@ export async function login(identifier, password) {
   }
 }
 
+export async function loginWithGoogle(accessToken) {
+  const payload = { access_token: accessToken };
+
+  const data = await apiFetch(`${API_BASE}/login/google/`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  tokenStore.setTokens({
+    access: data.access,
+    refresh: data.refresh,
+  });
+
+  if (data.user) {
+    localStorage.setItem('user', JSON.stringify(data.user));
+  }
+
+  return data;
+}
+
 export async function register(payload) {
   try {
     // Map fields from Frontend to Backend

@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect } from 'react';
 import {
   login as apiLogin,
+  loginWithGoogle as apiLoginWithGoogle,
   register as apiRegister,
   logout as apiLogout,
   getCurrentUser,
@@ -55,6 +56,17 @@ export function AuthProvider({ children }) {
       throw err;
     }
   }
+  async function loginWithGoogle(accessToken) {
+    setError(null);
+    try {
+      const data = await apiLoginWithGoogle(accessToken);
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Errore durante il login con Google');
+      throw err;
+    }
+  }
 
   async function register(userData) {
     setError(null);
@@ -77,6 +89,7 @@ export function AuthProvider({ children }) {
     loading,
     error,
     login,
+    loginWithGoogle,
     register,
     logout,
     isAuthenticated: !!user,
