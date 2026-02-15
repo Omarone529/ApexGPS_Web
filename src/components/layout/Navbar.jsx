@@ -1,34 +1,27 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { tokenStore } from '../../services/api';
+import { useAuth } from '../../context/useAuth';
 
 function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
-  const isPlannerPage = window.location.pathname === '/planner';
-
+  const location = useLocation();
   const navigate = useNavigate();
 
+  const isPlannerPage = location.pathname === '/planner';
+  const { user, logout: authLogout } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(!!tokenStore.getAccess());
-  const [displayName, setDisplayName] = useState('utente');
 
   useEffect(() => {
     const syncAuth = () => {
       setIsAuthenticated(!!tokenStore.getAccess());
-
-      const name = localStorage.getItem('displayName') || localStorage.getItem('username');
-      setDisplayName(name || 'utente');
     };
 
     syncAuth();
 
     const onStorage = e => {
-      if (
-        e.key === 'access' ||
-        e.key === 'refresh' ||
-        e.key === 'displayName' ||
-        e.key === 'username'
-      ) {
+      if (e.key === 'access' || e.key === 'refresh') {
         syncAuth();
       }
     };
@@ -38,8 +31,8 @@ function Navbar() {
   }, []);
 
   const logout = () => {
-    tokenStore.clearTokens();
-    setIsAuthenticated(false);
+    authLogout();
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -65,6 +58,9 @@ function Navbar() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [isPlannerPage]);
+
+  const initials = user ? (user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase() : 'U';
+  const displayName = user?.first_name || user?.username || 'utente';
 
   return (
     <nav
@@ -98,17 +94,29 @@ function Navbar() {
           Altro
         </Link>
 
-        {isAuthenticated ? (
+        {isAuthenticated && user ? (
           <>
-            <span className="text-white text-sm tracking-[1px] opacity-90">
-              Ciao, <span className="font-semibold">{displayName}</span>
-            </span>
+            {/* Foto profilo e nome utente */}
+            <div className="flex items-center gap-3">
+              {user.profile_picture ? (
+                <img
+                  src={user.profile_picture}
+                  alt={displayName}
+                  className="w-8 h-8 rounded-full object-cover border-2 border-orange-500"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                  {initials}
+                </div>
+              )}
+              <span className="text-white text-sm tracking-[1px] opacity-90">
+                Ciao, <span className="font-semibold">{displayName}</span>
+              </span>
+            </div>
 
             <button
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
+              onClick={logout}
               className="text-white text-sm tracking-[1px] py-2 px-4.5
                          border border-white/60 rounded-full hover:opacity-100"
             >
