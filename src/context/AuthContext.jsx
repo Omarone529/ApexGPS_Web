@@ -1,82 +1,86 @@
-//need for disable eslint --fix warning about non-component export
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import * as auth from '../services/auth';
-import { tokenStore } from '../services/api';
+import { createContext, useState, useEffect } from 'react';
+import {
+  login as apiLogin,
+  register as apiRegister,
+  logout as apiLogout,
+  getCurrentUser,
+  isAuthenticated,
+  me,
+} from '../services/auth';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [status, setStatus] = useState('loading');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const boot = async () => {
-      const access = tokenStore.getAccess();
-      const refresh = tokenStore.getRefresh();
-
-      if (!access && !refresh) {
-        setStatus('guest');
-        return;
-      }
-
+    async function loadUser() {
       try {
-        const u = await auth.me();
-        setUser(u);
-        setStatus('authed');
-      } catch {
-        auth.logout();
-        setUser(null);
-        setStatus('guest');
-      }
-    };
+        if (isAuthenticated()) {
+          const savedUser = getCurrentUser();
+          if (savedUser) {
+            setUser(savedUser);
+          }
 
-    boot();
+          try {
+            const userData = await me();
+            setUser(userData);
+          } catch (err) {
+            console.error('Errore nel caricamento utente:', err);
+            if (err.status === 401) {
+              apiLogout();
+              setUser(null);
+            }
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadUser();
   }, []);
 
-  const value = useMemo(
-    () => ({
-      user,
-      status,
-      isAuthenticated: status === 'authed',
-      login: async (identifier, password) => {
-        const data = await auth.login(identifier, password);
+  async function login(identifier, password) {
+    setError(null);
+    try {
+      const data = await apiLogin(identifier, password);
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Errore durante il login');
+      throw err;
+    }
+  }
 
-        if (data?.user) {
-          setUser(data.user);
-          setStatus('authed');
-          return;
-        }
+  async function register(userData) {
+    setError(null);
+    try {
+      const data = await apiRegister(userData);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Errore durante la registrazione');
+      throw err;
+    }
+  }
 
-        try {
-          const u = await auth.me();
-          setUser(u);
-          setStatus('authed');
-        } catch {
-          setUser(null);
-          setStatus('authed');
-        }
-      },
-      logout: () => {
-        auth.logout();
-        setUser(null);
-        setStatus('guest');
-      },
-      refreshUser: async () => {
-        const u = await auth.me();
-        setUser(u);
-        setStatus('authed');
-        return u;
-      },
-    }),
-    [user, status]
-  );
+  function logout() {
+    apiLogout();
+    setUser(null);
+  }
+
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    isAuthenticated: !!user,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
 }

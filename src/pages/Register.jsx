@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import * as auth from '../services/auth';
 
 function Register() {
@@ -21,7 +20,6 @@ function Register() {
   });
 
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   // Validation fields
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -69,8 +67,8 @@ function Register() {
         password,
       });
 
-      await login(email || username, password);
-      navigate('/planner');
+      // Redirect to login after successful registration
+      navigate('/login');
     } catch (err) {
       setError(err.message || 'Errore nella registrazione');
     } finally {
@@ -269,7 +267,9 @@ function Register() {
               autoComplete="new-password"
             />
             {touched.confirmPassword && isConfirmPasswordValid && (
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400"></span>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-400">
+                ✓
+              </span>
             )}
             {touched.confirmPassword && !isConfirmPasswordValid && confirmPassword && (
               <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-400"></span>
