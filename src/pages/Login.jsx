@@ -6,6 +6,7 @@ import { useAuth } from '../context/useAuth.jsx';
 function Login() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -19,7 +20,7 @@ function Login() {
     setLoading(true);
 
     try {
-      await login(identifier, password);
+      await login(identifier, password, rememberMe);
       navigate('/planner');
     } catch (err) {
       setError(err.message || 'Errore login');
@@ -33,7 +34,7 @@ function Login() {
       setGoogleLoading(true);
       setError(null);
       try {
-        await loginWithGoogle(tokenResponse.access_token);
+        await loginWithGoogle(tokenResponse.access_token, rememberMe);
         navigate('/planner');
       } catch (err) {
         setError(err.message || 'Errore login con Google');
@@ -112,6 +113,20 @@ function Login() {
             autoComplete="current-password"
             disabled={isDisabled}
           />
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              className="w-4 h-4 accent-orange-500"
+              disabled={isDisabled}
+            />
+            <label htmlFor="rememberMe" className="text-white/80 text-sm">
+              Ricordami
+            </label>
+          </div>
 
           <button
             className="bg-orange-500 text-white p-3 rounded-lg font-medium hover:bg-orange-600 transition disabled:opacity-60"

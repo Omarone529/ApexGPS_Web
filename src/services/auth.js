@@ -2,21 +2,28 @@ import { apiFetch, tokenStore } from './api';
 
 const API_BASE = '/users';
 
-export async function login(identifier, password) {
+export async function login(identifier, password, rememberMe = false) {
   try {
     const data = await apiFetch(`${API_BASE}/login/`, {
       method: 'POST',
       body: JSON.stringify({ identifier, password }),
     });
 
-    tokenStore.setTokens({
-      access: data.access,
-      refresh: data.refresh,
-    });
+    tokenStore.setTokensOnLogin(
+      {
+        access: data.access,
+        refresh: data.refresh,
+      },
+      rememberMe
+    );
 
     if (data.user) {
-      localStorage.setItem('user', JSON.stringify(data.user));
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(data.user));
+      const otherStorage = rememberMe ? sessionStorage : localStorage;
+      otherStorage.removeItem('user');
     }
+    window.dispatchEvent(new Event('auth-change'));
 
     return data;
   } catch (error) {
@@ -25,7 +32,7 @@ export async function login(identifier, password) {
   }
 }
 
-export async function loginWithGoogle(accessToken) {
+export async function loginWithGoogle(accessToken, rememberMe = false) {
   const payload = { access_token: accessToken };
 
   const data = await apiFetch(`${API_BASE}/login/google/`, {
@@ -33,21 +40,27 @@ export async function loginWithGoogle(accessToken) {
     body: JSON.stringify(payload),
   });
 
-  tokenStore.setTokens({
-    access: data.access,
-    refresh: data.refresh,
-  });
+  tokenStore.setTokensOnLogin(
+    {
+      access: data.access,
+      refresh: data.refresh,
+    },
+    rememberMe
+  );
 
   if (data.user) {
-    localStorage.setItem('user', JSON.stringify(data.user));
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('user', JSON.stringify(data.user));
+    const otherStorage = rememberMe ? sessionStorage : localStorage;
+    otherStorage.removeItem('user');
   }
+  window.dispatchEvent(new Event('auth-change'));
 
   return data;
 }
 
 export async function register(payload) {
   try {
-    // Map fields from Frontend to Backend
     const backendPayload = {
       email: payload.email,
       username: payload.username,
@@ -72,7 +85,18 @@ export async function me() {
   try {
     const data = await apiFetch(`${API_BASE}/me/`);
     if (data) {
-      localStorage.setItem('user', JSON.stringify(data));
+      // Determine which storage to use based on existing refresh token
+      const refreshInLocal = localStorage.getItem('refresh_token');
+      const refreshInSession = sessionStorage.getItem('refresh_token');
+      const storage = refreshInLocal ? localStorage : refreshInSession ? sessionStorage : null;
+      if (storage) {
+        storage.setItem('user', JSON.stringify(data));
+        const otherStorage = storage === localStorage ? sessionStorage : localStorage;
+        otherStorage.removeItem('user');
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(data));
+      }
+      window.dispatchEvent(new Event('auth-change'));
     }
     return data;
   } catch (error) {
@@ -83,11 +107,11 @@ export async function me() {
 
 export function logout() {
   tokenStore.clearTokens();
-  localStorage.removeItem('user');
+  window.dispatchEvent(new Event('auth-change'));
 }
 
 export function getCurrentUser() {
-  const userStr = localStorage.getItem('user');
+  const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
   return userStr ? JSON.parse(userStr) : null;
 }
 

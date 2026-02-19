@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { tokenStore } from '../../services/api';
-import { useAuth } from '../../context/useAuth';
+import { getCurrentUser, logout as authLogout } from '../../services/auth';
 
 function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
@@ -10,53 +10,57 @@ function Navbar() {
   const navigate = useNavigate();
 
   const isPlannerPage = location.pathname === '/planner';
-  const { user, logout: authLogout } = useAuth();
+
+  const [user, setUser] = useState(getCurrentUser());
   const [isAuthenticated, setIsAuthenticated] = useState(!!tokenStore.getAccess());
 
-  useEffect(() => {
-    const syncAuth = () => {
-      setIsAuthenticated(!!tokenStore.getAccess());
-    };
+  const syncAuth = () => {
+    setUser(getCurrentUser());
+    setIsAuthenticated(!!tokenStore.getAccess());
+  };
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     syncAuth();
 
     const onStorage = e => {
-      if (e.key === 'access' || e.key === 'refresh') {
+      if (e.key === 'access_token' || e.key === 'refresh_token' || e.key === 'user') {
         syncAuth();
       }
     };
-
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+
+    // Ascolta evento personalizzato per aggiornamenti nella stessa scheda
+    const onAuthChange = () => syncAuth();
+    window.addEventListener('auth-change', onAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('auth-change', onAuthChange);
+    };
   }, []);
 
   const logout = () => {
     authLogout();
+    syncAuth();
     navigate('/login');
   };
 
   useEffect(() => {
-    if (isPlannerPage) {
-      return;
-    }
+    if (isPlannerPage) return;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY.current && currentScrollY > 0) {
         setIsVisible(false);
       } else if (currentScrollY < lastScrollY.current) {
         setIsVisible(true);
       }
-
       lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [isPlannerPage]);
 
   const initials = user ? (user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase() : 'U';
@@ -96,7 +100,6 @@ function Navbar() {
 
         {isAuthenticated && user ? (
           <>
-            {/* Foto profilo e nome utente */}
             <div className="flex items-center gap-3">
               {user.profile_picture ? (
                 <img
@@ -117,8 +120,7 @@ function Navbar() {
 
             <button
               onClick={logout}
-              className="text-white text-sm tracking-[1px] py-2 px-4.5
-                         border border-white/60 rounded-full hover:opacity-100"
+              className="text-white text-sm tracking-[1px] py-2 px-4.5 border border-white/60 rounded-full hover:opacity-100"
             >
               Logout
             </button>
@@ -126,8 +128,7 @@ function Navbar() {
         ) : (
           <Link
             to="/login"
-            className="text-white text-sm tracking-[1px] opacity-85 py-2 px-4.5
-                       border border-white/60 rounded-full hover:opacity-100"
+            className="text-white text-sm tracking-[1px] opacity-85 py-2 px-4.5 border border-white/60 rounded-full hover:opacity-100"
           >
             Login
           </Link>
