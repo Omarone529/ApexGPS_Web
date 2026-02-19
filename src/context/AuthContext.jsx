@@ -45,10 +45,10 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  async function login(identifier, password) {
+  async function login(identifier, password, rememberMe = false) {
     setError(null);
     try {
-      const data = await apiLogin(identifier, password);
+      const data = await apiLogin(identifier, password, rememberMe);
       setUser(data.user);
       return data;
     } catch (err) {
@@ -56,10 +56,11 @@ export function AuthProvider({ children }) {
       throw err;
     }
   }
-  async function loginWithGoogle(accessToken) {
+
+  async function loginWithGoogle(accessToken, rememberMe = false) {
     setError(null);
     try {
-      const data = await apiLoginWithGoogle(accessToken);
+      const data = await apiLoginWithGoogle(accessToken, rememberMe);
       setUser(data.user);
       return data;
     } catch (err) {

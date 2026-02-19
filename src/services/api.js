@@ -1,22 +1,50 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+function getFromStorages(key) {
+  return sessionStorage.getItem(key) || localStorage.getItem(key);
+}
+
 function getAccess() {
-  return localStorage.getItem('access_token');
+  return getFromStorages('access_token');
 }
 
 function getRefresh() {
-  return localStorage.getItem('refresh_token');
+  return getFromStorages('refresh_token');
 }
 
-function setTokens({ access, refresh }) {
-  if (access) localStorage.setItem('access_token', access);
-  if (refresh) localStorage.setItem('refresh_token', refresh);
+function setTokensOnLogin({ access, refresh }, rememberMe) {
+  const targetStorage = rememberMe ? localStorage : sessionStorage;
+  const otherStorage = rememberMe ? sessionStorage : localStorage;
+
+  targetStorage.setItem('access_token', access);
+  targetStorage.setItem('refresh_token', refresh);
+
+  otherStorage.removeItem('access_token');
+  otherStorage.removeItem('refresh_token');
+}
+
+function updateAccessToken(access) {
+  const refreshInLocal = localStorage.getItem('refresh_token');
+  const refreshInSession = sessionStorage.getItem('refresh_token');
+  const storage = refreshInLocal ? localStorage : refreshInSession ? sessionStorage : null;
+
+  if (!storage) {
+    throw new Error('No refresh token found');
+  }
+
+  storage.setItem('access_token', access);
+
+  const otherStorage = storage === localStorage ? sessionStorage : localStorage;
+  otherStorage.removeItem('access_token');
 }
 
 function clearTokens() {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
+  sessionStorage.removeItem('access_token');
+  sessionStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
+  sessionStorage.removeItem('user');
 }
 
 let refreshPromise = null;
@@ -38,7 +66,7 @@ async function refreshAccessToken() {
     throw new Error(data?.detail || 'Refresh failed');
   }
 
-  setTokens({ access: data.access });
+  updateAccessToken(data.access);
   return data.access;
 }
 
@@ -52,7 +80,6 @@ async function ensureRefreshedAccess() {
 }
 
 export async function apiFetch(path, options = {}) {
-  // Costruisci l'URL completo con /api/
   const url = `${API_BASE}/api${path}`;
   console.log('🌐 Chiamata API:', url);
 
@@ -104,7 +131,8 @@ export async function apiFetch(path, options = {}) {
 }
 
 export const tokenStore = {
-  setTokens,
+  setTokensOnLogin,
+  updateAccessToken,
   clearTokens,
   getAccessToken: getAccess,
   getRefreshToken: getRefresh,
