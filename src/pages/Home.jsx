@@ -1,6 +1,7 @@
 import RouteCarousel from '../components/home/RouteCarousel';
 import { Link } from 'react-router-dom';
 import { useRef, useEffect } from 'react';
+import RouteMiniPreview from '../components/home/RouteMiniPreview';
 
 function Home() {
     const videoRef = useRef(null);
@@ -69,12 +70,12 @@ function Home() {
                 <RouteCarousel />
             </section>
 
-            <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
-                <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
-                    <div>
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
-                            Pianifica il percorso perfetto
-                        </h2>
+      <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+        <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-14 items-center">
+          <div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
+              Pianifica il percorso perfetto
+            </h2>
 
                         <p className="mt-4 text-base sm:text-lg leading-relaxed text-white/85 max-w-xl">
                             ApexGPS nasce per la moto: calcola percorsi panoramici privilegiando
@@ -102,55 +103,11 @@ function Home() {
                         </div>
                     </div>
 
-                    <div className="grid gap-4 justify-items-start lg:justify-items-end">
-                        <div className="w-full max-w-105 rounded-2xl border border-white/10 bg-white/6 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
-                            <div className="p-4">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="rounded-full bg-white/10 px-3 py-2 text-xs tracking-wide">
-                                        Passo della Futa
-                                    </span>
-                                    <span className="rounded-full bg-orange-500/15 border border-orange-500/25 px-3 py-2 text-xs tracking-wide">
-                                        Panoramico
-                                    </span>
-                                </div>
-
-                                <div
-                                    className="relative h-44 rounded-2xl grid place-items-center overflow-hidden
-                                bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.10),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.08),transparent_50%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]"
-                                >
-                                    <div
-                                        className="absolute left-5 bottom-5 h-9 w-9 rounded-full grid place-items-center font-bold
-                                  bg-emerald-300/20 border border-emerald-300/35"
-                                    >
-                                        A
-                                    </div>
-                                    <div
-                                        className="absolute right-5 top-5 h-9 w-9 rounded-full grid place-items-center font-bold
-                                  bg-orange-300/20 border border-orange-300/35"
-                                    >
-                                        B
-                                    </div>
-                                    <div className="h-1 w-[70%] rounded-full bg-orange-500/70 -rotate-18" />
-                                </div>
-
-                                <div className="mt-4 flex flex-wrap items-baseline gap-2 text-xs text-white/90">
-                                    <span>Scenic score</span>
-                                    <strong className="text-sm">92</strong>
-                                    <span className="opacity-50">•</span>
-                                    <span>Curve</span>
-                                    <strong className="text-sm">Alte</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            className="w-full max-w-90 h-56 rounded-2xl border border-white/10 bg-white/6
-                            shadow-2xl shadow-black/40 overflow-hidden opacity-90
-                            bg-[linear-gradient(135deg,rgba(255,107,0,0.22),transparent_40%),url('/moto.webp')] bg-center bg-cover"
-                        ></div>
-                    </div>
-                </div>
-            </section>
+          <div className="grid gap-4 justify-items-start lg:justify-items-end">
+            <RouteMiniPreview />
+          </div>
+        </div>
+      </section>
 
             <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
                 <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
