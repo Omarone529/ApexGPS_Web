@@ -1,147 +1,70 @@
-import { useState, useEffect, useRef } from 'react';
-import { FiMapPin, FiNavigation } from 'react-icons/fi';
+import { useRef } from 'react';
+import { FiMapPin, FiNavigation, FiCircle, FiMoreVertical } from 'react-icons/fi';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const LocationInput = ({
+  value,
+  onChange,
+  name,
+  placeholder,
+  onUseCurrentLocation,
+  onSearch,
+  onFocus,
+  iconType = 'end',
+  isLoading = false,
+}) => {
+  const inputRef = useRef(null);
 
-const LocationInput = ({ value, onChange, name, placeholder, onUseCurrentLocation }) => {
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const wrapperRef = useRef(null);
-  const abortControllerRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = event => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const searchLocations = async query => {
-    // Cancel previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    if (query.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    abortControllerRef.current = new AbortController();
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/geocode/search/?q=${encodeURIComponent(query)}&limit=5`,
-        {
-          headers: {
-            Accept: 'application/json',
-          },
-          signal: abortControllerRef.current.signal,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-
-      const data = await response.json();
-
-      if (data.length > 0) {
-        setSuggestions(data);
-        setShowSuggestions(true);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        return;
-      }
-      console.error('Geocoding error:', error);
-    } finally {
-      setIsLoading(false);
+  const renderIcon = () => {
+    switch (iconType) {
+      case 'start':
+        return <FiCircle className="text-gray-400" size={18} />;
+      case 'waypoint':
+        return <FiMoreVertical className="text-gray-400" size={18} />;
+      case 'end':
+      default:
+        return <FiMapPin className="text-gray-400" size={18} />;
     }
   };
 
   const handleInputChange = e => {
     const newValue = e.target.value;
-    const syntheticEvent = {
+    onChange({
       target: {
         name: name,
         value: newValue,
       },
-    };
-    onChange(syntheticEvent);
-    searchLocations(newValue);
-  };
-
-  const handleSelectSuggestion = suggestion => {
-    const syntheticEvent = {
-      target: {
-        name: name,
-        value: suggestion.display_name,
-      },
-    };
-    onChange(syntheticEvent);
-    setShowSuggestions(false);
+    });
+    if (onSearch) {
+      onSearch(newValue);
+    }
   };
 
   return (
-    <div ref={wrapperRef} className="relative">
-      <div className="relative">
+    <div className="relative flex items-center gap-3 w-full group">
+      <div className="flex-shrink-0">{renderIcon()}</div>
+      <div className="flex-1 relative">
         <input
+          ref={inputRef}
           type="text"
           name={name}
           value={value}
           onChange={handleInputChange}
-          onFocus={() => {
-            if (suggestions.length > 0) {
-              setShowSuggestions(true);
-            }
-          }}
+          onFocus={onFocus}
           placeholder={placeholder}
-          className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all pr-10"
+          className="w-full px-0 py-2 bg-transparent border-b border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:shadow-sm focus:shadow-orange-500/20 focus:scale-[1.02] transition-all duration-200"
           autoComplete="off"
         />
         {isLoading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
           </div>
         )}
       </div>
-
-      {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-20 w-full mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto">
-          {suggestions.map(suggestion => (
-            <button
-              key={suggestion.id}
-              onClick={() => handleSelectSuggestion(suggestion)}
-              className="w-full px-4 py-3 text-left hover:bg-gray-700 transition-colors flex items-start gap-2 border-b border-gray-700 last:border-0"
-            >
-              <FiMapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={14} />
-              <div className="flex-1">
-                <span className="text-sm text-gray-200">{suggestion.display_name}</span>
-                {suggestion.type && (
-                  <span className="text-xs text-gray-500 ml-2">({suggestion.type})</span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
       {onUseCurrentLocation && (
         <button
           type="button"
           onClick={onUseCurrentLocation}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
+          className="flex-shrink-0 text-gray-400 hover:text-orange-500 transition-colors duration-200"
           title="Usa la mia posizione"
         >
           <FiNavigation size={18} />
