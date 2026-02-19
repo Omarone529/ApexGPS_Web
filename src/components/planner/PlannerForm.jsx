@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FiX,
   FiPlus,
@@ -32,10 +33,14 @@ const PlannerForm = ({
   const [suggestions, setSuggestions] = useState([]);
   const [activeField, setActiveField] = useState(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestionsPosition, setSuggestionsPosition] = useState({ top: 0, left: 0, width: 0 });
+
   const abortControllerRef = useRef(null);
   const suggestionsRef = useRef(null);
+  const formRef = useRef(null);
+  const fieldRefs = useRef({});
 
-  // Chiudi suggerimenti con ESC
+  // Effetti e funzioni rimangono invariati
   useEffect(() => {
     const handleEsc = e => {
       if (e.key === 'Escape') setSuggestions([]);
@@ -44,7 +49,6 @@ const PlannerForm = ({
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
-  // Chiudi suggerimenti cliccando fuori
   useEffect(() => {
     const handleClickOutside = e => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target)) {
@@ -54,6 +58,20 @@ const PlannerForm = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (suggestions.length > 0 && activeField) {
+      const fieldElement = fieldRefs.current[activeField];
+      if (fieldElement) {
+        const rect = fieldElement.getBoundingClientRect();
+        setSuggestionsPosition({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    }
+  }, [suggestions, activeField]);
 
   const handleInputChange = e => {
     const { name, value } = e.target;
@@ -186,7 +204,6 @@ const PlannerForm = ({
     }
   };
 
-  // Restituisce direttamente l'elemento icona
   const renderSuggestionIcon = type => {
     if (!type) return <FiMapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
     const typeLower = type.toLowerCase();
@@ -201,37 +218,43 @@ const PlannerForm = ({
     return <FiMapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
   };
 
+  const setFieldRef = (fieldName, element) => {
+    if (element) {
+      fieldRefs.current[fieldName] = element;
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[2000]">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-gray-900 shadow-2xl overflow-y-auto border-r border-orange-500/20">
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Pianifica Percorso</h2>
-              <p className="text-orange-500/80 text-sm mt-1">
-                Crea il tuo itinerario personalizzato
-              </p>
-            </div>
+
+      <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-gray-900 shadow-xl overflow-y-auto border-r border-gray-800">
+        <div className="p-6" ref={formRef}>
+          {/* Header minimal */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">Pianifica percorso</h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:text-orange-500 hover:bg-gray-700 transition-colors duration-200"
+              className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
               disabled={isSubmitting}
             >
-              <FiX size={24} />
+              <FiX size={20} />
             </button>
           </div>
 
-          <form onSubmit={e => e.preventDefault()} className="space-y-5">
+          <form onSubmit={e => e.preventDefault()} className="space-y-4">
             {/* Start Point */}
-            <div title="Scegli la partenza">
+            <div
+              ref={el => setFieldRef('startPoint', el)}
+              onFocus={() => setActiveField('startPoint')}
+            >
               <LocationInput
                 value={formData.startPoint}
                 onChange={handleInputChange}
                 name="startPoint"
-                placeholder="Scegli la partenza"
+                placeholder="Partenza"
                 onUseCurrentLocation={() => getCurrentLocation('startPoint')}
                 onSearch={query => handleLocationSearch(query, 'startPoint')}
                 onFocus={() => setActiveField('startPoint')}
@@ -241,9 +264,14 @@ const PlannerForm = ({
             </div>
 
             {/* Waypoints */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {formData.waypoints.map((waypoint, index) => (
-                <div key={index} className="flex items-center gap-2 group/waypoint">
+                <div
+                  key={index}
+                  className="flex items-center gap-2"
+                  ref={el => setFieldRef(`waypoint-${index}`, el)}
+                  onFocus={() => setActiveField(`waypoint-${index}`)}
+                >
                   <LocationInput
                     value={waypoint}
                     onChange={e => handleWaypointChange(index, e.target.value)}
@@ -258,7 +286,7 @@ const PlannerForm = ({
                     <button
                       type="button"
                       onClick={() => removeWaypoint(index)}
-                      className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-all duration-200 hover:rotate-3"
+                      className="p-2 text-gray-500 hover:text-red-400 transition-colors"
                       disabled={isSubmitting}
                     >
                       <FiTrash2 size={18} />
@@ -269,7 +297,7 @@ const PlannerForm = ({
               <button
                 type="button"
                 onClick={addWaypoint}
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-orange-500 hover:bg-gray-800/50 px-2 py-1 rounded-lg transition-all duration-200 hover:translate-x-1"
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-orange-400 transition-colors px-2 py-1"
                 disabled={isSubmitting}
               >
                 <FiPlus size={18} />
@@ -278,12 +306,12 @@ const PlannerForm = ({
             </div>
 
             {/* End Point */}
-            <div title="Scegli la destinazione">
+            <div ref={el => setFieldRef('endPoint', el)} onFocus={() => setActiveField('endPoint')}>
               <LocationInput
                 value={formData.endPoint}
                 onChange={handleInputChange}
                 name="endPoint"
-                placeholder="Scegli la destinazione"
+                placeholder="Destinazione"
                 onUseCurrentLocation={() => getCurrentLocation('endPoint')}
                 onSearch={query => handleLocationSearch(query, 'endPoint')}
                 onFocus={() => setActiveField('endPoint')}
@@ -292,138 +320,109 @@ const PlannerForm = ({
               />
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-800 pt-4"></div>
+            {/* Separatore sottile */}
+            <div className="border-t border-gray-800 my-4"></div>
 
-            {/* Action Buttons */}
+            {/* Pulsanti azione professionali */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={handleCalculate}
                 disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
-                className="group relative overflow-hidden bg-transparent border border-gray-600 text-gray-300 py-3 px-3 rounded-xl font-medium hover:border-orange-500 hover:text-orange-500 transition-all duration-200 hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 rounded-lg border border-gray-700 bg-transparent text-gray-300 hover:border-orange-600 hover:text-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
               >
-                <div className="absolute inset-0 bg-orange-500/0 group-hover:bg-orange-500/5 transition-colors duration-200" />
-                <FiTarget
-                  size={16}
-                  className={
-                    isScenicMode ? 'text-gray-600' : 'text-orange-500 group-hover:text-orange-500'
-                  }
-                />
-                <span className="text-xs">Manuale</span>
+                Manuale
               </button>
 
               <button
                 type="button"
                 onClick={handleCalculateScenic}
                 disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
-                className={`group relative overflow-hidden bg-gradient-to-br from-orange-600 to-orange-500 text-white py-3 px-3 rounded-xl font-medium hover:from-orange-500 hover:to-orange-400 transition-all duration-200 shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isScenicMode ? 'ring-2 ring-orange-400 ring-offset-2 ring-offset-gray-900' : ''
+                className={`px-4 py-3 rounded-lg bg-orange-800 text-orange-50 border border-orange-700 hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium ${
+                  isScenicMode ? 'ring-1 ring-orange-500' : ''
                 }`}
               >
-                <FiCamera size={16} className="text-white/90" />
-                <span className="text-xs">Panoramico</span>
+                Panoramico
               </button>
             </div>
 
-            {/* Suggestions Panel */}
-            {suggestions.length > 0 && (
-              <div ref={suggestionsRef} className="mt-4 space-y-3 border-t border-gray-800 pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-medium text-gray-400 tracking-wider">
-                    SUGGERIMENTI
-                  </div>
-                  <button
-                    onClick={() => setSuggestions([])}
-                    className="text-xs text-gray-500 hover:text-gray-400 transition-colors"
-                  >
-                    Chiudi
-                  </button>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {suggestions.map(suggestion => (
-                    <button
-                      key={suggestion.id}
-                      onClick={() => handleSelectSuggestion(suggestion)}
-                      className="w-full text-left px-4 py-3 bg-gray-800/80 hover:bg-gray-700 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border border-gray-700/50 hover:border-gray-600 flex items-start gap-3 group"
-                    >
-                      {renderSuggestionIcon(suggestion.type)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm text-gray-200 font-medium truncate">
-                            {suggestion.display_name}
-                          </span>
-                          {suggestion.type && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-700 text-gray-300 uppercase tracking-wider">
-                              {suggestion.type}
-                            </span>
-                          )}
-                        </div>
-                        {suggestion.region && (
-                          <div className="text-xs text-gray-500 mt-1">{suggestion.region}</div>
-                        )}
-                      </div>
-                      <FiCheck
-                        className="opacity-0 group-hover:opacity-100 text-orange-400 transition-opacity duration-200"
-                        size={16}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Pulsante Salva */}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
+              className="w-full py-3 px-4 rounded-lg bg-orange-800 text-orange-50 border border-orange-700 hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-orange-50 border-t-transparent rounded-full animate-spin"></div>
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <FiSave size={18} />
+                  Salva percorso
+                </>
+              )}
+            </button>
 
-            {/* Save Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-orange-500 hover:to-orange-400 transition-all duration-200 shadow-lg hover:shadow-orange-500/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Salvando...
-                  </span>
-                ) : (
-                  <>
-                    <FiSave />
-                    Salva Percorso
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Clear Form */}
+            {/* Link cancella */}
             <button
               type="button"
               onClick={clearForm}
               disabled={isSubmitting}
-              className="w-full py-3 text-gray-400 hover:text-red-500 text-sm font-medium transition-colors duration-200 disabled:opacity-50"
+              className="w-full text-sm text-gray-500 hover:text-red-400 transition-colors disabled:opacity-40 py-2"
             >
               Cancella tutto
             </button>
           </form>
 
-          {/* Info Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-800">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 text-sm text-gray-400">
-                <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                <p>Crea il tuo percorso con tappe personalizzate.</p>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-400">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                <p>
-                  <span className="font-medium text-blue-400">Percorso Panoramico:</span> Il sistema
-                  genererà automaticamente un percorso suggestivo.
-                </p>
-              </div>
-            </div>
+          {/* Footer minimal */}
+          <div className="mt-6 pt-4 border-t border-gray-800 text-xs text-gray-500 space-y-1">
+            <p>Manuale: Crea itinerari con tappe personalizzate.</p>
+            <p>Panoramico: percorso suggestivo automatico.</p>
           </div>
         </div>
       </div>
+
+      {/* Dropdown suggerimenti */}
+      {suggestions.length > 0 &&
+        createPortal(
+          <div
+            ref={suggestionsRef}
+            className="fixed z-[2100] bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden"
+            style={{
+              top: suggestionsPosition.top,
+              left: suggestionsPosition.left,
+              width: suggestionsPosition.width,
+              maxHeight: '240px',
+              overflowY: 'auto',
+            }}
+          >
+            <div className="py-1">
+              {suggestions.map(suggestion => (
+                <button
+                  key={suggestion.id}
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-start gap-2"
+                >
+                  {renderSuggestionIcon(suggestion.type)}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-200 truncate">{suggestion.display_name}</div>
+                    {suggestion.region && (
+                      <div className="text-xs text-gray-500">{suggestion.region}</div>
+                    )}
+                  </div>
+                  <FiCheck
+                    className="opacity-0 group-hover:opacity-100 text-orange-400"
+                    size={16}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
