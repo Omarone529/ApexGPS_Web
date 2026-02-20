@@ -83,13 +83,66 @@ const Planner = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [selectedPoi, setSelectedPoi] = useState(null);
 
+  // Map to normalize POI categories to expected POICard values
+  const categoryMap = {
+    // Restaurants and food
+    ristorante: 'restaurant',
+    trattoria: 'restaurant',
+    osteria: 'restaurant',
+    pizzeria: 'restaurant',
+    food: 'food',
+    // Places of worship
+    chiesa: 'church',
+    cattedrale: 'church',
+    basilica: 'church',
+    duomo: 'church',
+    // Historic and monuments
+    castello: 'castle',
+    fortezza: 'castle',
+    monumento: 'monument',
+    statua: 'monument',
+    'sito archeologico': 'historic',
+    rovine: 'historic',
+    storico: 'historic',
+    // Museums
+    museo: 'museum',
+    // Viewpoints
+    belvedere: 'viewpoint',
+    panorama: 'viewpoint',
+    panoramico: 'panoramic',
+    // Nature
+    lago: 'lake',
+    fiume: 'nature',
+    cascata: 'waterfall',
+    passo: 'mountain_pass',
+    montagna: 'nature',
+    valle: 'nature',
+    parco: 'nature',
+    giardino: 'nature',
+    spiaggia: 'nature',
+    costiera: 'nature',
+    // Vineyards
+    vigneto: 'vineyard',
+    cantina: 'vineyard',
+  };
+
   useEffect(() => {
     const loadAllPOIs = async () => {
       setLoadingPois(true);
       try {
         const poisData = await poiService.getAllPOIs();
+        // Format POIs for the map
         const formattedPois = poiService.formatPOIsForMap(poisData);
-        setAllPois(formattedPois);
+        // Normalize categories
+        const normalizedPois = formattedPois.map(poi => {
+          const originalCategory = poi.category?.toLowerCase() || '';
+          const mappedCategory = categoryMap[originalCategory] || poi.category || 'unknown';
+          return {
+            ...poi,
+            category: mappedCategory,
+          };
+        });
+        setAllPois(normalizedPois);
       } catch (error) {
         console.error('Error loading POIs:', error);
         showError('Impossibile caricare i punti di interesse');
@@ -127,14 +180,19 @@ const Planner = () => {
       return;
     }
 
-    // Otherwise fetch full details from backend
+    // Determine correct ID for fetch (try different keys)
+    const poiId = poi.originalId || poi.id || poi.pk;
+    if (!poiId) {
+      console.warn('POI without ID, using base data', poi);
+      setSelectedPoi(poi);
+      return;
+    }
+
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/gis_data/points-of-interest/${poi.originalId}/`,
-        {
-          headers: { Accept: 'application/json' },
-        }
-      );
+      // FIX: use same base URL as list (/api/gis/...)
+      const response = await fetch(`${API_BASE_URL}/api/gis/points-of-interest/${poiId}/`, {
+        headers: { Accept: 'application/json' },
+      });
 
       if (response.ok) {
         const fullPoiData = await response.json();
@@ -146,6 +204,7 @@ const Planner = () => {
           region: fullPoiData.region,
         });
       } else {
+        // If request fails, use base data
         setSelectedPoi(poi);
       }
     } catch (error) {
@@ -156,7 +215,7 @@ const Planner = () => {
 
   const handleAddPoiToRoute = poi => {
     console.log('Add POI to route:', poi);
-    // Here you would add the POI as a waypoint
+    // Here you could add the POI as a waypoint
     setSelectedPoi(null);
   };
 
