@@ -81,6 +81,7 @@ const Planner = () => {
   const [loadingPois, setLoadingPois] = useState(false);
   const [routeDetails, setRouteDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [selectedPoi, setSelectedPoi] = useState(null);
 
   // Map to normalize POI categories to expected POICard values
@@ -166,6 +167,11 @@ const Planner = () => {
   const showError = message => {
     setErrorMessage(message);
     setTimeout(() => setErrorMessage(null), 5000);
+  };
+
+  const showSuccess = message => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const handlePoiClick = async poi => {
@@ -351,6 +357,12 @@ const Planner = () => {
     setErrorMessage(null);
 
     try {
+      const token = localStorage.getItem('access_token'); // Legge il token JWT
+
+      if (!token) {
+        throw new Error('Utente non autenticato. Effettua il login.');
+      }
+
       const payload = {
         name: formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
         visibility: formData.isPublic ? 'public' : 'private',
@@ -370,10 +382,10 @@ const Planner = () => {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
         mode: 'cors',
-        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -385,8 +397,20 @@ const Planner = () => {
         } catch (parseError) {
           console.error('Error parsing save response:', parseError);
         }
+        // Gestione specifica per duplicato (409 Conflict)
+        if (response.status === 409) {
+          errorMessage = 'Percorso già salvato in precedenza.';
+        }
         throw new Error(errorMessage);
       }
+
+      // Salvataggio riuscito
+      showSuccess('Percorso salvato con successo!');
+
+      // Chiudi il form dopo un breve ritardo per dare feedback visivo
+      setTimeout(() => {
+        setIsMenuOpen(false);
+      }, 500);
     } catch (error) {
       console.error('Error saving route:', error);
       showError(`Errore salvataggio: ${error.message}`);
@@ -403,6 +427,12 @@ const Planner = () => {
         <div className="absolute top-4 right-4 z-[1500] bg-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-gray-800 flex items-center gap-2">
           <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
           <span className="text-sm">Caricamento POI...</span>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1500] bg-green-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-green-800 shadow-lg">
+          {successMessage}
         </div>
       )}
 
