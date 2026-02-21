@@ -6,7 +6,6 @@ import MainLayout from './layout/MainLayout';
 import Home from './pages/Home';
 import Planner from './pages/Planner';
 import Tour from './pages/Tour';
-import Altro from './pages/Altro';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -41,14 +40,6 @@ function App() {
                                 element={
                                     <MainLayout>
                                         <Tour />
-                                    </MainLayout>
-                                }
-                            />
-                            <Route
-                                path="/altro"
-                                element={
-                                    <MainLayout>
-                                        <Altro />
                                     </MainLayout>
                                 }
                             />
