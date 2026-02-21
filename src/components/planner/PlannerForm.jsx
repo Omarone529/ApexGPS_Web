@@ -11,6 +11,7 @@ import {
     FiHome,
     FiCoffee,
     FiCheck,
+    FiRepeat,
 } from 'react-icons/fi';
 import LocationInput from './LocationInput';
 
@@ -95,6 +96,14 @@ const PlannerForm = ({
             const newWaypoints = formData.waypoints.filter((_, i) => i !== index);
             setFormData(prev => ({ ...prev, waypoints: newWaypoints }));
         }
+    };
+
+    const handleSwap = () => {
+        setFormData(prev => ({
+            ...prev,
+            startPoint: prev.endPoint,
+            endPoint: prev.startPoint,
+        }));
     };
 
     const handleLocationSearch = async query => {
@@ -227,10 +236,10 @@ const PlannerForm = ({
 
     return (
         <div className="fixed inset-0 z-[2000]">
-            {/* Overlay invisibile: chiude il form senza oscurare la mappa */}
+            {/* Overlay invisibile */}
             <div className="absolute inset-0 bg-transparent" onClick={onClose} />
 
-            {/* Pannello laterale chiaro con testo ben leggibile */}
+            {/* Pannello laterale */}
             <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl overflow-y-auto border-r border-gray-200">
                 <div className="p-6" ref={formRef}>
                     {/* Header */}
@@ -313,6 +322,21 @@ const PlannerForm = ({
                             </button>
                         </div>
 
+                        {/* Pulsante inverti piccolo a sinistra */}
+                        <div className="flex justify-start -mt-2 mb-2">
+                            <button
+                                type="button"
+                                onClick={handleSwap}
+                                disabled={
+                                    isSubmitting || !formData.startPoint || !formData.endPoint
+                                }
+                                className="p-2 text-gray-500 hover:text-orange-600 transition-colors disabled:opacity-40 rounded-full hover:bg-orange-50"
+                                title="Inverti partenza e destinazione"
+                            >
+                                <FiRepeat size={18} />
+                            </button>
+                        </div>
+
                         {/* End Point */}
                         <div
                             ref={el => setFieldRef('endPoint', el)}
@@ -347,7 +371,6 @@ const PlannerForm = ({
                             >
                                 Manuale
                             </button>
-
                             <button
                                 type="button"
                                 onClick={handleCalculateScenic}
