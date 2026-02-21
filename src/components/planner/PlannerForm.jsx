@@ -40,7 +40,6 @@ const PlannerForm = ({
     const formRef = useRef(null);
     const fieldRefs = useRef({});
 
-    // Effetti e funzioni rimangono invariati
     useEffect(() => {
         const handleEsc = e => {
             if (e.key === 'Escape') setSuggestions([]);
@@ -205,17 +204,17 @@ const PlannerForm = ({
     };
 
     const renderSuggestionIcon = type => {
-        if (!type) return <FiMapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
+        if (!type) return <FiMapPin className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
         const typeLower = type.toLowerCase();
         if (typeLower.includes('city') || typeLower.includes('comune'))
-            return <FiHome className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
+            return <FiHome className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
         if (typeLower.includes('restaurant') || typeLower.includes('ristorante'))
-            return <FiCoffee className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
+            return <FiCoffee className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
         if (typeLower.includes('museum') || typeLower.includes('museo'))
-            return <FiCamera className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
+            return <FiCamera className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
         if (typeLower.includes('monument'))
-            return <FiCamera className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
-        return <FiMapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={16} />;
+            return <FiCamera className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
+        return <FiMapPin className="text-gray-600 mt-0.5 flex-shrink-0" size={16} />;
     };
 
     const setFieldRef = (fieldName, element) => {
@@ -228,16 +227,18 @@ const PlannerForm = ({
 
     return (
         <div className="fixed inset-0 z-[2000]">
-            <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+            {/* Overlay invisibile: chiude il form senza oscurare la mappa */}
+            <div className="absolute inset-0 bg-transparent" onClick={onClose} />
 
-            <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-gray-900 shadow-xl overflow-y-auto border-r border-gray-800">
+            {/* Pannello laterale chiaro con testo ben leggibile */}
+            <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl overflow-y-auto border-r border-gray-200">
                 <div className="p-6" ref={formRef}>
-                    {/* Header minimal */}
+                    {/* Header */}
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-white">Pianifica percorso</h2>
+                        <h2 className="text-xl font-semibold text-black">Pianifica percorso</h2>
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                            className="p-1.5 rounded-md text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
                             disabled={isSubmitting}
                         >
                             <FiX size={20} />
@@ -260,6 +261,7 @@ const PlannerForm = ({
                                 onFocus={() => setActiveField('startPoint')}
                                 iconType="start"
                                 isLoading={loadingSuggestions && activeField === 'startPoint'}
+                                inputClassName="text-black placeholder-gray-500"
                             />
                         </div>
 
@@ -286,12 +288,13 @@ const PlannerForm = ({
                                             loadingSuggestions &&
                                             activeField === `waypoint-${index}`
                                         }
+                                        inputClassName="text-black placeholder-gray-500"
                                     />
                                     {formData.waypoints.length > 1 && (
                                         <button
                                             type="button"
                                             onClick={() => removeWaypoint(index)}
-                                            className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                                             disabled={isSubmitting}
                                         >
                                             <FiTrash2 size={18} />
@@ -302,7 +305,7 @@ const PlannerForm = ({
                             <button
                                 type="button"
                                 onClick={addWaypoint}
-                                className="flex items-center gap-2 text-sm text-gray-400 hover:text-orange-400 transition-colors px-2 py-1"
+                                className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-800 transition-colors px-2 py-1 font-medium"
                                 disabled={isSubmitting}
                             >
                                 <FiPlus size={18} />
@@ -325,13 +328,14 @@ const PlannerForm = ({
                                 onFocus={() => setActiveField('endPoint')}
                                 iconType="end"
                                 isLoading={loadingSuggestions && activeField === 'endPoint'}
+                                inputClassName="text-black placeholder-gray-500"
                             />
                         </div>
 
-                        {/* Separatore sottile */}
-                        <div className="border-t border-gray-800 my-4"></div>
+                        {/* Separatore */}
+                        <div className="border-t border-gray-200 my-4"></div>
 
-                        {/* Pulsanti azione professionali */}
+                        {/* Pulsanti azione */}
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
@@ -339,7 +343,7 @@ const PlannerForm = ({
                                 disabled={
                                     isSubmitting || !formData.startPoint || !formData.endPoint
                                 }
-                                className="px-4 py-3 rounded-lg border border-gray-700 bg-transparent text-gray-300 hover:border-orange-600 hover:text-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
+                                className="px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 hover:border-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
                             >
                                 Manuale
                             </button>
@@ -350,8 +354,8 @@ const PlannerForm = ({
                                 disabled={
                                     isSubmitting || !formData.startPoint || !formData.endPoint
                                 }
-                                className={`px-4 py-3 rounded-lg bg-orange-800 text-orange-50 border border-orange-700 hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium ${
-                                    isScenicMode ? 'ring-1 ring-orange-500' : ''
+                                className={`px-4 py-3 rounded-lg bg-orange-500 text-white border border-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium ${
+                                    isScenicMode ? 'ring-2 ring-orange-300' : ''
                                 }`}
                             >
                                 Panoramico
@@ -363,11 +367,11 @@ const PlannerForm = ({
                             type="button"
                             onClick={handleSave}
                             disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
-                            className="w-full py-3 px-4 rounded-lg bg-orange-800 text-orange-50 border border-orange-700 hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+                            className="w-full py-3 px-4 rounded-lg bg-orange-500 text-white border border-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? (
                                 <>
-                                    <div className="w-4 h-4 border-2 border-orange-50 border-t-transparent rounded-full animate-spin"></div>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                     Salvando...
                                 </>
                             ) : (
@@ -383,14 +387,14 @@ const PlannerForm = ({
                             type="button"
                             onClick={clearForm}
                             disabled={isSubmitting}
-                            className="w-full text-sm text-gray-500 hover:text-red-400 transition-colors disabled:opacity-40 py-2"
+                            className="w-full text-sm text-gray-600 hover:text-red-700 transition-colors disabled:opacity-40 py-2"
                         >
                             Cancella tutto
                         </button>
                     </form>
 
-                    {/* Footer minimal */}
-                    <div className="mt-6 pt-4 border-t border-gray-800 text-xs text-gray-500 space-y-1">
+                    {/* Footer */}
+                    <div className="mt-6 pt-4 border-t border-gray-200 text-xs text-gray-600 space-y-1">
                         <p>Manuale: Crea itinerari con tappe personalizzate.</p>
                         <p>Panoramico: percorso suggestivo automatico.</p>
                     </div>
@@ -402,7 +406,7 @@ const PlannerForm = ({
                 createPortal(
                     <div
                         ref={suggestionsRef}
-                        className="fixed z-[2100] bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden"
+                        className="fixed z-[2100] bg-white rounded-lg border border-gray-200 shadow-lg overflow-hidden"
                         style={{
                             top: suggestionsPosition.top,
                             left: suggestionsPosition.left,
@@ -416,21 +420,21 @@ const PlannerForm = ({
                                 <button
                                     key={suggestion.id}
                                     onClick={() => handleSelectSuggestion(suggestion)}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-start gap-2"
+                                    className="w-full text-left px-3 py-2 hover:bg-orange-50 transition-colors flex items-start gap-2 group"
                                 >
                                     {renderSuggestionIcon(suggestion.type)}
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-sm text-gray-200 truncate">
+                                        <div className="text-sm text-gray-900 truncate font-medium">
                                             {suggestion.display_name}
                                         </div>
                                         {suggestion.region && (
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-xs text-gray-600">
                                                 {suggestion.region}
                                             </div>
                                         )}
                                     </div>
                                     <FiCheck
-                                        className="opacity-0 group-hover:opacity-100 text-orange-400"
+                                        className="opacity-0 group-hover:opacity-100 text-orange-600"
                                         size={16}
                                     />
                                 </button>
