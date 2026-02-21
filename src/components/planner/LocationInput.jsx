@@ -11,6 +11,7 @@ const LocationInput = ({
     onFocus,
     iconType = 'end',
     isLoading = false,
+    inputClassName = '', // nuova prop opzionale
 }) => {
     const inputRef = useRef(null);
 
@@ -51,7 +52,7 @@ const LocationInput = ({
                     onChange={handleInputChange}
                     onFocus={onFocus}
                     placeholder={placeholder}
-                    className="w-full px-0 py-2 bg-transparent border-b border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:shadow-sm focus:shadow-orange-500/20 focus:scale-[1.02] transition-all duration-200"
+                    className={`w-full px-0 py-2 bg-transparent border-b border-gray-700 focus:outline-none focus:border-orange-500 focus:shadow-sm focus:shadow-orange-500/20 focus:scale-[1.02] transition-all duration-200 ${inputClassName}`}
                     autoComplete="off"
                 />
                 {isLoading && (
