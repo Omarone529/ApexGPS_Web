@@ -145,6 +145,15 @@ function Navbar() {
                     Tour
                 </Link>
 
+                {isAuthenticated && (
+                    <Link
+                        className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                        to="/mytours"
+                    >
+                        I miei percorsi
+                    </Link>
+                )}
+
                 {isAuthenticated && user ? (
                     <>
                         <div className="flex items-center gap-3">

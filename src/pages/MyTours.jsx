@@ -134,7 +134,7 @@ function RoutesGrid() {
             {/* Header */}
             <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 className="text-[clamp(2.2rem,3.2vw,2.8rem)] font-semibold leading-[1.15] m-0 text-[#f2f2f2]">
-                    Scopri i percorsi degli utenti
+                    I percorsi che hai creato
                 </h2>
                 <div className="flex items-center gap-4">
                     <span className="bg-white/10 py-2 px-4 rounded-2xl text-base text-[#f2f2f2] font-medium backdrop-blur-md border border-white/10">
@@ -248,34 +248,6 @@ function RoutesGrid() {
                                 </div>
                             </label>
                         </div>
-
-                        {/* iOS-style alternative toggle (commented out - you can switch to this one if preferred) */}
-                        {/* <div className="absolute top-3 left-3 z-10">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={route.isPublic}
-                                    onChange={() => handleTogglePublic(route.id)}
-                                />
-                                <div className={`
-                                    w-12 h-6 rounded-full
-                                    transition-all duration-300 ease-in-out
-                                    ${route.isPublic ? 'bg-green-500' : 'bg-gray-400'}
-                                    peer-focus:ring-2 peer-focus:ring-green-300
-                                `}>
-                                    <div className={`
-                                        absolute top-0.5 left-0.5
-                                        w-5 h-5 bg-white rounded-full
-                                        shadow-md transform transition-transform duration-300
-                                        ${route.isPublic ? 'translate-x-6' : 'translate-x-0'}
-                                    `} />
-                                </div>
-                                <span className="ml-2 text-xs font-medium text-white">
-                                    {route.isPublic ? 'Public' : 'Private'}
-                                </span>
-                            </label>
-                        </div> */}
 
                         <div
                             className="absolute bottom-0 left-0 right-0 p-6
