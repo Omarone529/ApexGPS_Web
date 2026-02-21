@@ -13,60 +13,60 @@ import Register from './pages/Register';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 function App() {
-  return (
-    <AuthProvider>
-      {' '}
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <BrowserRouter>
-          <div className="min-h-screen w-full">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <MainLayout>
-                    <Home />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="/planner"
-                element={
-                  <MainLayout>
-                    <Planner />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="/tour"
-                element={
-                  <MainLayout>
-                    <Tour />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="/altro"
-                element={
-                  <MainLayout>
-                    <Altro />
-                  </MainLayout>
-                }
-              />
-              <Route
-                path="/login"
-                element={
-                  <MainLayout>
-                    <Login />
-                  </MainLayout>
-                }
-              />
-              <Route path="/register" element={<Register />} />
-            </Routes>
-          </div>
-        </BrowserRouter>
-      </GoogleOAuthProvider>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            {' '}
+            <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                <BrowserRouter>
+                    <div className="min-h-screen w-full">
+                        <Routes>
+                            <Route
+                                path="/"
+                                element={
+                                    <MainLayout>
+                                        <Home />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/planner"
+                                element={
+                                    <MainLayout>
+                                        <Planner />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/tour"
+                                element={
+                                    <MainLayout>
+                                        <Tour />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/altro"
+                                element={
+                                    <MainLayout>
+                                        <Altro />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/login"
+                                element={
+                                    <MainLayout>
+                                        <Login />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route path="/register" element={<Register />} />
+                        </Routes>
+                    </div>
+                </BrowserRouter>
+            </GoogleOAuthProvider>
+        </AuthProvider>
+    );
 }
 
 export default App;

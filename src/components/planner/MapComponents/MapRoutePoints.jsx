@@ -3,20 +3,20 @@ import { FiMapPin } from 'react-icons/fi';
 import L from 'leaflet';
 
 const MapRoutePoints = ({ routePoints }) => {
-  if (!routePoints || routePoints.length === 0) return null;
+    if (!routePoints || routePoints.length === 0) return null;
 
-  return (
-    <>
-      {routePoints.map((point, index) => {
-        const position = point.position || [45.4642, 9.19];
-        const isStart = index === 0;
-        const isEnd = index === routePoints.length - 1;
-        let customIcon = null;
+    return (
+        <>
+            {routePoints.map((point, index) => {
+                const position = point.position || [45.4642, 9.19];
+                const isStart = index === 0;
+                const isEnd = index === routePoints.length - 1;
+                let customIcon = null;
 
-        if (isStart) {
-          customIcon = L.divIcon({
-            className: 'start-marker',
-            html: `
+                if (isStart) {
+                    customIcon = L.divIcon({
+                        className: 'start-marker',
+                        html: `
               <div style="
                 width: 20px;
                 height: 20px;
@@ -26,13 +26,13 @@ const MapRoutePoints = ({ routePoints }) => {
                 box-shadow: 0 2px 4px rgba(0,0,0,0.3);
               "></div>
             `,
-            iconSize: [20, 20],
-            iconAnchor: [10, 10],
-          });
-        } else if (isEnd) {
-          customIcon = L.divIcon({
-            className: 'end-marker',
-            html: `
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10],
+                    });
+                } else if (isEnd) {
+                    customIcon = L.divIcon({
+                        className: 'end-marker',
+                        html: `
               <div style="
                 position: relative;
                 width: 24px;
@@ -65,43 +65,47 @@ const MapRoutePoints = ({ routePoints }) => {
                 "></div>
               </div>
             `,
-            iconSize: [24, 32],
-            iconAnchor: [12, 32],
-          });
-        }
+                        iconSize: [24, 32],
+                        iconAnchor: [12, 32],
+                    });
+                }
 
-        return (
-          <Marker
-            key={index}
-            position={position}
-            icon={customIcon || undefined} // undefined => usa icona di default
-          >
-            <Popup>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-2">
-                  <FiMapPin
-                    className={`${isStart ? 'text-gray-800' : isEnd ? 'text-red-600' : 'text-orange-500'}`}
-                  />
-                  <span className="font-bold text-gray-900">
-                    {point.label ||
-                      (isStart ? 'Partenza' : isEnd ? 'Arrivo' : `Punto ${index + 1}`)}
-                  </span>
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {point.description ||
-                    (isStart
-                      ? 'Punto di partenza'
-                      : isEnd
-                        ? 'Punto di arrivo'
-                        : 'Punto intermedio')}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
-    </>
-  );
+                return (
+                    <Marker
+                        key={index}
+                        position={position}
+                        icon={customIcon || undefined} // undefined => usa icona di default
+                    >
+                        <Popup>
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FiMapPin
+                                        className={`${isStart ? 'text-gray-800' : isEnd ? 'text-red-600' : 'text-orange-500'}`}
+                                    />
+                                    <span className="font-bold text-gray-900">
+                                        {point.label ||
+                                            (isStart
+                                                ? 'Partenza'
+                                                : isEnd
+                                                  ? 'Arrivo'
+                                                  : `Punto ${index + 1}`)}
+                                    </span>
+                                </div>
+                                <div className="text-gray-600 text-sm">
+                                    {point.description ||
+                                        (isStart
+                                            ? 'Punto di partenza'
+                                            : isEnd
+                                              ? 'Punto di arrivo'
+                                              : 'Punto intermedio')}
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
+                );
+            })}
+        </>
+    );
 };
 
 export default MapRoutePoints;

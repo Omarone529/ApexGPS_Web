@@ -3,13 +3,13 @@ import { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 
 const MapUserLocation = ({ onLocationFound }) => {
-  const [userLocation, setUserLocation] = useState(null);
-  const hasFetchedLocationRef = useRef(false);
+    const [userLocation, setUserLocation] = useState(null);
+    const hasFetchedLocationRef = useRef(false);
 
-  // Icona personalizzata per la posizione utente
-  const userLocationIcon = L.divIcon({
-    className: 'custom-user-location',
-    html: `
+    // Icona personalizzata per la posizione utente
+    const userLocationIcon = L.divIcon({
+        className: 'custom-user-location',
+        html: `
       <div style="
         position: relative;
         width: 26px;
@@ -61,41 +61,41 @@ const MapUserLocation = ({ onLocationFound }) => {
         }
       </style>
     `,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-  });
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+    });
 
-  useEffect(() => {
-    if (navigator.geolocation && !hasFetchedLocationRef.current) {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const location = [position.coords.latitude, position.coords.longitude];
-          setUserLocation(location);
-          hasFetchedLocationRef.current = true;
-          if (onLocationFound) {
-            onLocationFound(location);
-          }
-        },
-        error => {
-          console.log('Geolocation non disponibile o permesso negato:', error.message);
-          hasFetchedLocationRef.current = true;
+    useEffect(() => {
+        if (navigator.geolocation && !hasFetchedLocationRef.current) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const location = [position.coords.latitude, position.coords.longitude];
+                    setUserLocation(location);
+                    hasFetchedLocationRef.current = true;
+                    if (onLocationFound) {
+                        onLocationFound(location);
+                    }
+                },
+                error => {
+                    console.log('Geolocation non disponibile o permesso negato:', error.message);
+                    hasFetchedLocationRef.current = true;
+                }
+            );
         }
-      );
-    }
-  }, [onLocationFound]);
+    }, [onLocationFound]);
 
-  if (!userLocation) return null;
+    if (!userLocation) return null;
 
-  return (
-    <Marker position={userLocation} icon={userLocationIcon}>
-      <Popup>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-          <span className="font-semibold text-gray-900">La tua posizione</span>
-        </div>
-      </Popup>
-    </Marker>
-  );
+    return (
+        <Marker position={userLocation} icon={userLocationIcon}>
+            <Popup>
+                <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                    <span className="font-semibold text-gray-900">La tua posizione</span>
+                </div>
+            </Popup>
+        </Marker>
+    );
 };
 
 export default MapUserLocation;
