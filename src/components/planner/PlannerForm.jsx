@@ -228,16 +228,18 @@ const PlannerForm = ({
 
     return (
         <div className="fixed inset-0 z-[2000]">
-            <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+            {/* Overlay invisibile: clicca per chiudere senza opacizzare la mappa */}
+            <div className="absolute inset-0 bg-transparent" onClick={onClose} />
 
-            <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-gray-900 shadow-xl overflow-y-auto border-r border-gray-800">
+            {/* Pannello laterale: sfondo più chiaro (gray-800 invece di gray-900) */}
+            <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-gray-800 shadow-xl overflow-y-auto border-r border-gray-700">
                 <div className="p-6" ref={formRef}>
                     {/* Header minimal */}
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-white">Pianifica percorso</h2>
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                            className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
                             disabled={isSubmitting}
                         >
                             <FiX size={20} />
@@ -329,7 +331,7 @@ const PlannerForm = ({
                         </div>
 
                         {/* Separatore sottile */}
-                        <div className="border-t border-gray-800 my-4"></div>
+                        <div className="border-t border-gray-700 my-4"></div>
 
                         {/* Pulsanti azione professionali */}
                         <div className="grid grid-cols-2 gap-3">
@@ -339,7 +341,7 @@ const PlannerForm = ({
                                 disabled={
                                     isSubmitting || !formData.startPoint || !formData.endPoint
                                 }
-                                className="px-4 py-3 rounded-lg border border-gray-700 bg-transparent text-gray-300 hover:border-orange-600 hover:text-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
+                                className="px-4 py-3 rounded-lg border border-gray-600 bg-transparent text-gray-200 hover:border-orange-600 hover:text-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
                             >
                                 Manuale
                             </button>
@@ -390,7 +392,7 @@ const PlannerForm = ({
                     </form>
 
                     {/* Footer minimal */}
-                    <div className="mt-6 pt-4 border-t border-gray-800 text-xs text-gray-500 space-y-1">
+                    <div className="mt-6 pt-4 border-t border-gray-700 text-xs text-gray-400 space-y-1">
                         <p>Manuale: Crea itinerari con tappe personalizzate.</p>
                         <p>Panoramico: percorso suggestivo automatico.</p>
                     </div>
@@ -402,7 +404,7 @@ const PlannerForm = ({
                 createPortal(
                     <div
                         ref={suggestionsRef}
-                        className="fixed z-[2100] bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden"
+                        className="fixed z-[2100] bg-gray-700 rounded-lg border border-gray-600 shadow-lg overflow-hidden"
                         style={{
                             top: suggestionsPosition.top,
                             left: suggestionsPosition.left,
@@ -416,7 +418,7 @@ const PlannerForm = ({
                                 <button
                                     key={suggestion.id}
                                     onClick={() => handleSelectSuggestion(suggestion)}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-start gap-2"
+                                    className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors flex items-start gap-2"
                                 >
                                     {renderSuggestionIcon(suggestion.type)}
                                     <div className="flex-1 min-w-0">
@@ -424,7 +426,7 @@ const PlannerForm = ({
                                             {suggestion.display_name}
                                         </div>
                                         {suggestion.region && (
-                                            <div className="text-xs text-gray-500">
+                                            <div className="text-xs text-gray-400">
                                                 {suggestion.region}
                                             </div>
                                         )}
