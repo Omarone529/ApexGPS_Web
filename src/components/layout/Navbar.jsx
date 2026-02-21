@@ -101,12 +101,6 @@ function Navbar() {
                 >
                     Tour
                 </Link>
-                <Link
-                    className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
-                    to="/altro"
-                >
-                    Altro
-                </Link>
 
                 {isAuthenticated && user ? (
                     <>
