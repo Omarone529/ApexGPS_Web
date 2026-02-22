@@ -5,7 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-      react(),
-      tailwindcss(),
+    react(),
+    tailwindcss(),
   ],
+
+  // vite doesn't support .lottie files out of the box, so we need to tell it to treat them as assets
+  assetsInclude: ['**/*.lottie'],
 })
