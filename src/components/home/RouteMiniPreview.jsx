@@ -41,7 +41,7 @@ export default function RouteMiniPreview() {
     return (
         <div
             ref={containerRef}
-            className="w-full max-w-2xl rounded-3xl border border-black/10 bg-[#EDE9DE] shadow-xl overflow-hidden"
+            className="w-full max-w-2xl rounded-3xl border border-black/10 bg-[#EDE9DE] overflow-hidden"
         >
             <div className="p-5">
                 <div className="relative w-full aspect-5/3 rounded-2xl overflow-hidden">
@@ -112,12 +112,12 @@ export default function RouteMiniPreview() {
                     </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-baseline gap-2 text-xs text-white/90">
+                <div className="mt-4 flex flex-wrap items-baseline gap-2 text-xs text-[#1C1A18]/80">
                     <span>Scenic score</span>
-                    <strong className="text-sm">92</strong>
+                    <strong className="text-sm text-[#1C1A18]">92</strong>
                     <span className="opacity-50">•</span>
                     <span>Curve</span>
-                    <strong className="text-sm">Alte</strong>
+                    <strong className="text-sm text-[#1C1A18]">Alte</strong>
                 </div>
             </div>
         </div>

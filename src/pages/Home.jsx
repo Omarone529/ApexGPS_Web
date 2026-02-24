@@ -21,7 +21,10 @@ function Home() {
 
     return (
         <>
-            <section className="relative min-h-screen w-full overflow-hidden flex items-center">
+            <section
+                id="hero"
+                className="relative min-h-screen w-full overflow-hidden flex items-center"
+            >
                 <video
                     ref={videoRef}
                     src="/header-video.mp4"
@@ -97,7 +100,7 @@ function Home() {
                                     type="button"
                                     onClick={scrollToNearby}
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-                           border border-white/60 text-white hover:bg-white/10 transition"
+             border border-[#E0DACB] bg-[#EDE9DE] text-[#1C1A18] hover:bg-[#E6E1D4] transition"
                                 >
                                     Vedi percorsi vicino a te
                                 </button>
@@ -110,50 +113,16 @@ function Home() {
                     </div>
                 </section>
 
-                <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                    {' '}
                     <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
-                        <div className="order-2 lg:order-1 grid gap-4 justify-items-start">
-                            <div className="w-full max-w-105 rounded-2xl border border-white/10 bg-white/6 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
-                                <div className="p-4">
-                                    <div className="rounded-xl bg-black/35 border border-white/10 px-4 py-3 text-sm text-white/90">
-                                        Cerca luoghi o percorsi…
-                                    </div>
-
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        <span className="rounded-full bg-orange-500/20 border border-orange-500/35 px-3 py-2 text-xs">
-                                            Panorama
-                                        </span>
-                                        <span className="rounded-full bg-white/10 px-3 py-2 text-xs">
-                                            Curve
-                                        </span>
-                                        <span className="rounded-full bg-white/10 px-3 py-2 text-xs">
-                                            Bilanciato
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-4 grid grid-cols-3 gap-2">
-                                        {[
-                                            ['Distanza', '120 km'],
-                                            ['Tempo', '2h 10m'],
-                                            ['Scenic', '🔥 88'],
-                                        ].map(([t, v]) => (
-                                            <div
-                                                key={t}
-                                                className="rounded-xl bg-white/6 border border-white/10 p-3"
-                                            >
-                                                <div className="text-[11px] text-white/70">{t}</div>
-                                                <div className="mt-1 font-semibold">{v}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                className="w-full max-w-90 h-60 rounded-2xl border border-white/10 bg-white/6
-                            shadow-2xl shadow-black/40 overflow-hidden opacity-90
-                            bg-[linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.55)),url('/moto.webp')] bg-center bg-cover"
-                            ></div>
+                        <div className="order-2 lg:order-1 flex justify-center lg:justify-start lg:-ml-12">
+                            <img
+                                src="/planner-mockup-desktop.png"
+                                alt="Mockup Planner ApexGPS"
+                                className="w-full max-w-205 h-auto"
+                                draggable={false}
+                            />
                         </div>
 
                         <div className="order-1 lg:order-2">
@@ -180,7 +149,7 @@ function Home() {
                                 <Link
                                     to="/planner"
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-                           border border-white/60 text-white hover:bg-white/10 transition"
+                           border border-white/60 text-[#1C1A18] hover:bg-white/10 transition"
                                 >
                                     Pianifica ora
                                 </Link>
@@ -189,7 +158,8 @@ function Home() {
                     </div>
                 </section>
 
-                <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                    {' '}
                     <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
                         <div>
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
@@ -214,33 +184,20 @@ function Home() {
                                     type="button"
                                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-                           border border-white/60 text-white hover:bg-white/10 transition"
+                           border border-white/60 text-[#1C1A18] hover:bg-white/10 transition"
                                 >
                                     Torna su
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid gap-4 justify-items-start lg:justify-items-end">
-                            <div className="w-full max-w-105 rounded-2xl border border-white/10 bg-white/6 shadow-2xl shadow-black/40 overflow-hidden backdrop-blur">
-                                <div className="p-4">
-                                    <div
-                                        className="h-56 rounded-2xl overflow-hidden
-                                bg-[linear-gradient(135deg,rgba(255,107,0,0.22),transparent_40%),url('/moto.webp')] bg-center bg-cover"
-                                    />
-                                    <div className="mt-3 flex flex-wrap gap-2">
-                                        <span className="rounded-full bg-white/10 px-3 py-2 text-xs">
-                                            ✅ Salvato
-                                        </span>
-                                        <span className="rounded-full bg-white/10 px-3 py-2 text-xs">
-                                            🔗 Condividi
-                                        </span>
-                                        <span className="rounded-full bg-white/10 px-3 py-2 text-xs">
-                                            ⭐ 4.8
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="flex justify-center lg:justify-center">
+                            <img
+                                src="/planner-mockup-iphone.png"
+                                alt="Mockup Planner ApexGPS su iPhone"
+                                className="w-full max-w-60 h-auto drop-shadow-[0_40px_80px_rgba(0,0,0,0.25)]"
+                                draggable={false}
+                            />
                         </div>
                     </div>
                 </section>
