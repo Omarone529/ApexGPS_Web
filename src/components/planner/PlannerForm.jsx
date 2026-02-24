@@ -239,15 +239,19 @@ const PlannerForm = ({
             {/* Overlay invisibile */}
             <div className="absolute inset-0 bg-transparent" onClick={onClose} />
 
-            {/* Pannello laterale */}
-            <div className="absolute left-0 top-0 h-full w-full sm:w-96 bg-white shadow-xl overflow-y-auto border-r border-gray-200">
-                <div className="p-6" ref={formRef}>
+            {/* Pannello laterale con sfondo #FAF7F2 */}
+            <div
+                className="absolute left-0 top-0 h-full w-full sm:w-96 shadow-xl overflow-y-auto border-r border-gray-200"
+                style={{ backgroundColor: '#FAF7F2' }}
+                ref={formRef}
+            >
+                <div className="p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-black">Pianifica percorso</h2>
+                        <h2 className="text-xl font-semibold text-gray-800">Pianifica percorso</h2>
                         <button
                             onClick={onClose}
-                            className="p-1.5 rounded-md text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+                            className="p-1.5 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-200/50 transition-colors"
                             disabled={isSubmitting}
                         >
                             <FiX size={20} />
@@ -270,7 +274,7 @@ const PlannerForm = ({
                                 onFocus={() => setActiveField('startPoint')}
                                 iconType="start"
                                 isLoading={loadingSuggestions && activeField === 'startPoint'}
-                                inputClassName="text-black placeholder-gray-500"
+                                inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
                             />
                         </div>
 
@@ -297,7 +301,7 @@ const PlannerForm = ({
                                             loadingSuggestions &&
                                             activeField === `waypoint-${index}`
                                         }
-                                        inputClassName="text-black placeholder-gray-500"
+                                        inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
                                     />
                                     {formData.waypoints.length > 1 && (
                                         <button
@@ -330,7 +334,7 @@ const PlannerForm = ({
                                 disabled={
                                     isSubmitting || !formData.startPoint || !formData.endPoint
                                 }
-                                className="p-2 text-gray-500 hover:text-orange-600 transition-colors disabled:opacity-40 rounded-full hover:bg-orange-50"
+                                className="p-2 text-gray-500 hover:text-orange-600 transition-colors disabled:opacity-40 rounded-full hover:bg-orange-100"
                                 title="Inverti partenza e destinazione"
                             >
                                 <FiRepeat size={18} />
@@ -352,12 +356,12 @@ const PlannerForm = ({
                                 onFocus={() => setActiveField('endPoint')}
                                 iconType="end"
                                 isLoading={loadingSuggestions && activeField === 'endPoint'}
-                                inputClassName="text-black placeholder-gray-500"
+                                inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
                             />
                         </div>
 
                         {/* Separatore */}
-                        <div className="border-t border-gray-200 my-4"></div>
+                        <div className="border-t border-gray-300 my-4"></div>
 
                         {/* Pulsanti azione */}
                         <div className="grid grid-cols-2 gap-3">
@@ -367,7 +371,7 @@ const PlannerForm = ({
                                 disabled={
                                     isSubmitting || !formData.startPoint || !formData.endPoint
                                 }
-                                className="px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 hover:border-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
+                                className="px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 hover:border-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
                             >
                                 Manuale
                             </button>
@@ -417,7 +421,7 @@ const PlannerForm = ({
                     </form>
 
                     {/* Footer */}
-                    <div className="mt-6 pt-4 border-t border-gray-200 text-xs text-gray-600 space-y-1">
+                    <div className="mt-6 pt-4 border-t border-gray-300 text-xs text-gray-600 space-y-1">
                         <p>Manuale: Crea itinerari con tappe personalizzate.</p>
                         <p>Panoramico: percorso suggestivo automatico.</p>
                     </div>
