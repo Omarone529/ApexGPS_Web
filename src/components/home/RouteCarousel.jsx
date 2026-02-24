@@ -179,7 +179,6 @@ export default function RouteCarousel() {
             ro.disconnect();
             window.removeEventListener('resize', updateWidth);
         };
-         
     }, []);
 
     const onMouseDown = e => {
