@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function MyTours() {
     return (
@@ -23,108 +25,108 @@ function MyTours() {
 }
 
 function RoutesGrid() {
-    const [routes, setRoutes] = useState([
-        {
-            id: 1,
-            title: 'Passo della Futa',
-            area: 'Appennino Tosco-Emiliano',
-            rating: 4.8,
-            image: '/routes/routes1.webp',
-            isPublic: true,
-        },
-        {
-            id: 2,
-            title: 'Passo della Raticosa',
-            area: 'Bologna – Firenze',
-            rating: 4.9,
-            image: '/routes/routes2.webp',
-            isPublic: true,
-        },
-        {
-            id: 3,
-            title: 'Muraglione',
-            area: 'Foreste Casentinesi',
-            rating: 4.7,
-            image: '/routes/routes3.webp',
-            isPublic: false,
-        },
-        {
-            id: 4,
-            title: 'Passo della Cisa',
-            area: 'Appennino Parmense',
-            rating: 4.6,
-            image: '/routes/routes4.webp',
-            isPublic: true,
-        },
-        {
-            id: 5,
-            title: 'Passo del Gavia',
-            area: 'Alpi Lombarde',
-            rating: 4.9,
-            image: '/routes/routes5.webp',
-            isPublic: true,
-        },
-        {
-            id: 6,
-            title: 'Passo dello Stelvio',
-            area: 'Alpi Retiche',
-            rating: 5.0,
-            image: '/routes/routes6.webp',
-            isPublic: true,
-        },
-        {
-            id: 7,
-            title: 'Passo Giau',
-            area: 'Dolomiti',
-            rating: 4.9,
-            image: '/routes/routes7.webp',
-            isPublic: false,
-        },
-        {
-            id: 8,
-            title: 'Colle delle Finestre',
-            area: 'Val di Susa',
-            rating: 4.8,
-            image: '/routes/routes8.webp',
-            isPublic: true,
-        },
-        {
-            id: 9,
-            title: 'Passo del Rombo',
-            area: 'Alpi Venoste',
-            rating: 4.9,
-            image: '/routes/routes9.webp',
-            isPublic: true,
-        },
-        {
-            id: 10,
-            title: 'Passo del Tonale',
-            area: 'Lombardia – Trentino',
-            rating: 4.6,
-            image: '/routes/routes10.webp',
-            isPublic: false,
-        },
-        {
-            id: 11,
-            title: 'Passo San Marco',
-            area: 'Val Brembana',
-            rating: 4.7,
-            image: '/routes/routes11.webp',
-            isPublic: true,
-        },
-    ]);
+    const [routes, setRoutes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleDelete = id => {
-        if (window.confirm('Are you sure you want to delete this route?')) {
+    // Helper to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+        };
+    };
+
+    // Fetch routes from API
+    useEffect(() => {
+        const fetchRoutes = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${API_BASE_URL}/routes/my_routes`, {
+                    headers: getAuthHeaders(),
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch routes: ${response.statusText}`);
+                }
+                const data = await response.json();
+                // data is expected to be an array of route objects
+                // Map API data to the shape expected by the component
+                const formattedRoutes = data.map(route => ({
+                    id: route.id,
+                    title: route.name,
+                    area: `${route.start_location || '?'} → ${route.end_location || '?'}`,
+                    // Use total_scenic_score, assume out of 10, convert to 5-star scale
+                    rating: route.total_scenic_score
+                        ? Math.min(5, (route.total_scenic_score / 2).toFixed(1))
+                        : 4.5, // fallback if missing
+                    // Use a placeholder image that is consistent per route ID
+                    image: `https://picsum.photos/seed/${route.id}/300/400`,
+                    isPublic: route.visibility === 'public',
+                }));
+                setRoutes(formattedRoutes);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRoutes();
+    }, []);
+
+    // Delete handler – call API then update local state
+    const handleDelete = async id => {
+        if (!window.confirm('Are you sure you want to delete this route?')) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/routes/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) {
+                throw new Error(`Delete failed: ${response.statusText}`);
+            }
+            // Remove from local state
             setRoutes(routes.filter(route => route.id !== id));
+        } catch (err) {
+            alert(`Error deleting route: ${err.message}`);
         }
     };
 
-    const handleTogglePublic = id => {
-        setRoutes(
-            routes.map(route => (route.id === id ? { ...route, isPublic: !route.isPublic } : route))
-        );
+    // Toggle public/private – call PATCH API then update local state
+    const handleTogglePublic = async id => {
+        // Find current route to get new visibility
+        const route = routes.find(r => r.id === id);
+        if (!route) return;
+        const newVisibility = route.isPublic ? 'private' : 'public';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/routes/${id}`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ visibility: newVisibility }),
+            });
+            if (!response.ok) {
+                throw new Error(`Update failed: ${response.statusText}`);
+            }
+            // Update local state
+            setRoutes(routes.map(r => (r.id === id ? { ...r, isPublic: !r.isPublic } : r)));
+        } catch (err) {
+            alert(`Error updating route: ${err.message}`);
+        }
     };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-center text-red-400 p-8">Error loading routes: {error}</div>;
+    }
 
     return (
         <div
@@ -154,7 +156,7 @@ function RoutesGrid() {
                 {routes.map(route => (
                     <div
                         key={route.id}
-                        className="group relative aspect-[3/4] rounded-3xl overflow-hidden
+                        className="group relative aspect-3/4 rounded-3xl overflow-hidden
                               bg-white/5 backdrop-blur-sm border border-white/10
                               transition-all duration-500 ease-out
                               hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
@@ -169,7 +171,7 @@ function RoutesGrid() {
                         />
 
                         <div
-                            className="absolute inset-0 bg-gradient-to-t
+                            className="absolute inset-0 bg-linear-to-t
                           from-black/90 via-black/50 to-transparent
                           opacity-90 transition-opacity duration-500
                           group-hover:opacity-95"
@@ -252,7 +254,7 @@ function RoutesGrid() {
                         <div
                             className="absolute bottom-0 left-0 right-0 p-6
                          transition-all duration-500 ease-out
-                         translate-y-0 group-hover:translate-y-[-8px]"
+                         translate-y-0 group-hover:-translate-y-2"
                         >
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="flex gap-0.5">
@@ -315,4 +317,5 @@ function RoutesGrid() {
         </div>
     );
 }
+
 export default MyTours;
