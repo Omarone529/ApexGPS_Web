@@ -69,7 +69,7 @@ function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 flex justify-between items-center py-6 px-16 z-50 transition-transform ${
-                isPlannerPage ? 'bg-black' : 'bg-transparent'
+                isPlannerPage ? 'bg-[#FAF7F2]' : 'bg-transparent'
             } ${isVisible ? '' : '-translate-y-full'}`}
         >
             <div>
@@ -84,19 +84,25 @@ function Navbar() {
 
             <div className="flex items-center gap-8">
                 <Link
-                    className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
                     to="/"
                 >
                     Home
                 </Link>
                 <Link
-                    className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
                     to="/planner"
                 >
                     Planner
                 </Link>
                 <Link
-                    className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
                     to="/tour"
                 >
                     Tour
@@ -117,14 +123,22 @@ function Navbar() {
                                     {initials}
                                 </div>
                             )}
-                            <span className="text-white text-sm tracking-[1px] opacity-90">
+                            <span
+                                className={`text-sm tracking-[1px] opacity-90 ${
+                                    isPlannerPage ? 'text-gray-800' : 'text-white'
+                                }`}
+                            >
                                 Ciao, <span className="font-semibold">{displayName}</span>
                             </span>
                         </div>
 
                         <button
                             onClick={logout}
-                            className="text-white text-sm tracking-[1px] py-2 px-4.5 border border-white/60 rounded-full hover:opacity-100"
+                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${
+                                isPlannerPage
+                                    ? 'text-gray-800 border-gray-400/60'
+                                    : 'text-white border-white/60'
+                            }`}
                         >
                             Logout
                         </button>
@@ -132,7 +146,11 @@ function Navbar() {
                 ) : (
                     <Link
                         to="/login"
-                        className="text-white text-sm tracking-[1px] opacity-85 py-2 px-4.5 border border-white/60 rounded-full hover:opacity-100"
+                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${
+                            isPlannerPage
+                                ? 'text-gray-800 border-gray-400/60'
+                                : 'text-white border-white/60'
+                        }`}
                     >
                         Login
                     </Link>

@@ -133,8 +133,8 @@ const InteractiveMap = ({
             <div className="absolute top-24 left-6 z-[1000] flex flex-col gap-3">
                 <button
                     onClick={onMenuToggle}
-                    className="group w-12 h-12 bg-gray-900/90 backdrop-blur-sm text-white rounded-2xl shadow-2xl
-                     hover:bg-orange-500 transition-all duration-300 border border-gray-700
+                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+                     hover:bg-orange-500 hover:text-white transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center"
                     aria-label="Open planner"
                 >
@@ -145,8 +145,8 @@ const InteractiveMap = ({
                     onClick={() =>
                         setMapLayer(prev => (prev === 'standard' ? 'satellite' : 'standard'))
                     }
-                    className="group w-12 h-12 bg-gray-900/90 backdrop-blur-sm text-gray-300 rounded-2xl shadow-2xl
-                     hover:text-orange-400 transition-all duration-300 border border-gray-700
+                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+                     hover:text-orange-600 transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center"
                     aria-label="Toggle map layer"
                 >
@@ -156,11 +156,11 @@ const InteractiveMap = ({
                 <button
                     onClick={centerOnUser}
                     disabled={!userLocation}
-                    className={`group w-12 h-12 backdrop-blur-sm rounded-2xl shadow-2xl transition-all duration-300 
+                    className={`group w-12 h-12 rounded-2xl shadow-2xl transition-all duration-300 
                      flex items-center justify-center border ${
                          userLocation
-                             ? 'bg-gray-900/90 text-gray-300 border-gray-700 hover:border-orange-400 hover:text-orange-400'
-                             : 'bg-gray-900/50 text-gray-600 border-gray-800 cursor-not-allowed'
+                             ? 'bg-[#FAF7F2] text-gray-800 border-gray-200 hover:border-orange-400 hover:text-orange-600'
+                             : 'bg-gray-200/50 text-gray-400 border-gray-300 cursor-not-allowed'
                      }`}
                     aria-label="Center on my location"
                 >
@@ -175,25 +175,27 @@ const InteractiveMap = ({
             {(distance || routeStats) && (
                 <div
                     className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]
-                      bg-gray-900/90 backdrop-blur-sm text-white px-6 py-3 rounded-2xl
-                      border border-gray-800 shadow-2xl"
+                      bg-[#FAF7F2]/95 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-2xl
+                      border border-gray-200 shadow-2xl"
                 >
                     <div className="flex items-center gap-6">
                         {distance && (
                             <div className="flex items-center gap-2">
                                 <div
-                                    className={`w-2 h-2 rounded-full ${isScenicRoute ? 'bg-amber-400' : 'bg-orange-500'}`}
+                                    className={`w-2 h-2 rounded-full ${isScenicRoute ? 'bg-amber-500' : 'bg-orange-500'}`}
                                 />
-                                <span className="text-sm font-medium">{distance}</span>
+                                <span className="text-sm font-medium text-gray-800">
+                                    {distance}
+                                </span>
                             </div>
                         )}
 
                         {routeStats?.duration && (
                             <>
-                                <div className="w-px h-4 bg-gray-700" />
+                                <div className="w-px h-4 bg-gray-300" />
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-400">⏱️</span>
-                                    <span className="text-sm font-medium">
+                                    <span className="text-sm text-gray-600">⏱️</span>
+                                    <span className="text-sm font-medium text-gray-800">
                                         {routeStats.duration}
                                     </span>
                                 </div>
@@ -202,10 +204,10 @@ const InteractiveMap = ({
 
                         {routeStats?.scenicScore && routeStats.scenicScore !== 'N/A' && (
                             <>
-                                <div className="w-px h-4 bg-gray-700" />
+                                <div className="w-px h-4 bg-gray-300" />
                                 <div className="flex items-center gap-1">
                                     <span className="text-sm">🏔️</span>
-                                    <span className="text-sm font-medium text-amber-400">
+                                    <span className="text-sm font-medium text-amber-600">
                                         {routeStats.scenicScore}
                                     </span>
                                 </div>
@@ -256,19 +258,21 @@ const InteractiveMap = ({
             {/* Loading Overlay */}
             {loading && (
                 <div
-                    className="absolute inset-0 z-[2000] bg-gray-900/50 backdrop-blur-sm
+                    className="absolute inset-0 z-[2000] bg-[#FAF7F2]/80 backdrop-blur-sm
                       flex items-center justify-center"
                 >
                     <div
-                        className="bg-gray-900 text-white px-6 py-4 rounded-2xl
-                        border border-gray-800 shadow-2xl"
+                        className="bg-[#FAF7F2] text-gray-800 px-6 py-4 rounded-2xl
+                        border border-gray-200 shadow-2xl"
                     >
                         <div className="flex items-center gap-3">
                             <div
                                 className="w-5 h-5 border-2 border-orange-500 border-t-transparent
                             rounded-full animate-spin"
                             />
-                            <span className="text-sm font-medium">Calculating route...</span>
+                            <span className="text-sm font-medium text-gray-800">
+                                Calculating route...
+                            </span>
                         </div>
                     </div>
                 </div>
