@@ -112,7 +112,11 @@ function Navbar() {
             : 'text-[#1C1A18] text-sm tracking-[1px] opacity-85 py-2 px-4.5 border border-black/20 rounded-full hover:opacity-100 transition';
 
     return (
-        <nav className={`${navBase} ${navStyle}`}>
+        <nav
+            className={`fixed top-0 left-0 right-0 flex justify-between items-center py-6 px-16 z-50 transition-transform ${
+                isPlannerPage ? 'bg-[#FAF7F2]' : 'bg-transparent'
+            } ${isVisible ? '' : '-translate-y-full'}`}
+        >
             <div>
                 <Link to="/" className="flex items-center gap-3 -ml-20">
                     <img
@@ -124,13 +128,28 @@ function Navbar() {
             </div>
 
             <div className="flex items-center gap-8">
-                <Link className={linkClass} to="/">
+                <Link
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
+                    to="/"
+                >
                     Home
                 </Link>
-                <Link className={linkClass} to="/planner">
+                <Link
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
+                    to="/planner"
+                >
                     Planner
                 </Link>
-                <Link className={linkClass} to="/tour">
+                <Link
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                        isPlannerPage ? 'text-gray-800' : 'text-white'
+                    }`}
+                    to="/tour"
+                >
                     Tour
                 </Link>
 
@@ -149,24 +168,35 @@ function Navbar() {
                                     {initials}
                                 </div>
                             )}
-
                             <span
-                                className={
-                                    isPlannerPage || (isHomePage && isHeroVisible)
-                                        ? 'text-white text-sm tracking-[1px] opacity-90'
-                                        : 'text-[#1C1A18] text-sm tracking-[1px] opacity-90'
-                                }
+                                className={`text-sm tracking-[1px] opacity-90 ${
+                                    isPlannerPage ? 'text-gray-800' : 'text-white'
+                                }`}
                             >
                                 Ciao, <span className="font-semibold">{displayName}</span>
                             </span>
                         </div>
 
-                        <button onClick={logout} className={pillClass}>
+                        <button
+                            onClick={logout}
+                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${
+                                isPlannerPage
+                                    ? 'text-gray-800 border-gray-400/60'
+                                    : 'text-white border-white/60'
+                            }`}
+                        >
                             Logout
                         </button>
                     </>
                 ) : (
-                    <Link to="/login" className={pillClass}>
+                    <Link
+                        to="/login"
+                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${
+                            isPlannerPage
+                                ? 'text-gray-800 border-gray-400/60'
+                                : 'text-white border-white/60'
+                        }`}
+                    >
                         Login
                     </Link>
                 )}
