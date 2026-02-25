@@ -93,15 +93,13 @@ function RoutesGrid() {
         }
     };
 
-    // Toggle public/private – call PATCH API then update local state
     const handleTogglePublic = async id => {
-        // Find current route to get new visibility
         const route = routes.find(r => r.id === id);
         if (!route) return;
         const newVisibility = route.isPublic ? 'private' : 'public';
 
         try {
-            const response = await fetch(`${API_BASE_URL}/routes/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ visibility: newVisibility }),
@@ -109,7 +107,6 @@ function RoutesGrid() {
             if (!response.ok) {
                 throw new Error(`Update failed: ${response.statusText}`);
             }
-            // Update local state
             setRoutes(routes.map(r => (r.id === id ? { ...r, isPublic: !r.isPublic } : r)));
         } catch (err) {
             alert(`Error updating route: ${err.message}`);
