@@ -28,8 +28,9 @@ function RoutesGrid() {
     const [routes, setRoutes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [editingId, setEditingId] = useState(null);
+    const [editValue, setEditValue] = useState('');
 
-    // Helper to get auth headers
     const getAuthHeaders = () => {
         const token = localStorage.getItem('access_token');
         return {
@@ -38,7 +39,6 @@ function RoutesGrid() {
         };
     };
 
-    // Fetch routes from API
     useEffect(() => {
         const fetchRoutes = async () => {
             try {
@@ -110,6 +110,44 @@ function RoutesGrid() {
             setRoutes(routes.map(r => (r.id === id ? { ...r, isPublic: !r.isPublic } : r)));
         } catch (err) {
             alert(`Error updating route: ${err.message}`);
+        }
+    };
+
+    const handleEditStart = route => {
+        setEditingId(route.id);
+        setEditValue(route.title);
+    };
+
+    const handleEditCancel = () => {
+        setEditingId(null);
+        setEditValue('');
+    };
+
+    const handleEditSave = async id => {
+        if (!editValue.trim()) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ name: editValue.trim() }),
+            });
+            if (!response.ok) {
+                throw new Error(`Update failed: ${response.statusText}`);
+            }
+            // Update local state
+            setRoutes(routes.map(r => (r.id === id ? { ...r, title: editValue.trim() } : r)));
+            setEditingId(null);
+            setEditValue('');
+        } catch (err) {
+            alert(`Error updating route name: ${err.message}`);
+        }
+    };
+
+    const handleKeyDown = (e, id) => {
+        if (e.key === 'Enter') {
+            handleEditSave(id);
+        } else if (e.key === 'Escape') {
+            handleEditCancel();
         }
     };
 
@@ -278,13 +316,51 @@ function RoutesGrid() {
                                 </span>
                             </div>
 
-                            <h3
-                                className="text-2xl font-bold text-white mb-1
-                         drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]
-                         transition-all duration-500"
-                            >
-                                {route.title}
-                            </h3>
+                            <div className="flex items-center gap-2 mb-1">
+                                {editingId === route.id ? (
+                                    <input
+                                        type="text"
+                                        value={editValue}
+                                        onChange={e => setEditValue(e.target.value)}
+                                        onBlur={() => handleEditSave(route.id)}
+                                        onKeyDown={e => handleKeyDown(e, route.id)}
+                                        className="bg-black/50 text-white text-2xl font-bold
+                                                 px-2 py-1 rounded border border-white/30
+                                                 w-full focus:outline-none focus:border-orange-400
+                                                 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <>
+                                        <h3 className="text-2xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
+                                            {route.title}
+                                        </h3>
+                                        <button
+                                            onClick={() => handleEditStart(route)}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity
+                                                     p-1 rounded-lg bg-white/10 text-white/70
+                                                     hover:bg-orange-500 hover:text-white
+                                                     border border-white/20"
+                                            title="Edit name"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
 
                             <p
                                 className="text-gray-200 text-sm mb-4 opacity-90
