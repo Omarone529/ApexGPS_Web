@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 function MyTours() {
     return (
@@ -31,7 +31,7 @@ function RoutesGrid() {
 
     // Helper to get auth headers
     const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access_token');
         return {
             'Content-Type': 'application/json',
             ...(token && { Authorization: `Bearer ${token}` }),
@@ -43,7 +43,7 @@ function RoutesGrid() {
         const fetchRoutes = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`${API_BASE_URL}/routes/my_routes`, {
+                const response = await fetch(`${API_BASE_URL}/routes/my_routes/`, {
                     headers: getAuthHeaders(),
                 });
                 if (!response.ok) {
@@ -79,7 +79,7 @@ function RoutesGrid() {
     const handleDelete = async id => {
         if (!window.confirm('Are you sure you want to delete this route?')) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/routes/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
