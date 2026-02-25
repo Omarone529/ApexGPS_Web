@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // ← add useLocation
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/useAuth.jsx';
 
@@ -12,7 +12,10 @@ function Login() {
     const [googleLoading, setGoogleLoading] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const { login, loginWithGoogle } = useAuth();
+
+    const from = location.state?.from?.pathname || '/planner';
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -21,7 +24,7 @@ function Login() {
 
         try {
             await login(identifier, password, rememberMe);
-            navigate('/planner');
+            navigate(from, { replace: true });
         } catch (err) {
             setError(err.message || 'Errore login');
         } finally {
@@ -35,7 +38,7 @@ function Login() {
             setError(null);
             try {
                 await loginWithGoogle(tokenResponse.access_token, rememberMe);
-                navigate('/planner');
+                navigate(from, { replace: true });
             } catch (err) {
                 setError(err.message || 'Errore login con Google');
             } finally {
