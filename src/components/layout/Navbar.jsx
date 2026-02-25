@@ -147,7 +147,11 @@ function Navbar() {
 
                 {isAuthenticated && (
                     <Link
-                        className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
+                            isPlannerPage || (isHomePage && !isHeroVisible)
+                                ? 'text-[#1C1A18]'
+                                : 'text-white'
+                        }`}
                         to="/mytours"
                     >
                         I miei percorsi
