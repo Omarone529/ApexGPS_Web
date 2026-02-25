@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 function Tour() {
     return (
@@ -23,85 +25,63 @@ function Tour() {
 }
 
 function RoutesGrid() {
-    const routes = [
-        {
-            id: 1,
-            title: 'Passo della Futa',
-            area: 'Appennino Tosco-Emiliano',
-            rating: 4.8,
-            image: '/routes/routes1.webp',
-        },
-        {
-            id: 2,
-            title: 'Passo della Raticosa',
-            area: 'Bologna – Firenze',
-            rating: 4.9,
-            image: '/routes/routes2.webp',
-        },
-        {
-            id: 3,
-            title: 'Muraglione',
-            area: 'Foreste Casentinesi',
-            rating: 4.7,
-            image: '/routes/routes3.webp',
-        },
-        {
-            id: 4,
-            title: 'Passo della Cisa',
-            area: 'Appennino Parmense',
-            rating: 4.6,
-            image: '/routes/routes4.webp',
-        },
-        {
-            id: 5,
-            title: 'Passo del Gavia',
-            area: 'Alpi Lombarde',
-            rating: 4.9,
-            image: '/routes/routes5.webp',
-        },
-        {
-            id: 6,
-            title: 'Passo dello Stelvio',
-            area: 'Alpi Retiche',
-            rating: 5.0,
-            image: '/routes/routes6.webp',
-        },
-        {
-            id: 7,
-            title: 'Passo Giau',
-            area: 'Dolomiti',
-            rating: 4.9,
-            image: '/routes/routes7.webp',
-        },
-        {
-            id: 8,
-            title: 'Colle delle Finestre',
-            area: 'Val di Susa',
-            rating: 4.8,
-            image: '/routes/routes8.webp',
-        },
-        {
-            id: 9,
-            title: 'Passo del Rombo',
-            area: 'Alpi Venoste',
-            rating: 4.9,
-            image: '/routes/routes9.webp',
-        },
-        {
-            id: 10,
-            title: 'Passo del Tonale',
-            area: 'Lombardia – Trentino',
-            rating: 4.6,
-            image: '/routes/routes10.webp',
-        },
-        {
-            id: 11,
-            title: 'Passo San Marco',
-            area: 'Val Brembana',
-            rating: 4.7,
-            image: '/routes/routes11.webp',
-        },
-    ];
+    const [routes, setRoutes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Optional: include auth header if the user is logged in (not required for public endpoint)
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('access_token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+        };
+    };
+
+    useEffect(() => {
+        const fetchPublicRoutes = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch(`${API_BASE_URL}/routes/public/`, {
+                    headers: getAuthHeaders(),
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch routes: ${response.statusText}`);
+                }
+                const data = await response.json();
+                // data is expected to be an array of route objects
+                const formattedRoutes = data.map(route => ({
+                    id: route.id,
+                    title: route.name,
+                    area: `${route.start_location || '?'} → ${route.end_location || '?'}`,
+                    rating: route.total_scenic_score
+                        ? Math.min(5, (route.total_scenic_score / 2).toFixed(1))
+                        : 4.5,
+                    image: `https://picsum.photos/seed/${route.id}/300/400`,
+                    owner: route.owner_username || 'Anonymous',
+                }));
+                setRoutes(formattedRoutes);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPublicRoutes();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-center text-red-400 p-8">Error loading routes: {error}</div>;
+    }
 
     return (
         <div
@@ -127,17 +107,17 @@ function RoutesGrid() {
                     <div
                         key={route.id}
                         className="group relative aspect-[3/4] rounded-3xl overflow-hidden
-                      bg-white/5 backdrop-blur-sm border border-white/10
-                      transition-all duration-500 ease-out
-                      hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
+                              bg-white/5 backdrop-blur-sm border border-white/10
+                              transition-all duration-500 ease-out
+                              hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
                     >
                         {/* Image */}
                         <img
                             src={route.image}
                             alt={route.title}
                             className="absolute inset-0 w-full h-full object-cover
-                       transition-transform duration-700 ease-out
-                       group-hover:scale-110"
+                           transition-transform duration-700 ease-out
+                           group-hover:scale-110"
                         />
 
                         <div
@@ -173,7 +153,7 @@ function RoutesGrid() {
                                     className="text-white font-bold text-sm
                              drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
                                 >
-                                    {route.rating.toFixed(1)}
+                                    {route.rating}
                                 </span>
                             </div>
 
@@ -186,11 +166,18 @@ function RoutesGrid() {
                             </h3>
 
                             <p
-                                className="text-gray-200 text-sm mb-4 opacity-90
-                         drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]
-                         transition-all duration-500"
+                                className="text-gray-200 text-sm mb-1 opacity-90
+                         drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
                             >
                                 {route.area}
+                            </p>
+
+                            {/* Creator info */}
+                            <p
+                                className="text-gray-400 text-xs mb-4
+                         drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                            >
+                                by {route.owner}
                             </p>
 
                             <button
