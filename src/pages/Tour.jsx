@@ -111,7 +111,7 @@ function RoutesGrid() {
             {/* Header */}
             <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h2 className="text-[clamp(2.2rem,3.2vw,2.8rem)] font-semibold leading-[1.15] m-0 text-[#f2f2f2]">
-                    Scopri i percorsi degli utenti
+                    Scopri i percorsi degli utenti{' '}
                 </h2>
                 <span
                     className="bg-white/10 py-2 px-4 rounded-2xl text-base text-[#f2f2f2] font-medium
