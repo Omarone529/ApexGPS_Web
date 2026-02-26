@@ -8,6 +8,7 @@ import Planner from './pages/Planner';
 import Tour from './pages/Tour';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import MyTours from './pages/MyTours';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -48,6 +49,14 @@ function App() {
                                 element={
                                     <MainLayout>
                                         <Login />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/mytours"
+                                element={
+                                    <MainLayout>
+                                        <MyTours />
                                     </MainLayout>
                                 }
                             />
