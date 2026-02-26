@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
 import { poiService } from '../components/planner/MapServices/POIService.jsx';
@@ -83,6 +84,7 @@ const Planner = () => {
     const [errorMessage, setErrorMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [selectedPoi, setSelectedPoi] = useState(null);
+    const [routeScreenshot, setRouteScreenshot] = useState(null);
 
     // Map to normalize POI categories to expected POICard values
     const categoryMap = {
@@ -155,6 +157,16 @@ const Planner = () => {
 
         loadAllPOIs();
     }, []);
+
+    useEffect(() => {
+        if (calculatedRoute.length > 0 && !loading) {
+            // Attendere un breve momento per il rendering della mappa
+            const timer = setTimeout(() => {
+                captureRouteScreenshot();
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [calculatedRoute, loading]);
 
     const getDisplayPois = () => {
         if (pois.length > 0) {
@@ -230,6 +242,49 @@ const Planner = () => {
         console.log('Manual route requested:', formData);
     };
 
+    const captureRouteScreenshot = async () => {
+        try {
+            // Seleziona l'elemento della mappa (adatta il selettore alla tua implementazione)
+            const mapElement = document.querySelector('.leaflet-container');
+            if (!mapElement) {
+                console.warn('Elemento mappa non trovato');
+                return;
+            }
+
+            // Trova tutti i marker POI (supponendo che abbiano una classe specifica come 'leaflet-marker-icon' o una classe personalizzata)
+            const poiMarkers = document.querySelectorAll('.leaflet-marker-icon'); // o una classe più specifica se possibile
+
+            // Nascondi i marker
+            poiMarkers.forEach(marker => {
+                marker.style.visibility = 'hidden';
+            });
+
+            // Se usi popup o altri elementi, potresti dover nascondere anche quelli
+            // Ad esempio: .leaflet-popup
+
+            // Breve ritardo per assicurarsi che il DOM si aggiorni
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            const canvas = await html2canvas(mapElement, {
+                scale: 1.5,
+                backgroundColor: '#1a1a1a',
+                allowTaint: false,
+                useCORS: true,
+                logging: false,
+            });
+
+            poiMarkers.forEach(marker => {
+                marker.style.visibility = 'visible';
+            });
+
+            const screenshotBase64 = canvas.toDataURL('image/jpeg', 0.9);
+            setRouteScreenshot(screenshotBase64);
+            console.log('Screenshot salvato nella variabile routeScreenshot');
+        } catch (error) {
+            console.error('Errore nella cattura dello screenshot:', error);
+        }
+    };
+
     const handleCalculateScenicRoute = async formData => {
         if (!formData.startPoint || !formData.endPoint) {
             showError('Inserisci punto di partenza e arrivo');
@@ -239,6 +294,7 @@ const Planner = () => {
         if (loading) return;
         setLoading(true);
         setErrorMessage(null);
+        setRouteScreenshot(null);
 
         try {
             setIsScenicRoute(true);
@@ -358,10 +414,21 @@ const Planner = () => {
         setErrorMessage(null);
 
         try {
-            const token = localStorage.getItem('access_token'); // Legge il token JWT
+            const token = sessionStorage.getItem('access_token'); // Legge il token JWT
 
             if (!token) {
                 throw new Error('Utente non autenticato. Effettua il login.');
+            }
+
+            // Se c'è uno screenshot disponibile, scaricalo
+            if (routeScreenshot) {
+                const link = document.createElement('a');
+                link.download = `percorso-${new Date().toISOString().slice(0, 10)}.jpg`;
+                link.href = routeScreenshot;
+                link.click();
+                console.log('Screenshot scaricato');
+            } else {
+                console.warn('Nessuno screenshot disponibile per il download');
             }
 
             const payload = {
