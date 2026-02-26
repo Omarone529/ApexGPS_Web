@@ -358,8 +358,11 @@ const Planner = () => {
         setErrorMessage(null);
 
         try {
-            const token = localStorage.getItem('access_token'); // Legge il token JWT
+            let token = localStorage.getItem('access_token'); // Legge il token JWT
 
+            if (!token) {
+                token = sessionStorage.getItem('access_token');
+            }
             if (!token) {
                 throw new Error('Utente non autenticato. Effettua il login.');
             }
