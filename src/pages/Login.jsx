@@ -15,7 +15,7 @@ function Login() {
     const location = useLocation();
     const { login, loginWithGoogle } = useAuth();
 
-    const from = location.state?.from?.pathname || '/planner';
+    const from = location.state?.from || '/planner';
 
     async function handleSubmit(e) {
         e.preventDefault();
