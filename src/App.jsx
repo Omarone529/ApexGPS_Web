@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyTours from './pages/MyTours';
 import ProtectedRoute from './ProtectedRoute.jsx';
+import UserManagement from './pages/UserManagement.jsx';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -50,6 +51,14 @@ function App() {
                                 element={
                                     <MainLayout>
                                         <Login />
+                                    </MainLayout>
+                                }
+                            />
+                            <Route
+                                path="/admin/users"
+                                element={
+                                    <MainLayout>
+                                        <UserManagement />
                                     </MainLayout>
                                 }
                             />
