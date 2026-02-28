@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/useAuth.jsx';
 
 function Navbar() {
-    const { user, isAuthenticated, logout } = useAuth(); // get from context
+    const { user, isAuthenticated, logout } = useAuth();
     const location = useLocation();
 
     const [isVisible, setIsVisible] = useState(true);
@@ -30,7 +30,6 @@ function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isPlannerPage]);
 
-    // Hero visibility logic (unchanged)
     useEffect(() => {
         if (!isHomePage || isPlannerPage) return;
         const hero = document.getElementById('hero');
@@ -43,7 +42,6 @@ function Navbar() {
         return () => observer.disconnect();
     }, [isHomePage, isPlannerPage]);
 
-    // Derived values for display
     const initials = user ? (user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase() : 'U';
     const displayName = user?.first_name || user?.username || 'utente';
     const isAdmin = user?.is_administrator === true;
