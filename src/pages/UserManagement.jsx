@@ -157,7 +157,7 @@ function UserList() {
 
     return (
         <div className="bg-[#F5F3EC] min-h-screen py-16 sm:py-20 md:py-24">
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8 lg:px-16">
+            <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-16">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1A18] mb-8">
                     Gestione Utenti
                 </h1>
@@ -166,7 +166,7 @@ function UserList() {
                     <p className="text-gray-600">Nessun utente trovato.</p>
                 ) : (
                     <div className="overflow-x-auto rounded-lg shadow border border-gray-200">
-                        <table className="min-w-full divide-y divide-gray-200 bg-white">
+                        <table className="w-full divide-y divide-gray-200 bg-white">
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
