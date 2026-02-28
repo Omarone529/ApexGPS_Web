@@ -99,6 +99,35 @@ function UserList() {
         </span>
     );
 
+    const renderSuspension = hiddenUntil => {
+        if (!hiddenUntil) return <span className="text-gray-500">—</span>;
+
+        const suspensionDate = new Date(hiddenUntil);
+        const now = new Date();
+
+        if (suspensionDate <= now) {
+            return <span className="text-gray-500">Non sospeso</span>;
+        }
+
+        const diffMs = suspensionDate - now;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+        if (diffDays >= 1) {
+            return (
+                <span className="text-orange-600 font-medium">
+                    {diffDays} {diffDays === 1 ? 'giorno' : 'giorni'} rimasti
+                </span>
+            );
+        } else {
+            return (
+                <span className="text-orange-600 font-medium">
+                    {diffHours} {diffHours === 1 ? 'ora' : 'ore'} rimaste
+                </span>
+            );
+        }
+    };
+
     if (loading) {
         return (
             <div className="bg-[#F5F3EC] min-h-screen flex items-center justify-center">
@@ -166,6 +195,9 @@ function UserList() {
                                         Pubblica
                                     </th>
                                     <th className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Sospensione
+                                    </th>
+                                    <th className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Azioni
                                     </th>
                                 </tr>
@@ -206,6 +238,9 @@ function UserList() {
                                         </td>
                                         <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
                                             {renderBoolean(user.can_publish_routes)}
+                                        </td>
+                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                            {renderSuspension(user.hiddenUntil)}
                                         </td>
                                         <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
                                             <button
