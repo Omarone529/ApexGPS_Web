@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/useAuth.jsx';
 
 function Navbar() {
-    const { user, isAuthenticated, logout } = useAuth(); // get from context
+    const { user, isAuthenticated, logout } = useAuth();
     const location = useLocation();
 
     const [isVisible, setIsVisible] = useState(true);
@@ -14,7 +14,6 @@ function Navbar() {
 
     const [isHeroVisible, setIsHeroVisible] = useState(true);
 
-    // Scroll logic (unchanged)
     useEffect(() => {
         if (isPlannerPage) return;
         const handleScroll = () => {
@@ -30,7 +29,6 @@ function Navbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isPlannerPage]);
 
-    // Hero visibility logic (unchanged)
     useEffect(() => {
         if (!isHomePage || isPlannerPage) return;
         const hero = document.getElementById('hero');

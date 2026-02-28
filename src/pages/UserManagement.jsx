@@ -144,7 +144,7 @@ function UserList() {
             <div className="bg-[#F5F3EC] min-h-screen flex items-center justify-center">
                 <div className="text-center text-red-600 max-w-md">
                     <p className="text-lg font-semibold">Errore</p>
-                    <p className="mt-2 break-words whitespace-pre-wrap">{error}</p>
+                    <p className="mt-2 wrap-break-word whitespace-pre-wrap">{error}</p>
                     <button
                         onClick={() => navigate('/')}
                         className="mt-4 rounded-full bg-orange-500 px-6 py-2 text-white hover:bg-orange-600"
@@ -203,86 +203,96 @@ function UserList() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {users.map(user => (
-                                    <tr key={user.id} className="hover:bg-gray-50">
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                                            {user.id}
-                                        </td>
-                                        <td className="sticky left-0 bg-white z-10 hover:bg-gray-50 px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                                            {user.username}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                                            {user.email || '-'}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                                    user.role === 'ADMIN'
-                                                        ? 'bg-purple-100 text-purple-800'
-                                                        : user.role === 'SUBSCRIBED'
-                                                          ? 'bg-blue-100 text-blue-800'
-                                                          : 'bg-gray-100 text-gray-800'
-                                                }`}
-                                            >
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            {renderBoolean(user.is_administrator)}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            {renderBoolean(user.is_superuser)}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            {renderBoolean(user.can_create_routes)}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            {renderBoolean(user.can_publish_routes)}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            {renderSuspension(user.hiddenUntil)}
-                                        </td>
-                                        <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
-                                            <button
-                                                onClick={() => handleBan(user)}
-                                                disabled={banningUserId === user.id}
-                                                className={`inline-flex items-center rounded-full px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-medium ${
-                                                    banningUserId === user.id
-                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-red-500 text-white hover:bg-red-600'
-                                                }`}
-                                            >
-                                                {banningUserId === user.id ? (
-                                                    <>
-                                                        <svg
-                                                            className="animate-spin -ml-1 mr-1 h-3 w-3 sm:h-4 sm:w-4 text-white"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            ></circle>
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                            ></path>
-                                                        </svg>
-                                                        Sospensione...
-                                                    </>
-                                                ) : (
-                                                    'Sospendi'
-                                                )}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {users.map(user => {
+                                    const isSuspended =
+                                        user.hiddenUntil && new Date(user.hiddenUntil) > new Date();
+                                    return (
+                                        <tr key={user.id} className="hover:bg-gray-50">
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                {user.id}
+                                            </td>
+                                            <td className="sticky left-0 bg-white z-10 hover:bg-gray-50 px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                {user.username}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                                                {user.email || '-'}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                        user.role === 'ADMIN'
+                                                            ? 'bg-purple-100 text-purple-800'
+                                                            : user.role === 'SUBSCRIBED'
+                                                              ? 'bg-blue-100 text-blue-800'
+                                                              : 'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                {renderBoolean(user.is_administrator)}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                {renderBoolean(user.is_superuser)}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                {renderBoolean(user.can_create_routes)}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                {renderBoolean(user.can_publish_routes)}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                {renderSuspension(user.hiddenUntil)}
+                                            </td>
+                                            <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
+                                                <button
+                                                    onClick={() => handleBan(user)}
+                                                    disabled={
+                                                        banningUserId === user.id || isSuspended
+                                                    }
+                                                    className={`inline-flex items-center rounded-full px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-medium ${
+                                                        banningUserId === user.id
+                                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                            : isSuspended
+                                                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                              : 'bg-red-500 text-white hover:bg-red-600'
+                                                    }`}
+                                                >
+                                                    {banningUserId === user.id ? (
+                                                        <>
+                                                            <svg
+                                                                className="animate-spin -ml-1 mr-1 h-3 w-3 sm:h-4 sm:w-4 text-white"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <circle
+                                                                    className="opacity-25"
+                                                                    cx="12"
+                                                                    cy="12"
+                                                                    r="10"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="4"
+                                                                ></circle>
+                                                                <path
+                                                                    className="opacity-75"
+                                                                    fill="currentColor"
+                                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                                ></path>
+                                                            </svg>
+                                                            Sospensione...
+                                                        </>
+                                                    ) : isSuspended ? (
+                                                        'Sospeso'
+                                                    ) : (
+                                                        'Sospendi'
+                                                    )}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
