@@ -30,6 +30,8 @@ function RoutesGrid() {
     const [error, setError] = useState(null);
     const [currentUser, setCurrentUser] = useState(null);
     const [banningRouteId, setBanningRouteId] = useState(null);
+    const [showBanModal, setShowBanModal] = useState(false);
+    const [routeToBan, setRouteToBan] = useState(null);
 
     const getAuthHeaders = () => {
         const token = sessionStorage.getItem('access_token');
@@ -89,14 +91,9 @@ function RoutesGrid() {
         fetchCurrentUser();
     }, []);
 
-    const handleBanRoute = async routeId => {
-        if (
-            !window.confirm(
-                'Sei sicuro di voler rendere privato questo percorso? Non sarà più visibile pubblicamente.'
-            )
-        ) {
-            return;
-        }
+    const handleConfirmBan = async () => {
+        if (!routeToBan) return;
+        setShowBanModal(false);
 
         const token = sessionStorage.getItem('access_token');
         if (!token) {
@@ -104,10 +101,10 @@ function RoutesGrid() {
             return;
         }
 
-        setBanningRouteId(routeId);
+        setBanningRouteId(routeToBan.id);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/routes/${routeId}/ban`, {
+            const res = await fetch(`${API_BASE_URL}/routes/${routeToBan.id}/ban`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -120,12 +117,18 @@ function RoutesGrid() {
                 throw new Error(errorData.detail || 'Errore durante il ban del percorso');
             }
 
-            setRoutes(prev => prev.filter(route => route.id !== routeId));
+            setRoutes(prev => prev.filter(route => route.id !== routeToBan.id));
         } catch (err) {
             alert(`Errore: ${err.message}`);
         } finally {
             setBanningRouteId(null);
+            setRouteToBan(null);
         }
+    };
+
+    const handleCancelBan = () => {
+        setShowBanModal(false);
+        setRouteToBan(null);
     };
 
     const isAdmin = currentUser?.is_administrator === true;
@@ -165,7 +168,7 @@ function RoutesGrid() {
                 {routes.map(route => (
                     <div
                         key={route.id}
-                        className="group relative aspect-[3/4] rounded-3xl overflow-hidden
+                        className="group relative aspect-3/4 rounded-3xl overflow-hidden
                               bg-white/5 backdrop-blur-sm border border-white/10
                               transition-all duration-500 ease-out
                               hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
@@ -180,7 +183,7 @@ function RoutesGrid() {
                         />
 
                         <div
-                            className="absolute inset-0 bg-gradient-to-t
+                            className="absolute inset-0 bg-linear-to-t
                           from-black/90 via-black/50 to-transparent
                           opacity-90 transition-opacity duration-500
                           group-hover:opacity-95"
@@ -189,7 +192,7 @@ function RoutesGrid() {
                         <div
                             className="absolute bottom-0 left-0 p-6
                          transition-all duration-500 ease-out
-                         group-hover:translate-y-[-8px]"
+                         group-hover:-translate-y-2"
                         >
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="flex gap-0.5">
@@ -257,7 +260,10 @@ function RoutesGrid() {
                         {isAdmin && (
                             <div className="absolute bottom-0 right-0 p-6">
                                 <button
-                                    onClick={() => handleBanRoute(route.id)}
+                                    onClick={() => {
+                                        setRouteToBan(route);
+                                        setShowBanModal(true);
+                                    }}
                                     disabled={banningRouteId === route.id}
                                     className={`px-4 py-2.5 rounded-lg text-sm font-semibold
                                         transition-all duration-300 ease-out
@@ -300,6 +306,36 @@ function RoutesGrid() {
                     </div>
                 ))}
             </div>
+
+            {/* Custom confirmation modal */}
+            {showBanModal && routeToBan && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[#1a1a1a] rounded-xl shadow-2xl max-w-md w-full p-6 border border-white/10">
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                            Conferma rimozione
+                        </h3>
+                        <p className="text-gray-300 mb-6">
+                            Sei sicuro di voler rendere privato il percorso{' '}
+                            <span className="font-medium text-white">{routeToBan.title}</span>? Non
+                            sarà più visibile pubblicamente.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleCancelBan}
+                                className="px-5 py-2 rounded-lg bg-white/10 text-white border border-white/20 hover:bg-white/20 transition"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleConfirmBan}
+                                className="px-5 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition shadow-lg"
+                            >
+                                Conferma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
