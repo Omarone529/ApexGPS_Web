@@ -8,6 +8,8 @@ function UserList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [banningUserId, setBanningUserId] = useState(null);
+    const [showBanModal, setShowBanModal] = useState(false);
+    const [userToBan, setUserToBan] = useState(null);
     const navigate = useNavigate();
 
     const fetchUsers = async () => {
@@ -51,9 +53,9 @@ function UserList() {
         fetchUsers();
     }, []);
 
-    const handleBan = async user => {
-        const confirmMessage = `Sei sicuro di voler sospendere ${user.username}? Un utente sospeso non potrà rendere pubblici percorsi per alcuni giorni e tutti i suoi percorsi verranno resi privati.`;
-        if (!window.confirm(confirmMessage)) return;
+    const handleConfirmBan = async () => {
+        if (!userToBan) return;
+        setShowBanModal(false);
 
         const token = sessionStorage.getItem('access_token');
         if (!token) {
@@ -61,11 +63,11 @@ function UserList() {
             return;
         }
 
-        setBanningUserId(user.id);
+        setBanningUserId(userToBan.id);
         setError(null);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/users/${user.id}/ban`, {
+            const res = await fetch(`${API_BASE_URL}/users/${userToBan.id}/ban`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -78,14 +80,20 @@ function UserList() {
                 throw new Error(errorData.detail || 'Errore durante la sospensione');
             }
 
-            alert(`Utente ${user.username} sospeso con successo.`);
+            alert(`Utente ${userToBan.username} sospeso con successo.`);
             await fetchUsers();
         } catch (err) {
             setError(err.message);
             alert(`Errore: ${err.message}`);
         } finally {
             setBanningUserId(null);
+            setUserToBan(null);
         }
+    };
+
+    const handleCancelBan = () => {
+        setShowBanModal(false);
+        setUserToBan(null);
     };
 
     const renderBoolean = value => (
@@ -246,7 +254,10 @@ function UserList() {
                                             </td>
                                             <td className="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 whitespace-nowrap text-xs sm:text-sm">
                                                 <button
-                                                    onClick={() => handleBan(user)}
+                                                    onClick={() => {
+                                                        setUserToBan(user);
+                                                        setShowBanModal(true);
+                                                    }}
                                                     disabled={
                                                         banningUserId === user.id || isSuspended
                                                     }
@@ -297,6 +308,36 @@ function UserList() {
                     </div>
                 )}
             </div>
+
+            {showBanModal && userToBan && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Conferma sospensione
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Sei sicuro di voler sospendere{' '}
+                            <span className="font-medium text-gray-900">{userToBan.username}</span>?
+                            Un utente sospeso non potrà rendere pubblici percorsi per alcuni giorni
+                            e tutti i suoi percorsi verranno resi privati.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleCancelBan}
+                                className="px-4 py-2 rounded-full bg-gray-200 text-gray-800 text-sm font-medium hover:bg-gray-300 transition"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleConfirmBan}
+                                className="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition"
+                            >
+                                Conferma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
