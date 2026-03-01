@@ -14,7 +14,6 @@ function Navbar() {
 
     const [isHeroVisible, setIsHeroVisible] = useState(true);
 
-    // Scroll logic (unchanged)
     useEffect(() => {
         if (isPlannerPage) return;
         const handleScroll = () => {
