@@ -97,7 +97,7 @@ containerizzare il progetto ed eseguirlo in una sorta di ambiente protetto.
   
 - **Eseguire l'immagine**
     ```shell
-        docker run -d -p 5173:5173 --name apex_web apex
+        docker run -d -p 80:80 --name apex_web apex
     ```
   
 N.B. Nel caso in cui vengano fatte delle modifiche al processo sarà necessario creare
