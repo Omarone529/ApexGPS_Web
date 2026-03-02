@@ -67,7 +67,7 @@ function UserList() {
         setError(null);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/users/${userToBan.id}/ban`, {
+            const res = await fetch(`${API_BASE_URL}/users/users/${userToBan.id}/ban/`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
