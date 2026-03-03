@@ -17,8 +17,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Componente per il centraggio della mappa
-const MapController = ({ center, route, centerTrigger }) => {
+const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
     const hasCenteredOnRouteRef = useRef(false);
@@ -42,8 +41,18 @@ const MapController = ({ center, route, centerTrigger }) => {
                 maxZoom: 14,
             });
             hasCenteredOnRouteRef.current = true;
+
+            const onMoveEnd = () => {
+                map.off('moveend', onMoveEnd);
+                setTimeout(() => {
+                    if (onRouteRendered && typeof onRouteRendered === 'function') {
+                        onRouteRendered();
+                    }
+                }, 200);
+            };
+            map.on('moveend', onMoveEnd);
         }
-    }, [route, map]);
+    }, [route, map, onRouteRendered]);
 
     return null;
 };
@@ -59,10 +68,12 @@ const InteractiveMap = ({
     selectedPoi,
     onPoiClick,
     onAddPoiToRoute,
+    onRouteRendered,
+    mapLayer, // Nuova prop
+    onMapLayerChange, // Nuova prop
 }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
-    const [mapLayer, setMapLayer] = useState('standard');
     const hasInitializedRef = useRef(false);
 
     const handleUserLocation = location => {
@@ -77,6 +88,10 @@ const InteractiveMap = ({
         if (userLocation) {
             setCenterTrigger(prev => prev + 1);
         }
+    };
+
+    const toggleMapLayer = () => {
+        onMapLayerChange(prev => (prev === 'standard' ? 'satellite' : 'standard'));
     };
 
     const routePointsWithLabels = useMemo(() => {
@@ -142,9 +157,7 @@ const InteractiveMap = ({
                 </button>
 
                 <button
-                    onClick={() =>
-                        setMapLayer(prev => (prev === 'standard' ? 'satellite' : 'standard'))
-                    }
+                    onClick={toggleMapLayer}
                     className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
                      hover:text-orange-600 transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center"
@@ -229,6 +242,7 @@ const InteractiveMap = ({
                     center={userLocation}
                     route={calculatedRoute}
                     centerTrigger={centerTrigger}
+                    onRouteRendered={onRouteRendered}
                 />
 
                 <TileLayer
