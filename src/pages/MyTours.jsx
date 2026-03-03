@@ -245,14 +245,18 @@ function RoutesGrid() {
         );
     }
 
+    const sectionPadding = 'clamp(1.5rem, 5vw, 4rem)';
+
     return (
         <>
             {/* Header */}
             <header
                 className="bg-[#F5F3EC] border-b border-[#E2DDD3]"
                 style={{
-                    padding:
-                        'clamp(4rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem)',
+                    paddingTop: 'clamp(4rem, 6vw, 5rem)',
+                    paddingBottom: 'clamp(1.5rem, 3vw, 2.5rem)',
+                    paddingLeft: sectionPadding,
+                    paddingRight: sectionPadding,
                 }}
             >
                 <div className="max-w-[1280px] mx-auto animate-fadeUp">
@@ -272,78 +276,83 @@ function RoutesGrid() {
             </header>
 
             {/* Main */}
-            <main className="max-w-[1280px] mx-auto px-16 py-10 pb-20">
-                {/* Suspension banner */}
-                {isUserSuspended && (
-                    <div
-                        className="flex items-center gap-3 mb-8 px-4 py-3.5 rounded-2xl
+            <main
+                className="py-10 pb-20"
+                style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
+            >
+                <div className="max-w-[1280px] mx-auto">
+                    {/* Suspension banner */}
+                    {isUserSuspended && (
+                        <div
+                            className="flex items-center gap-3 mb-8 px-4 py-3.5 rounded-2xl
                                     bg-[#FEF2EE] border border-orange-200/60 animate-fadeUp"
-                    >
-                        <span className="text-[15px] flex-shrink-0">⏸</span>
-                        <p className="text-[13.5px] font-medium text-[#E8692A] font-body">
-                            Il tuo account è sospeso per {userSuspensionTime}. Durante questo
-                            periodo non puoi rendere pubblici nuovi percorsi.
-                        </p>
-                    </div>
-                )}
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    {routes.length === 0 && (
-                        <div className="col-span-full text-center py-20 animate-fadeUp">
-                            <div
-                                className="w-14 h-14 rounded-[16px] bg-[#EDE9DF] flex items-center justify-center
-                                            mx-auto mb-4 text-[#9B958F]"
-                            >
-                                <svg
-                                    width="26"
-                                    height="26"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                                    />
-                                </svg>
-                            </div>
-                            <h2 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
-                                Nessun percorso ancora
-                            </h2>
-                            <p className="text-[13px] text-[#9B958F] font-body">
-                                I tuoi percorsi creati appariranno qui.
+                        >
+                            <span className="text-[15px] flex-shrink-0">⏸</span>
+                            <p className="text-[13.5px] font-medium text-[#E8692A] font-body">
+                                Il tuo account è sospeso per {userSuspensionTime}. Durante questo
+                                periodo non puoi rendere pubblici nuovi percorsi.
                             </p>
                         </div>
                     )}
 
-                    {routes.map((route, idx) => {
-                        const isRouteSuspended =
-                            route.hiddenUntil && new Date(route.hiddenUntil) > new Date();
-                        const routeSuspensionTime = isRouteSuspended
-                            ? renderTimeRemaining(route.hiddenUntil)
-                            : null;
+                    {/* Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                        {routes.length === 0 && (
+                            <div className="col-span-full text-center py-20 animate-fadeUp">
+                                <div
+                                    className="w-14 h-14 rounded-[16px] bg-[#EDE9DF] flex items-center justify-center
+                                            mx-auto mb-4 text-[#9B958F]"
+                                >
+                                    <svg
+                                        width="26"
+                                        height="26"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <h2 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                                    Nessun percorso ancora
+                                </h2>
+                                <p className="text-[13px] text-[#9B958F] font-body">
+                                    I tuoi percorsi creati appariranno qui.
+                                </p>
+                            </div>
+                        )}
 
-                        return (
-                            <RouteCard
-                                key={route.id}
-                                route={route}
-                                idx={idx}
-                                isRouteSuspended={isRouteSuspended}
-                                routeSuspensionTime={routeSuspensionTime}
-                                editingId={editingId}
-                                editValue={editValue}
-                                setEditValue={setEditValue}
-                                onDelete={handleDelete}
-                                onTogglePublic={handleTogglePublic}
-                                onEditStart={handleEditStart}
-                                onEditSave={handleEditSave}
-                                onKeyDown={handleKeyDown}
-                            />
-                        );
-                    })}
+                        {routes.map((route, idx) => {
+                            const isRouteSuspended =
+                                route.hiddenUntil && new Date(route.hiddenUntil) > new Date();
+                            const routeSuspensionTime = isRouteSuspended
+                                ? renderTimeRemaining(route.hiddenUntil)
+                                : null;
+
+                            return (
+                                <RouteCard
+                                    key={route.id}
+                                    route={route}
+                                    idx={idx}
+                                    isRouteSuspended={isRouteSuspended}
+                                    routeSuspensionTime={routeSuspensionTime}
+                                    editingId={editingId}
+                                    editValue={editValue}
+                                    setEditValue={setEditValue}
+                                    onDelete={handleDelete}
+                                    onTogglePublic={handleTogglePublic}
+                                    onEditStart={handleEditStart}
+                                    onEditSave={handleEditSave}
+                                    onKeyDown={handleKeyDown}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </main>
         </>
