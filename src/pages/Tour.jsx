@@ -150,7 +150,7 @@ function RoutesGrid() {
         }
         setBanningRouteId(routeToBan.id);
         try {
-            const res = await fetch(`${API_BASE_URL}/routes/${routeToBan.id}/ban`, {
+            const res = await fetch(`${API_BASE_URL}/routes/${routeToBan.id}/ban/`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             });
