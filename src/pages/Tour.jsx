@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { gpxService } from '../services/gpxService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
@@ -123,6 +124,8 @@ function RoutesGrid() {
             const formattedRoutes = data.map(route => ({
                 id: route.id,
                 title: route.name,
+                name: route.name,
+                polyline: route.polyline,
                 area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
                 image: `https://picsum.photos/seed/${route.id}/300/400`,
                 owner: route.owner_username || 'Anonymous',
@@ -204,7 +207,7 @@ function RoutesGrid() {
                     paddingRight: sectionPadding,
                 }}
             >
-                <div className="max-w-[1280px] mx-auto animate-fadeUp">
+                <div className="max-w-7xl mx-auto animate-fadeUp">
                     <div className="flex justify-end mb-6">
                         <StatPill count={routes.length} label="percorsi" accent={false} />
                     </div>
@@ -222,10 +225,10 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-[1280px] mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {routes.length === 0 && (
                         <div className="text-center py-20 animate-fadeUp">
-                            <div className="w-14 h-14 rounded-[16px] bg-[#EDE9DF] flex items-center justify-center mx-auto mb-4 text-[#9B958F]">
+                            <div className="w-14 h-14 rounded-2xl bg-[#EDE9DF] flex items-center justify-center mx-auto mb-4 text-[#9B958F]">
                                 <svg
                                     width="26"
                                     height="26"
@@ -326,6 +329,21 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
         return () => io.disconnect();
     }, []);
 
+    const handleDownload = () => {
+        try {
+            gpxService.downloadGPX({
+                id: route.id,
+                name: route.title,
+                polyline: route.polyline,
+            });
+        } catch (error) {
+            console.error('GPX download failed:', error);
+            alert(
+                'Impossibile generare il file GPX. Il percorso potrebbe non contenere dati validi.'
+            );
+        }
+    };
+
     return (
         <div
             ref={ref}
@@ -338,13 +356,13 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
             style={{ animationDelay: `${idx * 0.05}s` }}
         >
             {/* Image */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE9DF]">
+            <div className="relative aspect-4/3 overflow-hidden bg-[#EDE9DF]">
                 <img
                     src={route.image}
                     alt={route.title}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/25 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/25 pointer-events-none" />
 
                 {/* Admin hide button */}
                 {isAdmin && (
@@ -417,7 +435,7 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        className="flex-shrink-0 opacity-50"
+                        className="shrink-0 opacity-50"
                     >
                         <path
                             strokeLinecap="round"
@@ -435,7 +453,32 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                     {route.area}
                 </p>
 
-                <p className="text-[11.5px] text-[#B0AAA4] font-body mb-4">by {route.owner}</p>
+                <div className="flex items-center justify-between mb-4">
+                    <p className="text-[11.5px] text-[#B0AAA4] font-body">by {route.owner}</p>
+                    <button
+                        onClick={handleDownload}
+                        title="Scarica GPX"
+                        className="w-7 h-7 rounded-full flex items-center justify-center
+                                   bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
+                                   hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
+                                   transition-all duration-200 active:scale-95"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-3-3m3 3l3-3"
+                            />
+                        </svg>
+                    </button>
+                </div>
 
                 <button
                     className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
