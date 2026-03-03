@@ -11,6 +11,7 @@ function Navbar() {
 
     const isPlannerPage = location.pathname === '/planner';
     const isHomePage = location.pathname === '/';
+    const isOtherPage = !isPlannerPage && !isHomePage;
 
     const [isHeroVisible, setIsHeroVisible] = useState(true);
 
@@ -57,6 +58,10 @@ function Navbar() {
               : 'bg-[#F5F3EC] text-[#1C1A18]'
           : 'bg-white/85 backdrop-blur-md text-[#1C1A18]';
 
+    const useDarkText = isPlannerPage || isOtherPage || (isHomePage && !isHeroVisible);
+    const linkColor = useDarkText ? 'text-[#1C1A18]' : 'text-white';
+    const borderColor = useDarkText ? 'border-gray-400/60' : 'border-white/60';
+
     return (
         <nav className={`${navBase} ${navStyle}`}>
             <div>
@@ -71,31 +76,19 @@ function Navbar() {
 
             <div className="flex items-center gap-8">
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/"
                 >
                     Home
                 </Link>
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/planner"
                 >
                     Planner
                 </Link>
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/tour"
                 >
                     Tour
@@ -103,11 +96,7 @@ function Navbar() {
 
                 {isAuthenticated && (
                     <Link
-                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                            isPlannerPage || (isHomePage && !isHeroVisible)
-                                ? 'text-[#1C1A18]'
-                                : 'text-white'
-                        }`}
+                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                         to="/mytours"
                     >
                         I miei percorsi
@@ -116,11 +105,7 @@ function Navbar() {
 
                 {isAdmin && (
                     <Link
-                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                            isPlannerPage || (isHomePage && !isHeroVisible)
-                                ? 'text-[#1C1A18]'
-                                : 'text-white'
-                        }`}
+                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                         to="/admin/users"
                     >
                         Gestione Utenti
@@ -142,24 +127,14 @@ function Navbar() {
                                     {initials}
                                 </div>
                             )}
-                            <span
-                                className={`text-sm tracking-[1px] opacity-90 ${
-                                    isPlannerPage || (isHomePage && !isHeroVisible)
-                                        ? 'text-[#1C1A18]'
-                                        : 'text-white'
-                                }`}
-                            >
+                            <span className={`text-sm tracking-[1px] opacity-90 ${linkColor}`}>
                                 Ciao, <span className="font-semibold">{displayName}</span>
                             </span>
                         </div>
 
                         <button
                             onClick={logout}
-                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${
-                                isPlannerPage || (isHomePage && !isHeroVisible)
-                                    ? 'text-[#1C1A18] border-gray-400/60'
-                                    : 'text-white border-white/60'
-                            }`}
+                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${linkColor} ${borderColor}`}
                         >
                             Logout
                         </button>
@@ -167,11 +142,7 @@ function Navbar() {
                 ) : (
                     <Link
                         to="/login"
-                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${
-                            isPlannerPage || (isHomePage && !isHeroVisible)
-                                ? 'text-[#1C1A18] border-gray-400/60'
-                                : 'text-white border-white/60'
-                        }`}
+                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${linkColor} ${borderColor}`}
                     >
                         Login
                     </Link>
