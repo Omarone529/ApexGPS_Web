@@ -125,7 +125,7 @@ function RoutesGrid() {
                 const formattedRoutes = data.map(route => ({
                     id: route.id,
                     title: route.name,
-                    area: `${route.start_location || '?'} → ${route.end_location || '?'}`,
+                    area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
                     image: `https://picsum.photos/seed/${route.id}/300/400`,
                     isPublic: route.visibility === 'public',
                     hiddenUntil: route.hidden_until,
