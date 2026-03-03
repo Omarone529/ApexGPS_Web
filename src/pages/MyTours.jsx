@@ -1,24 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
+
+const GLOBAL_STYLES = `
+  .font-display { font-family: 'Playfair Display', serif; }
+  .font-body    { font-family: 'DM Sans', sans-serif; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pillActivate {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.07); }
+    75%  { transform: scale(0.97); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-fadeUp { animation: fadeUp 0.45s ease both; }
+  .card-enter     { animation: fadeUp 0.45s cubic-bezier(0.25,0.46,0.45,0.94) both; }
+  .pill-activate  { animation: pillActivate 0.4s cubic-bezier(0.34,1.4,0.64,1) both; }
+
+  .pill-fill {
+    transition: transform 0.6s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s ease;
+    transform-origin: left center;
+  }
+`;
+
+function StatPill({ count, label, accent }) {
+    const prevRef = useRef(count);
+    const [bounce, setBounce] = useState(false);
+    const isActive = accent && count > 0;
+
+    useEffect(() => {
+        if (count !== prevRef.current) {
+            prevRef.current = count;
+            requestAnimationFrame(() => requestAnimationFrame(() => setBounce(true)));
+        }
+    }, [count]);
+
+    return (
+        <span
+            className={[
+                'relative overflow-hidden inline-flex items-center rounded-full px-4 py-2',
+                'text-[13px] font-medium font-body border select-none cursor-default',
+                'shadow-sm transition-all duration-500',
+                isActive
+                    ? 'bg-[#FDF0E8] border-orange-300/50 text-[#E8692A] shadow-[0_0_0_3px_rgba(232,105,42,0.07)]'
+                    : 'bg-white border-[#E2DDD3] text-[#6B6460]',
+                bounce && 'pill-activate',
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            onAnimationEnd={() => setBounce(false)}
+        >
+            {accent && (
+                <span
+                    aria-hidden
+                    className="pill-fill absolute inset-0 rounded-full bg-[#FDF0E8] pointer-events-none"
+                    style={{
+                        transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                        opacity: isActive ? 1 : 0,
+                    }}
+                />
+            )}
+            <span className="relative z-10">
+                <span className="font-semibold">{count}</span> {label}
+            </span>
+        </span>
+    );
+}
 
 function MyTours() {
     return (
         <>
-            <section className="tour">
-                <h1
-                    className="text-center py-8 m-0 text-5xl text-white bg-linear-to-r
-                             from-[#1c1c1c] to-[#0e0e0e]"
-                >
-                    MY TOURS
-                </h1>
-                <section
-                    id="nearby-routes"
-                    className="py-16 px-8 br-[radial-gradient(circle_at_top,#1c1c1c,#0e0e0e)]
-                             text-white overflow-hidden "
-                >
-                    <RoutesGrid />
-                </section>
+            <style>{GLOBAL_STYLES}</style>
+            <section className="font-body bg-[#F5F3EC] min-h-screen">
+                <RoutesGrid />
             </section>
         </>
     );
@@ -30,17 +88,29 @@ function RoutesGrid() {
     const [error, setError] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editValue, setEditValue] = useState('');
+    const [currentUser, setCurrentUser] = useState(null);
 
     const getAuthHeaders = () => {
-        let token = localStorage.getItem('access_token'); // Legge il token JWT
-
-        if (!token) {
-            token = sessionStorage.getItem('access_token');
-        }
+        let token = localStorage.getItem('access_token');
+        if (!token) token = sessionStorage.getItem('access_token');
         return {
             'Content-Type': 'application/json',
             ...(token && { Authorization: `Bearer ${token}` }),
         };
+    };
+
+    const fetchCurrentUser = async () => {
+        const token =
+            localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+        if (!token) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/users/me/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) setCurrentUser(await res.json());
+        } catch (err) {
+            console.error('Failed to fetch current user', err);
+        }
     };
 
     useEffect(() => {
@@ -50,23 +120,15 @@ function RoutesGrid() {
                 const response = await fetch(`${API_BASE_URL}/routes/my_routes/`, {
                     headers: getAuthHeaders(),
                 });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch routes: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Failed to fetch routes: ${response.statusText}`);
                 const data = await response.json();
-                // data is expected to be an array of route objects
-                // Map API data to the shape expected by the component
                 const formattedRoutes = data.map(route => ({
                     id: route.id,
                     title: route.name,
-                    area: `${route.start_location || '?'} → ${route.end_location || '?'}`,
-                    // Use total_scenic_score, assume out of 10, convert to 5-star scale
-                    rating: route.total_scenic_score
-                        ? Math.min(5, (route.total_scenic_score / 2).toFixed(1))
-                        : 4.5, // fallback if missing
-                    // Use a placeholder image that is consistent per route ID
+                    area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
                     image: `https://picsum.photos/seed/${route.id}/300/400`,
                     isPublic: route.visibility === 'public',
+                    hiddenUntil: route.hidden_until,
                 }));
                 setRoutes(formattedRoutes);
             } catch (err) {
@@ -75,11 +137,22 @@ function RoutesGrid() {
                 setLoading(false);
             }
         };
-
         fetchRoutes();
+        fetchCurrentUser();
     }, []);
 
-    // Delete handler – call API then update local state
+    const renderTimeRemaining = hiddenUntil => {
+        if (!hiddenUntil) return null;
+        const suspensionDate = new Date(hiddenUntil);
+        const now = new Date();
+        if (suspensionDate <= now) return null;
+        const diffMs = suspensionDate - now;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        if (diffDays >= 1) return `${diffDays} ${diffDays === 1 ? 'giorno' : 'giorni'}`;
+        return `${diffHours} ${diffHours === 1 ? 'ora' : 'ore'}`;
+    };
+
     const handleDelete = async id => {
         if (!window.confirm('Are you sure you want to delete this route?')) return;
         try {
@@ -87,10 +160,7 @@ function RoutesGrid() {
                 method: 'DELETE',
                 headers: getAuthHeaders(),
             });
-            if (!response.ok) {
-                throw new Error(`Delete failed: ${response.statusText}`);
-            }
-            // Remove from local state
+            if (!response.ok) throw new Error(`Delete failed: ${response.statusText}`);
             setRoutes(routes.filter(route => route.id !== id));
         } catch (err) {
             alert(`Error deleting route: ${err.message}`);
@@ -100,17 +170,18 @@ function RoutesGrid() {
     const handleTogglePublic = async id => {
         const route = routes.find(r => r.id === id);
         if (!route) return;
+        if (route.hiddenUntil && new Date(route.hiddenUntil) > new Date()) {
+            alert('Questo percorso è sospeso e non può essere reso pubblico.');
+            return;
+        }
         const newVisibility = route.isPublic ? 'private' : 'public';
-
         try {
             const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ visibility: newVisibility }),
             });
-            if (!response.ok) {
-                throw new Error(`Update failed: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
             setRoutes(routes.map(r => (r.id === id ? { ...r, isPublic: !r.isPublic } : r)));
         } catch (err) {
             alert(`Error updating route: ${err.message}`);
@@ -135,10 +206,7 @@ function RoutesGrid() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ name: editValue.trim() }),
             });
-            if (!response.ok) {
-                throw new Error(`Update failed: ${response.statusText}`);
-            }
-            // Update local state
+            if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
             setRoutes(routes.map(r => (r.id === id ? { ...r, title: editValue.trim() } : r)));
             setEditingId(null);
             setEditValue('');
@@ -148,248 +216,388 @@ function RoutesGrid() {
     };
 
     const handleKeyDown = (e, id) => {
-        if (e.key === 'Enter') {
-            handleEditSave(id);
-        } else if (e.key === 'Escape') {
-            handleEditCancel();
-        }
+        if (e.key === 'Enter') handleEditSave(id);
+        else if (e.key === 'Escape') handleEditCancel();
     };
+
+    const isUserSuspended =
+        currentUser?.hidden_until && new Date(currentUser.hidden_until) > new Date();
+    const userSuspensionTime = isUserSuspended
+        ? renderTimeRemaining(currentUser.hidden_until)
+        : null;
+
+    const publicCount = routes.filter(r => r.isPublic).length;
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            <div className="flex items-center justify-center gap-3 min-h-[60vh] text-[#9B958F]">
+                <div className="w-5 h-5 rounded-full border-2 border-[#E2DDD3] border-t-[#E8692A] animate-spin" />
+                <span className="text-[13px] font-body">Caricamento percorsi…</span>
             </div>
         );
     }
 
     if (error) {
-        return <div className="text-center text-red-400 p-8">Error loading routes: {error}</div>;
+        return (
+            <div className="text-center text-red-400 p-8 font-body text-sm">
+                Errore nel caricamento: {error}
+            </div>
+        );
     }
+
+    const sectionPadding = 'clamp(1.5rem, 5vw, 4rem)';
+
+    return (
+        <>
+            {/* Header */}
+            <header
+                className="bg-[#F5F3EC] border-b border-[#E2DDD3]"
+                style={{
+                    paddingTop: 'clamp(4rem, 6vw, 5rem)',
+                    paddingBottom: 'clamp(1.5rem, 3vw, 2.5rem)',
+                    paddingLeft: sectionPadding,
+                    paddingRight: sectionPadding,
+                }}
+            >
+                <div className="max-w-[1280px] mx-auto animate-fadeUp">
+                    <div className="flex justify-end mb-6">
+                        <div className="flex items-center gap-3">
+                            <StatPill count={publicCount} label="pubblici" accent={true} />
+                            <StatPill count={routes.length} label="totali" accent={false} />
+                        </div>
+                    </div>
+                    <h1
+                        className="font-display text-[clamp(2rem,3.5vw,2.75rem)] font-medium
+                                   text-[#1A1814] leading-[1.15] tracking-[-0.02em]"
+                    >
+                        I tuoi percorsi
+                    </h1>
+                </div>
+            </header>
+
+            {/* Main */}
+            <main
+                className="py-10 pb-20"
+                style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
+            >
+                <div className="max-w-[1280px] mx-auto">
+                    {/* Suspension banner */}
+                    {isUserSuspended && (
+                        <div
+                            className="flex items-center gap-3 mb-8 px-4 py-3.5 rounded-2xl
+                                    bg-[#FEF2EE] border border-orange-200/60 animate-fadeUp"
+                        >
+                            <span className="text-[15px] flex-shrink-0">⏸</span>
+                            <p className="text-[13.5px] font-medium text-[#E8692A] font-body">
+                                Il tuo account è sospeso per {userSuspensionTime}. Durante questo
+                                periodo non puoi rendere pubblici nuovi percorsi.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                        {routes.length === 0 && (
+                            <div className="col-span-full text-center py-20 animate-fadeUp">
+                                <div
+                                    className="w-14 h-14 rounded-[16px] bg-[#EDE9DF] flex items-center justify-center
+                                            mx-auto mb-4 text-[#9B958F]"
+                                >
+                                    <svg
+                                        width="26"
+                                        height="26"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <h2 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                                    Nessun percorso ancora
+                                </h2>
+                                <p className="text-[13px] text-[#9B958F] font-body">
+                                    I tuoi percorsi creati appariranno qui.
+                                </p>
+                            </div>
+                        )}
+
+                        {routes.map((route, idx) => {
+                            const isRouteSuspended =
+                                route.hiddenUntil && new Date(route.hiddenUntil) > new Date();
+                            const routeSuspensionTime = isRouteSuspended
+                                ? renderTimeRemaining(route.hiddenUntil)
+                                : null;
+
+                            return (
+                                <RouteCard
+                                    key={route.id}
+                                    route={route}
+                                    idx={idx}
+                                    isRouteSuspended={isRouteSuspended}
+                                    routeSuspensionTime={routeSuspensionTime}
+                                    editingId={editingId}
+                                    editValue={editValue}
+                                    setEditValue={setEditValue}
+                                    onDelete={handleDelete}
+                                    onTogglePublic={handleTogglePublic}
+                                    onEditStart={handleEditStart}
+                                    onEditSave={handleEditSave}
+                                    onKeyDown={handleKeyDown}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
+            </main>
+        </>
+    );
+}
+
+function RouteCard({
+    route,
+    idx,
+    isRouteSuspended,
+    routeSuspensionTime,
+    editingId,
+    editValue,
+    setEditValue,
+    onDelete,
+    onTogglePublic,
+    onEditStart,
+    onEditSave,
+    onKeyDown,
+}) {
+    const ref = useRef(null);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const io = new IntersectionObserver(
+            ([e]) => {
+                if (e.isIntersecting) {
+                    setVisible(true);
+                    io.disconnect();
+                }
+            },
+            { threshold: 0.06 }
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, []);
 
     return (
         <div
-            className="mw-[1400px] my-0 mx-auto
-            font-[-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Oxygen,Ubuntu,sans-serif]"
+            ref={ref}
+            className={[
+                'group bg-white rounded-[20px] border overflow-hidden cursor-pointer',
+                'shadow-[0_1px_3px_rgba(26,24,20,0.06)] transition-all duration-300',
+                route.isPublic ? 'border-orange-200/60' : 'border-[#E2DDD3]',
+                'hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(26,24,20,0.09)] hover:border-transparent',
+                visible ? 'card-enter' : 'opacity-0',
+            ].join(' ')}
+            style={{ animationDelay: `${idx * 0.05}s` }}
         >
-            {/* Header */}
-            <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-[clamp(2.2rem,3.2vw,2.8rem)] font-semibold leading-[1.15] m-0 text-[#f2f2f2]">
-                    I percorsi che hai creato
-                </h2>
-                <div className="flex items-center gap-4">
-                    <span className="bg-white/10 py-2 px-4 rounded-2xl text-base text-[#f2f2f2] font-medium backdrop-blur-md border border-white/10">
-                        {routes.filter(r => r.isPublic).length} public / {routes.length} total
-                    </span>
-                    <span
-                        className="bg-white/10 py-2 px-4 rounded-2xl text-base text-[#f2f2f2] font-medium
-                               backdrop-blur-md border border-white/10"
+            {/* Image */}
+            <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE9DF]">
+                <img
+                    src={route.image}
+                    alt={route.title}
+                    className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/25 pointer-events-none" />
+
+                {/* Toggle */}
+                <div className="absolute top-3 left-3 z-10">
+                    <label
+                        className={[
+                            'inline-flex items-center gap-2 rounded-full px-2.5 py-[5px]',
+                            'bg-white/90 backdrop-blur-sm border border-black/8 shadow-sm select-none',
+                            'transition-transform duration-150',
+                            !isRouteSuspended
+                                ? 'cursor-pointer hover:scale-[1.03] active:scale-[0.97]'
+                                : 'opacity-40 cursor-not-allowed',
+                        ].join(' ')}
+                        onClick={isRouteSuspended ? undefined : () => onTogglePublic(route.id)}
                     >
-                        {routes.length} percorsi
-                    </span>
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={route.isPublic}
+                            onChange={() => onTogglePublic(route.id)}
+                            disabled={isRouteSuspended}
+                        />
+                        <span
+                            className={[
+                                'relative flex-shrink-0 w-[28px] h-[16px] rounded-full transition-colors duration-300',
+                                route.isPublic ? 'bg-[#E8692A]' : 'bg-[#C8C4BC]',
+                            ].join(' ')}
+                        >
+                            <span
+                                className={[
+                                    'absolute top-[2px] w-[12px] h-[12px] rounded-full bg-white',
+                                    'shadow-[0_1px_2px_rgba(0,0,0,0.2)]',
+                                    'transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+                                    route.isPublic ? 'translate-x-[14px]' : 'translate-x-[2px]',
+                                ].join(' ')}
+                            />
+                        </span>
+                        <span
+                            className={[
+                                'text-[11px] font-semibold tracking-[0.03em] font-body min-w-[32px]',
+                                'transition-colors duration-300',
+                                route.isPublic ? 'text-[#E8692A]' : 'text-[#9B958F]',
+                            ].join(' ')}
+                        >
+                            {route.isPublic ? 'Pubblico' : 'Privato'}
+                        </span>
+                    </label>
+                    {isRouteSuspended && (
+                        <div className="absolute top-8 left-0 text-[11px] font-medium text-[#E8692A] whitespace-nowrap font-body">
+                            ⏳ Sospeso {routeSuspensionTime}
+                        </div>
+                    )}
                 </div>
+
+                {/* Delete */}
+                <div className="absolute top-3 right-3 z-10">
+                    <button
+                        onClick={() => onDelete(route.id)}
+                        disabled={isRouteSuspended}
+                        title={isRouteSuspended ? 'Cannot delete suspended route' : 'Delete route'}
+                        className={[
+                            'w-8 h-8 rounded-full flex items-center justify-center',
+                            'bg-white/90 backdrop-blur-sm border border-black/8 shadow-sm',
+                            'text-[#9B8880] opacity-0 group-hover:opacity-100 transition-all duration-200',
+                            !isRouteSuspended
+                                ? 'hover:bg-red-50 hover:text-red-500 hover:scale-110'
+                                : 'opacity-20 cursor-not-allowed',
+                        ].join(' ')}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Suspended badge */}
+                {isRouteSuspended && (
+                    <div
+                        className="absolute top-12 right-3 z-10 flex items-center gap-1.5
+                                    bg-red-500/80 backdrop-blur-sm text-white
+                                    text-[10px] font-semibold tracking-widest uppercase
+                                    px-2.5 py-1 rounded-full font-body"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                        Sospeso
+                    </div>
+                )}
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
-                {routes.map(route => (
-                    <div
-                        key={route.id}
-                        className="group relative aspect-3/4 rounded-3xl overflow-hidden
-                              bg-white/5 backdrop-blur-sm border border-white/10
-                              transition-all duration-500 ease-out
-                              hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
+            {/* Body */}
+            <div className="p-5">
+                {/* Title */}
+                <div className="flex items-center gap-2 mb-1.5">
+                    {editingId === route.id ? (
+                        <input
+                            type="text"
+                            value={editValue}
+                            onChange={e => setEditValue(e.target.value)}
+                            onBlur={() => onEditSave(route.id)}
+                            onKeyDown={e => onKeyDown(e, route.id)}
+                            className="w-full font-display text-[17px] font-medium text-[#1A1814]
+                                       bg-[#F5F3EC] border border-[#E8692A] rounded-lg px-2.5 py-1
+                                       outline-none shadow-[0_0_0_3px_rgba(232,105,42,0.1)]"
+                            autoFocus
+                        />
+                    ) : (
+                        <>
+                            <h3 className="flex-1 font-display text-[17px] font-medium text-[#1A1814] leading-snug">
+                                {route.title}
+                            </h3>
+                            {!isRouteSuspended && (
+                                <button
+                                    onClick={() => onEditStart(route)}
+                                    title="Edit name"
+                                    className="w-[26px] h-[26px] rounded-lg flex items-center justify-center flex-shrink-0
+                                               opacity-0 group-hover:opacity-100 text-[#9B958F]
+                                               transition-all duration-200
+                                               hover:bg-[#FDF0E8] hover:text-[#E8692A]"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
+                                    </svg>
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Area */}
+                <p className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-4 font-body">
+                    <svg
+                        width="11"
+                        height="11"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        className="flex-shrink-0 opacity-50"
                     >
-                        {/* Image */}
-                        <img
-                            src={route.image}
-                            alt={route.title}
-                            className="absolute inset-0 w-full h-full object-cover
-                           transition-transform duration-700 ease-out
-                           group-hover:scale-110"
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                         />
-
-                        <div
-                            className="absolute inset-0 bg-linear-to-t
-                          from-black/90 via-black/50 to-transparent
-                          opacity-90 transition-opacity duration-500
-                          group-hover:opacity-95"
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                         />
+                    </svg>
+                    {route.area}
+                </p>
 
-                        {/* Action Buttons - Top Right */}
-                        <div className="absolute top-3 right-3 z-10 flex gap-2">
-                            {/* Delete Button */}
-                            <button
-                                onClick={() => handleDelete(route.id)}
-                                className="p-2 rounded-lg bg-red-500/20 text-red-300
-                                         border border-red-400/30 backdrop-blur-md
-                                         transition-all duration-300 ease-out
-                                         hover:bg-red-500 hover:text-white
-                                         hover:border-red-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]
-                                         hover:scale-110 active:scale-95"
-                                title="Delete route"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Smartphone-style Toggle Switch - Top Left */}
-                        <div className="absolute top-3 left-3 z-10">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only peer"
-                                    checked={route.isPublic}
-                                    onChange={() => handleTogglePublic(route.id)}
-                                />
-                                <div
-                                    className={`
-                                    relative w-14 h-7 rounded-full 
-                                    transition-all duration-300 ease-in-out
-                                    after:content-[''] after:absolute after:top-0.5 after:left-0.5 
-                                    after:bg-white after:rounded-full after:h-6 after:w-6
-                                    after:shadow-md after:transition-all after:duration-300
-                                    ${
-                                        route.isPublic
-                                            ? 'bg-green-500/50 after:translate-x-7 after:bg-white'
-                                            : 'bg-gray-400/50 after:translate-x-0 after:bg-white'
-                                    }
-                                `}
-                                >
-                                    {/* Icons inside the switch */}
-                                    <span
-                                        className={`
-                                        absolute left-1.5 top-1.5 text-xs font-bold transition-opacity duration-300
-                                        ${route.isPublic ? 'text-white opacity-100' : 'text-gray-600 opacity-0'}
-                                    `}
-                                    >
-                                        PUB
-                                    </span>
-                                    <span
-                                        className={`
-                                        absolute right-1.5 top-1.5 text-xs font-bold transition-opacity duration-300
-                                        ${!route.isPublic ? 'text-white opacity-100' : 'text-gray-600 opacity-0'}
-                                    `}
-                                    >
-                                        PRIV
-                                    </span>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div
-                            className="absolute bottom-0 left-0 right-0 p-6
-                         transition-all duration-500 ease-out
-                         translate-y-0 group-hover:-translate-y-2"
-                        >
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="flex gap-0.5">
-                                    {[...Array(5)].map((_, i) => (
-                                        <span
-                                            key={i}
-                                            className="text-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-                                            style={{
-                                                color:
-                                                    i < Math.floor(route.rating)
-                                                        ? '#FFD700'
-                                                        : '#ffffff80',
-                                            }}
-                                        >
-                                            ★
-                                        </span>
-                                    ))}
-                                </div>
-                                <span
-                                    className="text-white font-bold text-sm
-                             drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-                                >
-                                    {route.rating.toFixed(1)}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 mb-1">
-                                {editingId === route.id ? (
-                                    <input
-                                        type="text"
-                                        value={editValue}
-                                        onChange={e => setEditValue(e.target.value)}
-                                        onBlur={() => handleEditSave(route.id)}
-                                        onKeyDown={e => handleKeyDown(e, route.id)}
-                                        className="bg-black/50 text-white text-2xl font-bold
-                                                 px-2 py-1 rounded border border-white/30
-                                                 w-full focus:outline-none focus:border-orange-400
-                                                 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <>
-                                        <h3 className="text-2xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                                            {route.title}
-                                        </h3>
-                                        <button
-                                            onClick={() => handleEditStart(route)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity
-                                                     p-1 rounded-lg bg-white/10 text-white/70
-                                                     hover:bg-orange-500 hover:text-white
-                                                     border border-white/20"
-                                            title="Edit name"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-
-                            <p
-                                className="text-gray-200 text-sm mb-4 opacity-90
-                         drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]
-                         transition-all duration-500"
-                            >
-                                {route.area}
-                            </p>
-
-                            <button
-                                className="px-5 py-2.5 rounded-lg text-sm font-semibold
-                         bg-white/10 text-white
-                         border border-white/30
-                         backdrop-blur-md
-                         transition-all duration-300 ease-out
-                         hover:bg-orange-500 hover:border-orange-400
-                         hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]
-                         hover:scale-105
-                         active:scale-95"
-                            >
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                {/* CTA */}
+                <button
+                    className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
+                                   bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
+                                   transition-all duration-200
+                                   hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
+                                   hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
+                                   active:scale-[0.99]"
+                >
+                    View Details
+                </button>
             </div>
         </div>
     );

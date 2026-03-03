@@ -1,93 +1,50 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { tokenStore } from '../../services/api';
-import { getCurrentUser, logout as authLogout } from '../../services/auth';
+import { useAuth } from '../../context/useAuth.jsx';
 
 function Navbar() {
+    const { user, isAuthenticated, logout } = useAuth();
+    const location = useLocation();
+
     const [isVisible, setIsVisible] = useState(true);
     const lastScrollY = useRef(0);
 
-    const location = useLocation();
-    const navigate = useNavigate();
-
     const isPlannerPage = location.pathname === '/planner';
     const isHomePage = location.pathname === '/';
-
-    const [user, setUser] = useState(getCurrentUser());
-    const [isAuthenticated, setIsAuthenticated] = useState(!!tokenStore.getAccess());
+    const isOtherPage = !isPlannerPage && !isHomePage;
 
     const [isHeroVisible, setIsHeroVisible] = useState(true);
 
-    const syncAuth = () => {
-        setUser(getCurrentUser());
-        setIsAuthenticated(!!tokenStore.getAccess());
-    };
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        syncAuth();
-
-        const onStorage = e => {
-            if (e.key === 'access_token' || e.key === 'refresh_token' || e.key === 'user') {
-                syncAuth();
-            }
-        };
-        window.addEventListener('storage', onStorage);
-
-        const onAuthChange = () => syncAuth();
-        window.addEventListener('auth-change', onAuthChange);
-
-        return () => {
-            window.removeEventListener('storage', onStorage);
-            window.removeEventListener('auth-change', onAuthChange);
-        };
-    }, []);
-
-    const logout = () => {
-        authLogout();
-        syncAuth();
-        navigate('/login');
-    };
-
     useEffect(() => {
         if (isPlannerPage) return;
-
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-
             if (currentScrollY > lastScrollY.current && currentScrollY > 0) {
                 setIsVisible(false);
             } else if (currentScrollY < lastScrollY.current) {
                 setIsVisible(true);
             }
-
             lastScrollY.current = currentScrollY;
         };
-
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, [isPlannerPage]);
 
     useEffect(() => {
         if (!isHomePage || isPlannerPage) return;
-
         const hero = document.getElementById('hero');
         if (!hero) return;
-
         const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsHeroVisible(entry.isIntersecting);
-            },
+            ([entry]) => setIsHeroVisible(entry.isIntersecting),
             { threshold: 0.15 }
         );
-
         observer.observe(hero);
         return () => observer.disconnect();
     }, [isHomePage, isPlannerPage]);
 
     const initials = user ? (user.first_name?.[0] || user.username?.[0] || 'U').toUpperCase() : 'U';
-
     const displayName = user?.first_name || user?.username || 'utente';
+    const isAdmin = user?.is_administrator === true;
 
     const navBase = `fixed top-0 left-0 right-0 flex justify-between items-center py-3 px-16 z-50 transition-transform duration-300 ${
         isVisible ? '' : '-translate-y-full'
@@ -100,6 +57,10 @@ function Navbar() {
               ? 'bg-transparent text-white'
               : 'bg-[#F5F3EC] text-[#1C1A18]'
           : 'bg-white/85 backdrop-blur-md text-[#1C1A18]';
+
+    const useDarkText = isPlannerPage || isOtherPage || (isHomePage && !isHeroVisible);
+    const linkColor = useDarkText ? 'text-[#1C1A18]' : 'text-white';
+    const borderColor = useDarkText ? 'border-gray-400/60' : 'border-white/60';
 
     return (
         <nav className={`${navBase} ${navStyle}`}>
@@ -115,31 +76,19 @@ function Navbar() {
 
             <div className="flex items-center gap-8">
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/"
                 >
                     Home
                 </Link>
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/planner"
                 >
                     Planner
                 </Link>
                 <Link
-                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${
-                        isPlannerPage || (isHomePage && !isHeroVisible)
-                            ? 'text-[#1C1A18]'
-                            : 'text-white'
-                    }`}
+                    className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                     to="/tour"
                 >
                     Tour
@@ -147,10 +96,19 @@ function Navbar() {
 
                 {isAuthenticated && (
                     <Link
-                        className="text-white text-sm tracking-[1px] opacity-85 hover:opacity-100"
+                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
                         to="/mytours"
                     >
                         I miei percorsi
+                    </Link>
+                )}
+
+                {isAdmin && (
+                    <Link
+                        className={`text-sm tracking-[1px] opacity-85 hover:opacity-100 ${linkColor}`}
+                        to="/admin/users"
+                    >
+                        Gestione Utenti
                     </Link>
                 )}
 
@@ -169,24 +127,14 @@ function Navbar() {
                                     {initials}
                                 </div>
                             )}
-                            <span
-                                className={`text-sm tracking-[1px] opacity-90 ${
-                                    isPlannerPage || (isHomePage && !isHeroVisible)
-                                        ? 'text-[#1C1A18]'
-                                        : 'text-white'
-                                }`}
-                            >
+                            <span className={`text-sm tracking-[1px] opacity-90 ${linkColor}`}>
                                 Ciao, <span className="font-semibold">{displayName}</span>
                             </span>
                         </div>
 
                         <button
                             onClick={logout}
-                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${
-                                isPlannerPage || (isHomePage && !isHeroVisible)
-                                    ? 'text-[#1C1A18] border-gray-400/60'
-                                    : 'text-white border-white/60'
-                            }`}
+                            className={`text-sm tracking-[1px] py-2 px-4.5 border rounded-full hover:opacity-100 ${linkColor} ${borderColor}`}
                         >
                             Logout
                         </button>
@@ -194,11 +142,7 @@ function Navbar() {
                 ) : (
                     <Link
                         to="/login"
-                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${
-                            isPlannerPage || (isHomePage && !isHeroVisible)
-                                ? 'text-[#1C1A18] border-gray-400/60'
-                                : 'text-white border-white/60'
-                        }`}
+                        className={`text-sm tracking-[1px] opacity-85 py-2 px-4.5 border rounded-full hover:opacity-100 ${linkColor} ${borderColor}`}
                     >
                         Login
                     </Link>

@@ -9,6 +9,9 @@ import MapRoutePoints from './MapComponents/MapRoutePoints';
 import MapPolyline from './MapComponents/MapPolyline';
 import MapPOIs from './MapComponents/MapPOIs';
 import POICard from './POICard';
+import MapClickHandler from './MapComponents/MapClickHandler';
+import MapillaryPanel from './MapillaryPanel';
+import { FiEye } from 'react-icons/fi';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -75,6 +78,8 @@ const InteractiveMap = ({
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
     const hasInitializedRef = useRef(false);
+    const [mapillaryPoint, setMapillaryPoint] = useState(null);
+    const [mapillaryMode, setMapillaryMode] = useState(false);
 
     const handleUserLocation = location => {
         setUserLocation(location);
@@ -230,6 +235,14 @@ const InteractiveMap = ({
                 </div>
             )}
 
+            {/* Mapillary Mode Tooltip */}
+            {mapillaryMode && (
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
+                    <FiEye size={14} />
+                    Clicca sulla mappa per vedere le foto della zona
+                </div>
+            )}
+
             {/* Map Container */}
             <MapContainer
                 center={[45.4642, 9.19]}
@@ -258,6 +271,7 @@ const InteractiveMap = ({
                 <MapRoutePoints routePoints={routePointsWithLabels} />
                 <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
                 <MapPOIs pois={pois} onPoiClick={onPoiClick} />
+                <MapClickHandler onMapClick={setMapillaryPoint} mapillaryMode={mapillaryMode} />
             </MapContainer>
 
             {/* POI Card */}
@@ -266,6 +280,15 @@ const InteractiveMap = ({
                     poi={selectedPoi}
                     onClose={() => onPoiClick(null)}
                     onAddToRoute={onAddPoiToRoute}
+                />
+            )}
+
+            {/* Mapillary Panel */}
+            {mapillaryPoint && (
+                <MapillaryPanel
+                    lat={mapillaryPoint.lat}
+                    lon={mapillaryPoint.lng}
+                    onClose={() => setMapillaryPoint(null)}
                 />
             )}
 
@@ -291,6 +314,20 @@ const InteractiveMap = ({
                     </div>
                 </div>
             )}
+            {/* Mapillary Toggle Button */}
+            <button
+                onClick={() => setMapillaryMode(prev => !prev)}
+                className={`absolute bottom-6 right-6 z-[1000] w-12 h-12 rounded-2xl shadow-2xl
+        transition-all duration-300 border flex items-center justify-center
+        ${
+            mapillaryMode
+                ? 'bg-blue-500 text-white border-blue-400'
+                : 'bg-[#FAF7F2] text-gray-800 border-gray-200 hover:border-blue-400 hover:text-blue-500'
+        }`}
+                aria-label="Toggle Mapillary"
+            >
+                <FiEye size={20} />
+            </button>
         </div>
     );
 };
