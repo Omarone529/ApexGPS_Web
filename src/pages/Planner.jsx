@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
@@ -232,7 +232,7 @@ const Planner = () => {
         console.log('Manual route requested:', formData);
     };
 
-    const captureRouteScreenshot = async () => {
+    const captureRouteScreenshot = useCallback(async () => {
         if (!calculatedRoute || calculatedRoute.length === 0) return;
 
         try {
@@ -285,7 +285,7 @@ const Planner = () => {
         } catch (error) {
             console.error('Errore nella cattura dello screenshot:', error);
         }
-    };
+    }, [calculatedRoute]);
 
     const handleCalculateScenicRoute = async formData => {
         if (!formData.startPoint || !formData.endPoint) {
