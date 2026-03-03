@@ -90,7 +90,7 @@ const Planner = () => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [selectedPoi, setSelectedPoi] = useState(null);
     const [routeScreenshot, setRouteScreenshot] = useState(null);
-
+    const [mapLayer, setMapLayer] = useState('standard');
     // Map to normalize POI categories to expected POICard values
     const categoryMap = {
         ristorante: 'restaurant',
@@ -385,27 +385,33 @@ const Planner = () => {
     };
 
     const captureRouteScreenshot = async () => {
+        if (!calculatedRoute || calculatedRoute.length === 0) return;
+
         try {
-            // Seleziona l'elemento della mappa (adatta il selettore alla tua implementazione)
+            // Salva il layer corrente per ripristinarlo dopo
+            const previousLayer = mapLayer;
+
+            // Se non è già satellitare, passa a satellitare
+            if (mapLayer !== 'satellite') {
+                setMapLayer('satellite');
+                // Attendere che il layer cambi (il tile layer si aggiorna)
+                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms dovrebbero bastare
+            }
+
             const mapElement = document.querySelector('.leaflet-container');
             if (!mapElement) {
                 console.warn('Elemento mappa non trovato');
                 return;
             }
 
-            // Trova tutti i marker POI (supponendo che abbiano una classe specifica come 'leaflet-marker-icon' o una classe personalizzata)
-            const poiMarkers = document.querySelectorAll('.leaflet-marker-icon'); // o una classe più specifica se possibile
-
-            // Nascondi i marker
+            // Nascondi i marker POI
+            const poiMarkers = document.querySelectorAll('.leaflet-marker-icon');
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'hidden';
             });
 
-            // Se usi popup o altri elementi, potresti dover nascondere anche quelli
-            // Ad esempio: .leaflet-popup
-
-            // Breve ritardo per assicurarsi che il DOM si aggiorni
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             const canvas = await html2canvas(mapElement, {
                 scale: 1.5,
@@ -415,13 +421,19 @@ const Planner = () => {
                 logging: false,
             });
 
+            // Ripristina i marker
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'visible';
             });
 
             const screenshotBase64 = canvas.toDataURL('image/jpeg', 0.9);
             setRouteScreenshot(screenshotBase64);
-            console.log('Screenshot salvato nella variabile routeScreenshot');
+            console.log('Screenshot catturato con mappa satellitare');
+
+            // Ripristina il layer precedente se diverso
+            if (previousLayer !== 'satellite') {
+                setMapLayer(previousLayer);
+            }
         } catch (error) {
             console.error('Errore nella cattura dello screenshot:', error);
         }
@@ -660,6 +672,10 @@ const Planner = () => {
                 selectedPoi={selectedPoi}
                 onPoiClick={handlePoiClick}
                 onAddPoiToRoute={handleAddPoiToRoute}
+                onRouteRendered={captureRouteScreenshot}
+                mapLayer={mapLayer}
+                onMapLayerChange={setMapLayer}
+                centerOnUserLocation={shouldCenterOnUser}
             />
 
             <PlannerForm
