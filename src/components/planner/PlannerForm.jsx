@@ -235,14 +235,17 @@ const PlannerForm = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[2000]">
+        <div className="fixed inset-0 z-[2000] pointer-events-none">
             {/* Overlay invisibile */}
-            <div className="absolute inset-0 bg-transparent" onClick={onClose} />
-
-            {/* Pannello laterale con sfondo #FAF7F2 */}
             <div
-                className="absolute left-0 top-0 h-full w-full sm:w-96 shadow-xl overflow-y-auto border-r border-gray-200"
-                style={{ backgroundColor: '#FAF7F2' }}
+                className="absolute inset-0 bg-transparent pointer-events-auto"
+                onClick={onClose}
+            />
+
+            {/* Pannello floating staccato dai bordi */}
+            <div
+                className="absolute left-6 top-20 w-full sm:w-88 max-w-sm shadow-2xl overflow-y-auto rounded-3xl border border-gray-200 pointer-events-auto"
+                style={{ backgroundColor: '#FAF7F2', maxHeight: 'calc(100vh - 6rem)' }}
                 ref={formRef}
             >
                 <div className="p-6">
