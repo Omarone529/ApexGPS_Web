@@ -24,7 +24,6 @@ L.Icon.Default.mergeOptions({
 const MapController = ({ center, route, centerTrigger }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
-    const hasCenteredOnRouteRef = useRef(false);
 
     useEffect(() => {
         if (center && centerTrigger > lastTriggerRef.current) {
@@ -37,14 +36,13 @@ const MapController = ({ center, route, centerTrigger }) => {
     }, [center, map, centerTrigger]);
 
     useEffect(() => {
-        if (route?.length > 1 && !hasCenteredOnRouteRef.current) {
+        if (route?.length > 1) {
             const bounds = L.latLngBounds(route);
             map.flyToBounds(bounds, {
                 padding: [50, 50],
                 duration: 1.5,
                 maxZoom: 14,
             });
-            hasCenteredOnRouteRef.current = true;
         }
     }, [route, map]);
 
