@@ -343,7 +343,7 @@ const PlannerForm = ({
                 style={{ backgroundColor: '#FAF7F2', maxHeight: 'calc(100vh - 6rem)' }}
                 ref={formRef}
             >
-                <div className="p-6">
+                <div className="py-6 px-4">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-gray-800">Pianifica percorso</h2>
                         <button
@@ -360,19 +360,22 @@ const PlannerForm = ({
                         <div
                             ref={el => setFieldRef('startPoint', el)}
                             onFocus={() => setActiveField('startPoint')}
+                            className="flex items-center gap-2"
                         >
-                            <LocationInput
-                                value={formData.startPoint}
-                                onChange={handleInputChange}
-                                name="startPoint"
-                                placeholder="Partenza"
-                                onUseCurrentLocation={() => getCurrentLocation('startPoint')}
-                                onSearch={query => handleLocationSearch(query, 'startPoint')}
-                                onFocus={() => setActiveField('startPoint')}
-                                iconType="start"
-                                isLoading={loadingSuggestions && activeField === 'startPoint'}
-                                inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
-                            />
+                            <div style={{ width: 18 }} className="flex-shrink-0" />
+                            <div className="flex-1">
+                                <LocationInput
+                                    value={formData.startPoint}
+                                    onChange={handleInputChange}
+                                    name="startPoint"
+                                    placeholder="Partenza"
+                                    onUseCurrentLocation={() => getCurrentLocation('startPoint')}
+                                    onSearch={query => handleLocationSearch(query, 'startPoint')}
+                                    onFocus={() => setActiveField('startPoint')}
+                                    isLoading={loadingSuggestions && activeField === 'startPoint'}
+                                    inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
+                                />
+                            </div>
                         </div>
 
                         {/* Waypoints */}
@@ -391,40 +394,51 @@ const PlannerForm = ({
                                     }}
                                 >
                                     <div
-                                        className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-orange-500 transition-colors flex-shrink-0 select-none"
+                                        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-orange-500 transition-colors flex-shrink-0 select-none flex items-center"
+                                        style={{ width: 18 }}
                                         onMouseDown={e => startDrag(e, originalIndex)}
                                     >
-                                        <FiMenu size={16} />
+                                        <FiMenu size={18} />
                                     </div>
-
-                                    <LocationInput
-                                        value={item}
-                                        onChange={e =>
-                                            handleWaypointChange(originalIndex, e.target.value)
-                                        }
-                                        name={`waypoint-${originalIndex}`}
-                                        placeholder={`Tappa ${originalIndex + 1}`}
-                                        onSearch={query =>
-                                            handleLocationSearch(query, `waypoint-${originalIndex}`)
-                                        }
-                                        onFocus={() => setActiveField(`waypoint-${originalIndex}`)}
-                                        iconType="waypoint"
-                                        isLoading={
-                                            loadingSuggestions &&
-                                            activeField === `waypoint-${originalIndex}`
-                                        }
-                                        inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
-                                    />
-                                    {formData.waypoints.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeWaypoint(originalIndex)}
-                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors flex-shrink-0"
-                                            disabled={isSubmitting}
-                                        >
-                                            <FiTrash2 size={18} />
-                                        </button>
-                                    )}
+                                    <div className="flex-1">
+                                        <LocationInput
+                                            value={item}
+                                            onChange={e =>
+                                                handleWaypointChange(originalIndex, e.target.value)
+                                            }
+                                            name={`waypoint-${originalIndex}`}
+                                            placeholder={`Tappa ${originalIndex + 1}`}
+                                            onSearch={query =>
+                                                handleLocationSearch(
+                                                    query,
+                                                    `waypoint-${originalIndex}`
+                                                )
+                                            }
+                                            onFocus={() =>
+                                                setActiveField(`waypoint-${originalIndex}`)
+                                            }
+                                            isLoading={
+                                                loadingSuggestions &&
+                                                activeField === `waypoint-${originalIndex}`
+                                            }
+                                            inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeWaypoint(originalIndex)}
+                                        className="flex-shrink-0 text-gray-400 hover:text-red-600 transition-colors"
+                                        disabled={isSubmitting}
+                                        style={{
+                                            width: 18,
+                                            visibility:
+                                                formData.waypoints.length > 1
+                                                    ? 'visible'
+                                                    : 'hidden',
+                                        }}
+                                    >
+                                        <FiTrash2 size={18} />
+                                    </button>
                                 </div>
                             ))}
 
@@ -458,19 +472,22 @@ const PlannerForm = ({
                         <div
                             ref={el => setFieldRef('endPoint', el)}
                             onFocus={() => setActiveField('endPoint')}
+                            className="flex items-center gap-2"
                         >
-                            <LocationInput
-                                value={formData.endPoint}
-                                onChange={handleInputChange}
-                                name="endPoint"
-                                placeholder="Destinazione"
-                                onUseCurrentLocation={() => getCurrentLocation('endPoint')}
-                                onSearch={query => handleLocationSearch(query, 'endPoint')}
-                                onFocus={() => setActiveField('endPoint')}
-                                iconType="end"
-                                isLoading={loadingSuggestions && activeField === 'endPoint'}
-                                inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
-                            />
+                            <div style={{ width: 18 }} className="flex-shrink-0" />
+                            <div className="flex-1">
+                                <LocationInput
+                                    value={formData.endPoint}
+                                    onChange={handleInputChange}
+                                    name="endPoint"
+                                    placeholder="Destinazione"
+                                    onUseCurrentLocation={() => getCurrentLocation('endPoint')}
+                                    onSearch={query => handleLocationSearch(query, 'endPoint')}
+                                    onFocus={() => setActiveField('endPoint')}
+                                    isLoading={loadingSuggestions && activeField === 'endPoint'}
+                                    inputClassName="text-gray-800 placeholder-gray-500 bg-white border border-gray-300 focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
+                                />
+                            </div>
                         </div>
 
                         <div className="border-t border-gray-300 my-4"></div>
@@ -602,6 +619,7 @@ const PlannerForm = ({
                                     />
                                 </button>
                             ))}
+                            A{' '}
                         </div>
                     </div>,
                     document.body
