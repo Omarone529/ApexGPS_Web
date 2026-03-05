@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { FiMapPin, FiNavigation, FiCircle, FiMoreVertical } from 'react-icons/fi';
+import { FiMapPin, FiNavigation, FiCircle } from 'react-icons/fi';
 
 const LocationInput = ({
     value,
@@ -11,7 +11,7 @@ const LocationInput = ({
     onFocus,
     iconType = 'end',
     isLoading = false,
-    inputClassName = '', // nuova prop opzionale
+    inputClassName = '',
 }) => {
     const inputRef = useRef(null);
 
@@ -20,7 +20,7 @@ const LocationInput = ({
             case 'start':
                 return <FiCircle className="text-gray-400" size={18} />;
             case 'waypoint':
-                return <FiMoreVertical className="text-gray-400" size={18} />;
+                return <FiCircle className="text-gray-400" size={18} />;
             case 'end':
             default:
                 return <FiMapPin className="text-gray-400" size={18} />;
