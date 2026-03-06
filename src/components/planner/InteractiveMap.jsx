@@ -36,7 +36,7 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     }, [center, map, centerTrigger]);
 
     useEffect(() => {
-        if (route?.length > 1 && !hasCenteredOnRouteRef.current) {
+        if (route?.length > 1) {
             const bounds = L.latLngBounds(route);
             map.flyToBounds(bounds, {
                 padding: [30, 30],

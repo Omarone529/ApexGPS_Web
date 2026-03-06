@@ -81,6 +81,7 @@ const Planner = () => {
     const [loading, setLoading] = useState(false);
     const [loadingPois, setLoadingPois] = useState(false);
     const [routeDetails, setRouteDetails] = useState(null);
+    const [waypointMarkers, setWaypointMarkers] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [selectedPoi, setSelectedPoi] = useState(null);
@@ -160,12 +161,21 @@ const Planner = () => {
     }, []);
 
     const getDisplayPois = () => {
+        const hiddenCategories = ['restaurant', 'food'];
+
         if (pois.length > 0) {
-            const routePoiIds = new Set(pois.map(p => p.id));
-            const uniquePois = allPois.filter(p => !routePoiIds.has(p.id));
-            return [...pois, ...uniquePois];
+            const routePoiOriginalIds = new Set(pois.map(p => p.originalId).filter(Boolean));
+
+            const filteredAllPois = allPois.filter(p => {
+                if (routePoiOriginalIds.has(p.id)) return false;
+                if (hiddenCategories.includes(p.category)) return false;
+                return true;
+            });
+
+            return [...pois, ...filteredAllPois];
         }
-        return allPois;
+
+        return allPois.filter(p => !hiddenCategories.includes(p.category));
     };
 
     const showError = message => {
@@ -229,8 +239,118 @@ const Planner = () => {
         setSelectedPoi(null);
     };
 
-    const handleCalculateRoute = formData => {
-        console.log('Manual route requested:', formData);
+    const handleCalculateRoute = async formData => {
+        if (!formData.startPoint || !formData.endPoint) {
+            showError('Inserisci punto di partenza e arrivo');
+            return;
+        }
+
+        if (loading) return;
+        setLoading(true);
+        setErrorMessage(null);
+
+        try {
+            setIsScenicRoute(false);
+            setCalculatedRoute([]);
+            setRouteStats(null);
+            setPois([]);
+            setRouteDetails(null);
+            setWaypointMarkers([]);
+
+            const filteredWaypoints = (formData.waypoints || []).filter(w => w.trim() !== '');
+
+            const payload = {
+                start_location_name: formData.startPoint.trim(),
+                end_location_name: formData.endPoint.trim(),
+                ...(filteredWaypoints.length > 0 && { waypoints: filteredWaypoints }),
+            };
+
+            const response = await fetch(`${API_BASE_URL}/api/routes/calculate-fastest/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify(payload),
+                mode: 'cors',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `Errore ${response.status}`;
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.error || errorData.details || errorMessage;
+                } catch {
+                    // keep default message
+                }
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+
+            const routeCoords = decodePolyline(result.polyline);
+
+            if (routeCoords.length === 0) {
+                if (result.start_coordinates) {
+                    routeCoords.push([result.start_coordinates.lat, result.start_coordinates.lon]);
+                }
+                if (result.end_coordinates) {
+                    routeCoords.push([result.end_coordinates.lat, result.end_coordinates.lon]);
+                }
+            }
+
+            setCalculatedRoute(routeCoords);
+            setRouteStats({
+                distance: formatDistance(result.total_distance_km),
+                duration: formatTime(result.total_time_minutes),
+            });
+            setRouteDetails({
+                ...result,
+                startAddress: result.start_location || formData.startPoint,
+                endAddress: result.end_location || formData.endPoint,
+                formData,
+            });
+
+            // Geocodifica le tappe intermedie per ottenere le coordinate dei marker
+            const nonEmptyWaypoints = filteredWaypoints;
+            if (nonEmptyWaypoints.length > 0) {
+                const markers = await Promise.all(
+                    nonEmptyWaypoints.map(async (name, i) => {
+                        try {
+                            const geo = await fetch(
+                                `${API_BASE_URL}/api/geocode/search/?q=${encodeURIComponent(name)}&limit=1`,
+                                { headers: { Accept: 'application/json' } }
+                            );
+                            if (!geo.ok) return null;
+                            const [place] = await geo.json();
+                            if (!place) return null;
+                            return {
+                                position: [parseFloat(place.lat), parseFloat(place.lon)],
+                                label: `Tappa ${i + 1}`,
+                                description: place.display_name || name,
+                            };
+                        } catch {
+                            return null;
+                        }
+                    })
+                );
+                setWaypointMarkers(markers.filter(Boolean));
+            } else {
+                setWaypointMarkers([]);
+            }
+        } catch (error) {
+            console.error('Error calculating fastest route:', error);
+            let msg = 'Errore nel calcolo del percorso';
+            if (error.message.includes('Failed to fetch')) {
+                msg = 'Connessione fallita. Il backend è in esecuzione?';
+            } else {
+                msg = error.message;
+            }
+            showError(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const captureRouteScreenshot = useCallback(async () => {
@@ -301,6 +421,7 @@ const Planner = () => {
             setIsScenicRoute(true);
             setCalculatedRoute([]);
             setRouteStats(null);
+            setWaypointMarkers([]);
             setPois([]);
             setRouteDetails(null);
 
@@ -489,14 +610,14 @@ const Planner = () => {
     return (
         <div className="relative h-screen">
             {loadingPois && (
-                <div className="absolute top-4 right-4 z-[1500] bg-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-gray-800 flex items-center gap-2">
+                <div className="absolute top-4 right-4 z-1500 bg-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-gray-800 flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
                     <span className="text-sm">Caricamento POI...</span>
                 </div>
             )}
 
             {successMessage && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1500] bg-green-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-green-800 shadow-lg">
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-1500 bg-green-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-green-800 shadow-lg">
                     {successMessage}
                 </div>
             )}
@@ -504,7 +625,7 @@ const Planner = () => {
             <InteractiveMap
                 ref={mapRef}
                 onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-                routePoints={[]}
+                routePoints={waypointMarkers}
                 calculatedRoute={calculatedRoute}
                 pois={displayPois}
                 routeStats={routeStats}
@@ -529,10 +650,10 @@ const Planner = () => {
             />
 
             {errorMessage && (
-                <div className="fixed inset-0 z-[3000] bg-black/50 flex items-center justify-center">
+                <div className="fixed inset-0 z-3000 bg-black/50 flex items-center justify-center">
                     <div className="bg-gray-900 text-white p-6 rounded-2xl border border-gray-800 shadow-2xl max-w-md mx-4">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
                                 <svg
                                     className="w-5 h-5 text-red-400"
                                     fill="currentColor"
@@ -550,7 +671,7 @@ const Planner = () => {
                         <p className="text-gray-300 text-sm mb-4">{errorMessage}</p>
                         <button
                             onClick={() => setErrorMessage(null)}
-                            className="w-full py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border border-gray-700"
+                            className="w-full py-2 bg-linear-to-r from-gray-800 to-gray-900 text-white rounded-xl font-medium hover:from-gray-700 hover:to-gray-800 transition-all duration-300 border border-gray-700"
                         >
                             Chiudi
                         </button>

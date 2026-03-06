@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { gpxService } from '../services/gpxService';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 const GLOBAL_STYLES = `
@@ -125,6 +127,7 @@ function RoutesGrid() {
                 const formattedRoutes = data.map(route => ({
                     id: route.id,
                     title: route.name,
+                    polyline: route.polyline,
                     area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
                     image: route.screenshot
                         ? route.screenshot.startsWith('http')
@@ -396,6 +399,21 @@ function RouteCard({
         return () => io.disconnect();
     }, []);
 
+    const handleDownload = () => {
+        try {
+            gpxService.downloadGPX({
+                id: route.id,
+                name: route.title,
+                polyline: route.polyline,
+            });
+        } catch (error) {
+            console.error('GPX download failed:', error);
+            alert(
+                'Impossibile generare il file GPX. Il percorso potrebbe non contenere dati validi.'
+            );
+        }
+    };
+
     return (
         <div
             ref={ref}
@@ -590,6 +608,32 @@ function RouteCard({
                     </svg>
                     {route.area}
                 </p>
+
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={handleDownload}
+                        title="Scarica GPX"
+                        className="w-7 h-7 rounded-full flex items-center justify-center
+                                   bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
+                                   hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
+                                   transition-all duration-200 active:scale-95"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-3-3m3 3l3-3"
+                            />
+                        </svg>
+                    </button>
+                </div>
 
                 {/* CTA */}
                 <button
