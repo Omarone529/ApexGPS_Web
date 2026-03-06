@@ -641,7 +641,7 @@ function RouteCard({
                                    hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
                                    active:scale-[0.99]"
                 >
-                    View Details
+                    Vai al Percorso
                 </button>
             </div>
         </div>
