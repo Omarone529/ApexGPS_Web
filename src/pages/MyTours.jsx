@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 const GLOBAL_STYLES = `
@@ -126,9 +126,13 @@ function RoutesGrid() {
                     id: route.id,
                     title: route.name,
                     area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
-                    image: `https://picsum.photos/seed/${route.id}/300/400`,
+                    image: route.screenshot
+                        ? route.screenshot.startsWith('http')
+                            ? route.screenshot
+                            : `${MEDIA_BASE_URL}${route.screenshot}`
+                        : `https://picsum.photos/seed/${route.id}/300/400`,
                     isPublic: route.visibility === 'public',
-                    hiddenUntil: route.hidden_until,
+                    hiddenUntil: route.hiddenUntil,
                 }));
                 setRoutes(formattedRoutes);
             } catch (err) {

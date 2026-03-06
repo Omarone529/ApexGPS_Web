@@ -450,6 +450,9 @@ const Planner = () => {
                     total_scenic_score: routeDetails.scenic_route?.scenic_score || 0,
                 },
             };
+            if (routeScreenshot) {
+                payload.screenshot = routeScreenshot;
+            }
 
             const response = await fetch(`${API_BASE_URL}/api/routes/save-calculated/`, {
                 method: 'POST',
