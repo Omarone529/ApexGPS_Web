@@ -80,6 +80,7 @@ const Planner = () => {
     const [loading, setLoading] = useState(false);
     const [loadingPois, setLoadingPois] = useState(false);
     const [routeDetails, setRouteDetails] = useState(null);
+    const [waypointMarkers, setWaypointMarkers] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [selectedPoi, setSelectedPoi] = useState(null);
@@ -235,8 +236,118 @@ const Planner = () => {
         setSelectedPoi(null);
     };
 
-    const handleCalculateRoute = formData => {
-        console.log('Manual route requested:', formData);
+    const handleCalculateRoute = async formData => {
+        if (!formData.startPoint || !formData.endPoint) {
+            showError('Inserisci punto di partenza e arrivo');
+            return;
+        }
+
+        if (loading) return;
+        setLoading(true);
+        setErrorMessage(null);
+
+        try {
+            setIsScenicRoute(false);
+            setCalculatedRoute([]);
+            setRouteStats(null);
+            setPois([]);
+            setRouteDetails(null);
+            setWaypointMarkers([]);
+
+            const filteredWaypoints = (formData.waypoints || []).filter(w => w.trim() !== '');
+
+            const payload = {
+                start_location_name: formData.startPoint.trim(),
+                end_location_name: formData.endPoint.trim(),
+                ...(filteredWaypoints.length > 0 && { waypoints: filteredWaypoints }),
+            };
+
+            const response = await fetch(`${API_BASE_URL}/api/routes/calculate-fastest/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify(payload),
+                mode: 'cors',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorMessage = `Errore ${response.status}`;
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.error || errorData.details || errorMessage;
+                } catch {
+                    // keep default message
+                }
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+
+            const routeCoords = decodePolyline(result.polyline);
+
+            if (routeCoords.length === 0) {
+                if (result.start_coordinates) {
+                    routeCoords.push([result.start_coordinates.lat, result.start_coordinates.lon]);
+                }
+                if (result.end_coordinates) {
+                    routeCoords.push([result.end_coordinates.lat, result.end_coordinates.lon]);
+                }
+            }
+
+            setCalculatedRoute(routeCoords);
+            setRouteStats({
+                distance: formatDistance(result.total_distance_km),
+                duration: formatTime(result.total_time_minutes),
+            });
+            setRouteDetails({
+                ...result,
+                startAddress: result.start_location || formData.startPoint,
+                endAddress: result.end_location || formData.endPoint,
+                formData,
+            });
+
+            // Geocodifica le tappe intermedie per ottenere le coordinate dei marker
+            const nonEmptyWaypoints = filteredWaypoints;
+            if (nonEmptyWaypoints.length > 0) {
+                const markers = await Promise.all(
+                    nonEmptyWaypoints.map(async (name, i) => {
+                        try {
+                            const geo = await fetch(
+                                `${API_BASE_URL}/api/geocode/search/?q=${encodeURIComponent(name)}&limit=1`,
+                                { headers: { Accept: 'application/json' } }
+                            );
+                            if (!geo.ok) return null;
+                            const [place] = await geo.json();
+                            if (!place) return null;
+                            return {
+                                position: [parseFloat(place.lat), parseFloat(place.lon)],
+                                label: `Tappa ${i + 1}`,
+                                description: place.display_name || name,
+                            };
+                        } catch {
+                            return null;
+                        }
+                    })
+                );
+                setWaypointMarkers(markers.filter(Boolean));
+            } else {
+                setWaypointMarkers([]);
+            }
+        } catch (error) {
+            console.error('Error calculating fastest route:', error);
+            let msg = 'Errore nel calcolo del percorso';
+            if (error.message.includes('Failed to fetch')) {
+                msg = 'Connessione fallita. Il backend è in esecuzione?';
+            } else {
+                msg = error.message;
+            }
+            showError(msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCalculateScenicRoute = async formData => {
@@ -253,6 +364,7 @@ const Planner = () => {
             setIsScenicRoute(true);
             setCalculatedRoute([]);
             setRouteStats(null);
+            setWaypointMarkers([]);
             setPois([]);
             setRouteDetails(null);
 
@@ -452,7 +564,7 @@ const Planner = () => {
 
             <InteractiveMap
                 onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
-                routePoints={[]}
+                routePoints={waypointMarkers}
                 calculatedRoute={calculatedRoute}
                 pois={displayPois}
                 routeStats={routeStats}
