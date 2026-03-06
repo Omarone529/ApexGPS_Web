@@ -48,6 +48,12 @@ const MapController = ({ center, route, centerTrigger }) => {
         }
     }, [route, map]);
 
+    useEffect(() => {
+        if (route?.length === 0) {
+            hasCenteredOnRouteRef.current = false;
+        }
+    }, [route]);
+
     return null;
 };
 
@@ -62,6 +68,7 @@ const InteractiveMap = ({
     selectedPoi,
     onPoiClick,
     onAddPoiToRoute,
+    centerOnUserLocation = true,
 }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
@@ -72,7 +79,7 @@ const InteractiveMap = ({
 
     const handleUserLocation = location => {
         setUserLocation(location);
-        if (!hasInitializedRef.current) {
+        if (centerOnUserLocation && !hasInitializedRef.current) {
             setCenterTrigger(1);
             hasInitializedRef.current = true;
         }
@@ -135,7 +142,7 @@ const InteractiveMap = ({
     return (
         <div className="relative w-full h-screen bg-gray-900">
             {/* Overlay Controls */}
-            <div className="absolute top-24 left-6 z-[1000] flex flex-col gap-3">
+            <div className="absolute top-24 left-6 z-1000 flex flex-col gap-3">
                 <button
                     onClick={onMenuToggle}
                     className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
@@ -179,7 +186,7 @@ const InteractiveMap = ({
             {/* Route Stats */}
             {(distance || routeStats) && (
                 <div
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-1000
                       bg-[#FAF7F2]/95 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-2xl
                       border border-gray-200 shadow-2xl"
                 >
@@ -224,7 +231,7 @@ const InteractiveMap = ({
 
             {/* Mapillary Mode Tooltip */}
             {mapillaryMode && (
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-1000 bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
                     <FiEye size={14} />
                     Clicca sulla mappa per vedere le foto della zona
                 </div>
@@ -281,7 +288,7 @@ const InteractiveMap = ({
             {/* Loading Overlay */}
             {loading && (
                 <div
-                    className="absolute inset-0 z-[2000] bg-[#FAF7F2]/80 backdrop-blur-sm
+                    className="absolute inset-0 z-2000 bg-[#FAF7F2]/80 backdrop-blur-sm
                       flex items-center justify-center"
                 >
                     <div
@@ -303,7 +310,7 @@ const InteractiveMap = ({
             {/* Mapillary Toggle Button */}
             <button
                 onClick={() => setMapillaryMode(prev => !prev)}
-                className={`absolute bottom-6 right-6 z-[1000] w-12 h-12 rounded-2xl shadow-2xl
+                className={`absolute bottom-6 right-6 z-1000 w-12 h-12 rounded-2xl shadow-2xl
         transition-all duration-300 border flex items-center justify-center
         ${
             mapillaryMode

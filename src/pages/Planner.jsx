@@ -453,6 +453,9 @@ const Planner = () => {
 
     const displayPois = getDisplayPois();
 
+    const hasRoute = calculatedRoute.length > 0 || routeData !== null;
+    const shouldCenterOnUser = !hasRoute;
+
     return (
         <div className="relative h-screen">
             {loadingPois && (
@@ -479,6 +482,7 @@ const Planner = () => {
                 selectedPoi={selectedPoi}
                 onPoiClick={handlePoiClick}
                 onAddPoiToRoute={handleAddPoiToRoute}
+                centerOnUserLocation={shouldCenterOnUser}
             />
 
             <PlannerForm
@@ -488,7 +492,7 @@ const Planner = () => {
                 onCalculateScenicRoute={handleCalculateScenicRoute}
                 onSaveRoute={handleSaveRoute}
                 loading={loading}
-                hasRoute={calculatedRoute.length > 0}
+                hasRoute={hasRoute}
             />
 
             {errorMessage && (
