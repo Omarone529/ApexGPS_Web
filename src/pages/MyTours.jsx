@@ -3,31 +3,6 @@ import { gpxService } from '../services/gpxService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
-const GLOBAL_STYLES = `
-  .font-display { font-family: 'Playfair Display', serif; }
-  .font-body    { font-family: 'DM Sans', sans-serif; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pillActivate {
-    0%   { transform: scale(1); }
-    45%  { transform: scale(1.07); }
-    75%  { transform: scale(0.97); }
-    100% { transform: scale(1); }
-  }
-
-  .animate-fadeUp { animation: fadeUp 0.45s ease both; }
-  .card-enter     { animation: fadeUp 0.45s cubic-bezier(0.25,0.46,0.45,0.94) both; }
-  .pill-activate  { animation: pillActivate 0.4s cubic-bezier(0.34,1.4,0.64,1) both; }
-
-  .pill-fill {
-    transition: transform 0.6s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s ease;
-    transform-origin: left center;
-  }
-`;
-
 function StatPill({ count, label, accent }) {
     const prevRef = useRef(count);
     const [bounce, setBounce] = useState(false);
@@ -74,12 +49,9 @@ function StatPill({ count, label, accent }) {
 
 function MyTours() {
     return (
-        <>
-            <style>{GLOBAL_STYLES}</style>
-            <section className="font-body bg-[#F5F3EC] min-h-screen">
-                <RoutesGrid />
-            </section>
-        </>
+        <section className="font-body bg-[#F5F3EC] min-h-screen">
+            <RoutesGrid />
+        </section>
     );
 }
 
@@ -261,7 +233,7 @@ function RoutesGrid() {
                     paddingRight: sectionPadding,
                 }}
             >
-                <div className="max-w-[1280px] mx-auto animate-fadeUp">
+                <div className="max-w-7xl mx-auto animate-fadeUp">
                     <div className="flex justify-end mb-6">
                         <div className="flex items-center gap-3">
                             <StatPill count={publicCount} label="pubblici" accent={true} />
@@ -282,14 +254,14 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-[1280px] mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Suspension banner */}
                     {isUserSuspended && (
                         <div
                             className="flex items-center gap-3 mb-8 px-4 py-3.5 rounded-2xl
                                     bg-[#FEF2EE] border border-orange-200/60 animate-fadeUp"
                         >
-                            <span className="text-[15px] flex-shrink-0">⏸</span>
+                            <span className="text-[15px] shrink-0">⏸</span>
                             <p className="text-[13.5px] font-medium text-[#E8692A] font-body">
                                 Il tuo account è sospeso per {userSuspensionTime}. Durante questo
                                 periodo non puoi rendere pubblici nuovi percorsi.
@@ -302,7 +274,7 @@ function RoutesGrid() {
                         {routes.length === 0 && (
                             <div className="col-span-full text-center py-20 animate-fadeUp">
                                 <div
-                                    className="w-14 h-14 rounded-[16px] bg-[#EDE9DF] flex items-center justify-center
+                                    className="w-14 h-14 rounded-2xl bg-[#EDE9DF] flex items-center justify-center
                                             mx-auto mb-4 text-[#9B958F]"
                                 >
                                     <svg
@@ -422,19 +394,19 @@ function RouteCard({
             style={{ animationDelay: `${idx * 0.05}s` }}
         >
             {/* Image */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE9DF]">
+            <div className="relative aspect-4/3 overflow-hidden bg-[#EDE9DF]">
                 <img
                     src={route.image}
                     alt={route.title}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/25 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/25 pointer-events-none" />
 
                 {/* Toggle */}
                 <div className="absolute top-3 left-3 z-10">
                     <label
                         className={[
-                            'inline-flex items-center gap-2 rounded-full px-2.5 py-[5px]',
+                            'inline-flex items-center gap-2 rounded-full px-2.5 py-1.25',
                             'bg-white/90 backdrop-blur-sm border border-black/8 shadow-sm select-none',
                             'transition-transform duration-150',
                             !isRouteSuspended
@@ -452,22 +424,22 @@ function RouteCard({
                         />
                         <span
                             className={[
-                                'relative flex-shrink-0 w-[28px] h-[16px] rounded-full transition-colors duration-300',
+                                'relative shrink-0 w-7 h-4 rounded-full transition-colors duration-300',
                                 route.isPublic ? 'bg-[#E8692A]' : 'bg-[#C8C4BC]',
                             ].join(' ')}
                         >
                             <span
                                 className={[
-                                    'absolute top-[2px] w-[12px] h-[12px] rounded-full bg-white',
+                                    'absolute top-0.5 w-3 h-3 rounded-full bg-white',
                                     'shadow-[0_1px_2px_rgba(0,0,0,0.2)]',
                                     'transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
-                                    route.isPublic ? 'translate-x-[14px]' : 'translate-x-[2px]',
+                                    route.isPublic ? 'translate-x-3.5' : 'translate-x-0.5',
                                 ].join(' ')}
                             />
                         </span>
                         <span
                             className={[
-                                'text-[11px] font-semibold tracking-[0.03em] font-body min-w-[32px]',
+                                'text-[11px] font-semibold tracking-[0.03em] font-body min-w-8',
                                 'transition-colors duration-300',
                                 route.isPublic ? 'text-[#E8692A]' : 'text-[#9B958F]',
                             ].join(' ')}
@@ -553,7 +525,7 @@ function RouteCard({
                                 <button
                                     onClick={() => onEditStart(route)}
                                     title="Edit name"
-                                    className="w-[26px] h-[26px] rounded-lg flex items-center justify-center flex-shrink-0
+                                    className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0
                                                opacity-0 group-hover:opacity-100 text-[#9B958F]
                                                transition-all duration-200
                                                hover:bg-[#FDF0E8] hover:text-[#E8692A]"
@@ -586,7 +558,7 @@ function RouteCard({
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
-                        className="flex-shrink-0 opacity-50"
+                        className="shrink-0 opacity-50"
                     >
                         <path
                             strokeLinecap="round"
