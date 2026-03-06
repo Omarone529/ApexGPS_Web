@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gpxService } from '../services/gpxService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
@@ -123,16 +124,7 @@ function RoutesGrid() {
                 });
                 if (!response.ok) throw new Error(`Failed to fetch routes: ${response.statusText}`);
                 const data = await response.json();
-                const formattedRoutes = data.map(route => ({
-                    id: route.id,
-                    title: route.name,
-                    polyline: route.polyline,
-                    area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
-                    image: `https://picsum.photos/seed/${route.id}/300/400`,
-                    isPublic: route.visibility === 'public',
-                    hiddenUntil: route.hidden_until,
-                }));
-                setRoutes(formattedRoutes);
+                setRoutes(data);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -172,11 +164,11 @@ function RoutesGrid() {
     const handleTogglePublic = async id => {
         const route = routes.find(r => r.id === id);
         if (!route) return;
-        if (route.hiddenUntil && new Date(route.hiddenUntil) > new Date()) {
+        if (route.hidden_until && new Date(route.hidden_until) > new Date()) {
             alert('Questo percorso è sospeso e non può essere reso pubblico.');
             return;
         }
-        const newVisibility = route.isPublic ? 'private' : 'public';
+        const newVisibility = route.visibility === 'public' ? 'private' : 'public';
         try {
             const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
                 method: 'PATCH',
@@ -184,7 +176,7 @@ function RoutesGrid() {
                 body: JSON.stringify({ visibility: newVisibility }),
             });
             if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
-            setRoutes(routes.map(r => (r.id === id ? { ...r, isPublic: !r.isPublic } : r)));
+            setRoutes(routes.map(r => (r.id === id ? { ...r, visibility: newVisibility } : r)));
         } catch (err) {
             alert(`Error updating route: ${err.message}`);
         }
@@ -192,7 +184,7 @@ function RoutesGrid() {
 
     const handleEditStart = route => {
         setEditingId(route.id);
-        setEditValue(route.title);
+        setEditValue(route.name);
     };
 
     const handleEditCancel = () => {
@@ -209,7 +201,7 @@ function RoutesGrid() {
                 body: JSON.stringify({ name: editValue.trim() }),
             });
             if (!response.ok) throw new Error(`Update failed: ${response.statusText}`);
-            setRoutes(routes.map(r => (r.id === id ? { ...r, title: editValue.trim() } : r)));
+            setRoutes(routes.map(r => (r.id === id ? { ...r, name: editValue.trim() } : r)));
             setEditingId(null);
             setEditValue('');
         } catch (err) {
@@ -228,7 +220,7 @@ function RoutesGrid() {
         ? renderTimeRemaining(currentUser.hidden_until)
         : null;
 
-    const publicCount = routes.filter(r => r.isPublic).length;
+    const publicCount = routes.filter(r => r.visibility === 'public').length;
 
     if (loading) {
         return (
@@ -331,9 +323,9 @@ function RoutesGrid() {
 
                         {routes.map((route, idx) => {
                             const isRouteSuspended =
-                                route.hiddenUntil && new Date(route.hiddenUntil) > new Date();
+                                route.hidden_until && new Date(route.hidden_until) > new Date();
                             const routeSuspensionTime = isRouteSuspended
-                                ? renderTimeRemaining(route.hiddenUntil)
+                                ? renderTimeRemaining(route.hidden_until)
                                 : null;
 
                             return (
@@ -375,6 +367,7 @@ function RouteCard({
     onEditSave,
     onKeyDown,
 }) {
+    const navigate = useNavigate();
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
 
@@ -398,7 +391,7 @@ function RouteCard({
         try {
             gpxService.downloadGPX({
                 id: route.id,
-                name: route.title,
+                name: route.name,
                 polyline: route.polyline,
             });
         } catch (error) {
@@ -409,13 +402,21 @@ function RouteCard({
         }
     };
 
+    const handleViewDetails = () => {
+        navigate('/planner', { state: { routeData: route } });
+    };
+
+    const area = `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`;
+    const image = `https://picsum.photos/seed/${route.id}/300/400`;
+    const isPublic = route.visibility === 'public';
+
     return (
         <div
             ref={ref}
             className={[
                 'group bg-white rounded-[20px] border overflow-hidden cursor-pointer',
                 'shadow-[0_1px_3px_rgba(26,24,20,0.06)] transition-all duration-300',
-                route.isPublic ? 'border-orange-200/60' : 'border-[#E2DDD3]',
+                isPublic ? 'border-orange-200/60' : 'border-[#E2DDD3]',
                 'hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(26,24,20,0.09)] hover:border-transparent',
                 visible ? 'card-enter' : 'opacity-0',
             ].join(' ')}
@@ -424,8 +425,8 @@ function RouteCard({
             {/* Image */}
             <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE9DF]">
                 <img
-                    src={route.image}
-                    alt={route.title}
+                    src={image}
+                    alt={route.name}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/25 pointer-events-none" />
@@ -446,14 +447,14 @@ function RouteCard({
                         <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={route.isPublic}
+                            checked={isPublic}
                             onChange={() => onTogglePublic(route.id)}
                             disabled={isRouteSuspended}
                         />
                         <span
                             className={[
                                 'relative flex-shrink-0 w-[28px] h-[16px] rounded-full transition-colors duration-300',
-                                route.isPublic ? 'bg-[#E8692A]' : 'bg-[#C8C4BC]',
+                                isPublic ? 'bg-[#E8692A]' : 'bg-[#C8C4BC]',
                             ].join(' ')}
                         >
                             <span
@@ -461,7 +462,7 @@ function RouteCard({
                                     'absolute top-[2px] w-[12px] h-[12px] rounded-full bg-white',
                                     'shadow-[0_1px_2px_rgba(0,0,0,0.2)]',
                                     'transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
-                                    route.isPublic ? 'translate-x-[14px]' : 'translate-x-[2px]',
+                                    isPublic ? 'translate-x-[14px]' : 'translate-x-[2px]',
                                 ].join(' ')}
                             />
                         </span>
@@ -469,10 +470,10 @@ function RouteCard({
                             className={[
                                 'text-[11px] font-semibold tracking-[0.03em] font-body min-w-[32px]',
                                 'transition-colors duration-300',
-                                route.isPublic ? 'text-[#E8692A]' : 'text-[#9B958F]',
+                                isPublic ? 'text-[#E8692A]' : 'text-[#9B958F]',
                             ].join(' ')}
                         >
-                            {route.isPublic ? 'Pubblico' : 'Privato'}
+                            {isPublic ? 'Pubblico' : 'Privato'}
                         </span>
                     </label>
                     {isRouteSuspended && (
@@ -547,7 +548,7 @@ function RouteCard({
                     ) : (
                         <>
                             <h3 className="flex-1 font-display text-[17px] font-medium text-[#1A1814] leading-snug">
-                                {route.title}
+                                {route.name}
                             </h3>
                             {!isRouteSuspended && (
                                 <button
@@ -601,7 +602,7 @@ function RouteCard({
                             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                     </svg>
-                    {route.area}
+                    {area}
                 </p>
 
                 <div className="flex justify-end mb-4">
@@ -632,6 +633,7 @@ function RouteCard({
 
                 {/* CTA */}
                 <button
+                    onClick={handleViewDetails}
                     className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
                                    bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
                                    transition-all duration-200
