@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gpxService } from '../services/gpxService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
@@ -121,16 +122,7 @@ function RoutesGrid() {
             });
             if (!response.ok) throw new Error(`Failed to fetch routes: ${response.statusText}`);
             const data = await response.json();
-            const formattedRoutes = data.map(route => ({
-                id: route.id,
-                title: route.name,
-                name: route.name,
-                polyline: route.polyline,
-                area: `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`,
-                image: `https://picsum.photos/seed/${route.id}/300/400`,
-                owner: route.owner_username || 'Anonymous',
-            }));
-            setRoutes(formattedRoutes);
+            setRoutes(data);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -280,8 +272,8 @@ function RoutesGrid() {
                         </h3>
                         <p className="text-[13.5px] text-[#6B6460] font-body mb-6">
                             Sei sicuro di voler rendere privato il percorso{' '}
-                            <span className="font-semibold text-[#1A1814]">{routeToBan.title}</span>
-                            ? Non sarà più visibile pubblicamente.
+                            <span className="font-semibold text-[#1A1814]">{routeToBan.name}</span>?
+                            Non sarà più visibile pubblicamente.
                         </p>
                         <div className="flex justify-end gap-3">
                             <button
@@ -310,6 +302,7 @@ function RoutesGrid() {
 }
 
 function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
+    const navigate = useNavigate();
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
 
@@ -333,7 +326,7 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
         try {
             gpxService.downloadGPX({
                 id: route.id,
-                name: route.title,
+                name: route.name,
                 polyline: route.polyline,
             });
         } catch (error) {
@@ -343,6 +336,14 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
             );
         }
     };
+
+    const handleViewDetails = () => {
+        navigate('/planner', { state: { routeData: route } });
+    };
+
+    const area = `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`;
+    const image = `https://picsum.photos/seed/${route.id}/300/400`;
+    const owner = route.owner_username || 'Anonymous';
 
     return (
         <div
@@ -358,8 +359,8 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
             {/* Image */}
             <div className="relative aspect-4/3 overflow-hidden bg-[#EDE9DF]">
                 <img
-                    src={route.image}
-                    alt={route.title}
+                    src={image}
+                    alt={route.name}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
                 />
                 <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/25 pointer-events-none" />
@@ -425,7 +426,7 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
             {/* Body */}
             <div className="p-5">
                 <h3 className="font-display text-[17px] font-medium text-[#1A1814] leading-snug mb-1.5">
-                    {route.title}
+                    {route.name}
                 </h3>
 
                 <p className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-1 font-body">
@@ -450,11 +451,11 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                     </svg>
-                    {route.area}
+                    {area}
                 </p>
 
                 <div className="flex items-center justify-between mb-4">
-                    <p className="text-[11.5px] text-[#B0AAA4] font-body">by {route.owner}</p>
+                    <p className="text-[11.5px] text-[#B0AAA4] font-body">by {owner}</p>
                     <button
                         onClick={handleDownload}
                         title="Scarica GPX"
@@ -481,6 +482,7 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                 </div>
 
                 <button
+                    onClick={handleViewDetails}
                     className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
                                bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
                                transition-all duration-200
@@ -488,7 +490,7 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                                hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
                                active:scale-[0.99]"
                 >
-                    View Details
+                    Vai al Percorso
                 </button>
             </div>
         </div>
