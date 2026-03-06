@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
 import { poiService } from '../components/planner/MapServices/POIService.jsx';
@@ -71,6 +72,9 @@ const formatDistance = km => {
 };
 
 const Planner = () => {
+    const location = useLocation();
+    const routeData = location.state?.routeData;
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [calculatedRoute, setCalculatedRoute] = useState([]);
     const [isScenicRoute, setIsScenicRoute] = useState(false);
@@ -87,18 +91,15 @@ const Planner = () => {
 
     // Map to normalize POI categories to expected POICard values
     const categoryMap = {
-        // Restaurants and food
         ristorante: 'restaurant',
         trattoria: 'restaurant',
         osteria: 'restaurant',
         pizzeria: 'restaurant',
         food: 'food',
-        // Places of worship
         chiesa: 'church',
         cattedrale: 'church',
         basilica: 'church',
         duomo: 'church',
-        // Historic and monuments
         castello: 'castle',
         fortezza: 'castle',
         monumento: 'monument',
@@ -106,13 +107,10 @@ const Planner = () => {
         'sito archeologico': 'historic',
         rovine: 'historic',
         storico: 'historic',
-        // Museums
         museo: 'museum',
-        // Viewpoints
         belvedere: 'viewpoint',
         panorama: 'viewpoint',
         panoramico: 'panoramic',
-        // Nature
         lago: 'lake',
         fiume: 'nature',
         cascata: 'waterfall',
@@ -123,7 +121,6 @@ const Planner = () => {
         giardino: 'nature',
         spiaggia: 'nature',
         costiera: 'nature',
-        // Vineyards
         vigneto: 'vineyard',
         cantina: 'vineyard',
     };
@@ -133,9 +130,7 @@ const Planner = () => {
             setLoadingPois(true);
             try {
                 const poisData = await poiService.getAllPOIs();
-                // Format POIs for the map
                 const formattedPois = poiService.formatPOIsForMap(poisData);
-                // Normalize categories
                 const normalizedPois = formattedPois.map(poi => {
                     const originalCategory = poi.category?.toLowerCase() || '';
                     const mappedCategory =
@@ -156,6 +151,38 @@ const Planner = () => {
 
         loadAllPOIs();
     }, []);
+
+    useEffect(() => {
+        if (routeData) {
+            applyRouteData(routeData);
+        }
+    }, [routeData]);
+
+    const applyRouteData = data => {
+        const coords = decodePolyline(data.polyline);
+        setCalculatedRoute(coords);
+
+        setRouteStats({
+            distance: formatDistance(data.total_distance_km),
+            duration: formatTime(data.total_time_minutes),
+            scenicScore: data.scenic_score ? `${data.scenic_score.toFixed(1)}/100` : 'N/A',
+            poiCount: data.poi_count || 0,
+        });
+
+        if (data.pois && Array.isArray(data.pois)) {
+            const routePoiMarkers = data.pois.map(poi => ({
+                id: `poi-${poi.id}`,
+                originalId: poi.id,
+                name: poi.name,
+                category: poi.category,
+                coordinates: [poi.latitude, poi.longitude], // adjust if needed
+                isRoutePoi: true,
+            }));
+            setPois(routePoiMarkers);
+        }
+
+        setRouteDetails(data);
+    };
 
     const getDisplayPois = () => {
         const hiddenCategories = ['restaurant', 'food'];
@@ -191,13 +218,11 @@ const Planner = () => {
             return;
         }
 
-        // If it's a route POI, use it directly
         if (poi.isRoutePoi) {
             setSelectedPoi(poi);
             return;
         }
 
-        // Determine correct ID for fetch (try different keys)
         const poiId = poi.originalId || poi.id || poi.pk;
         if (!poiId) {
             console.warn('POI without ID, using base data', poi);
@@ -206,7 +231,6 @@ const Planner = () => {
         }
 
         try {
-            // FIX: use same base URL as list (/api/gis/...)
             const response = await fetch(`${API_BASE_URL}/api/gis/points-of-interest/${poiId}/`, {
                 headers: { Accept: 'application/json' },
             });
@@ -221,7 +245,6 @@ const Planner = () => {
                     region: fullPoiData.region,
                 });
             } else {
-                // If request fails, use base data
                 setSelectedPoi(poi);
             }
         } catch (error) {
@@ -232,7 +255,6 @@ const Planner = () => {
 
     const handleAddPoiToRoute = poi => {
         console.log('Add POI to route:', poi);
-        // Here you could add the POI as a waypoint
         setSelectedPoi(null);
     };
 
@@ -479,8 +501,7 @@ const Planner = () => {
         setErrorMessage(null);
 
         try {
-            let token = localStorage.getItem('access_token'); // Legge il token JWT
-
+            let token = localStorage.getItem('access_token');
             if (!token) {
                 token = sessionStorage.getItem('access_token');
             }
@@ -523,17 +544,14 @@ const Planner = () => {
                 } catch (parseError) {
                     console.error('Error parsing save response:', parseError);
                 }
-                // Gestione specifica per duplicato (409 Conflict)
                 if (response.status === 409) {
                     errorMessage = 'Percorso già salvato in precedenza.';
                 }
                 throw new Error(errorMessage);
             }
 
-            // Salvataggio riuscito
             showSuccess('Percorso salvato con successo!');
 
-            // Chiudi il form dopo un breve ritardo per dare feedback visivo
             setTimeout(() => {
                 setIsMenuOpen(false);
             }, 500);
