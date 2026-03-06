@@ -16,6 +16,13 @@ function Navbar() {
     const [isHeroVisible, setIsHeroVisible] = useState(true);
 
     useEffect(() => {
+        if (isPlannerPage) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setIsVisible(true);
+        }
+    }, [isPlannerPage]);
+
+    useEffect(() => {
         if (isPlannerPage) return;
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
