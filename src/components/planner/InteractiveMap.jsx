@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { FiMenu, FiNavigation, FiLayers } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
@@ -23,6 +23,7 @@ L.Icon.Default.mergeOptions({
 const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
+    const hasCenteredOnRouteRef = useRef(false);
 
     useEffect(() => {
         if (center && centerTrigger > lastTriggerRef.current) {
@@ -35,13 +36,14 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     }, [center, map, centerTrigger]);
 
     useEffect(() => {
-        if (route?.length > 1) {
+        if (route?.length > 1 && !hasCenteredOnRouteRef.current) {
             const bounds = L.latLngBounds(route);
             map.flyToBounds(bounds, {
-                padding: [50, 50],
-                duration: 1.5,
-                maxZoom: 14,
+                padding: [30, 30],
+                duration: 1.2,
+                maxZoom: 15,
             });
+            hasCenteredOnRouteRef.current = true;
 
             const onMoveEnd = () => {
                 map.off('moveend', onMoveEnd);
@@ -49,7 +51,7 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
                     if (onRouteRendered && typeof onRouteRendered === 'function') {
                         onRouteRendered();
                     }
-                }, 200);
+                }, 300);
             };
             map.on('moveend', onMoveEnd);
         }
@@ -58,276 +60,320 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     return null;
 };
 
-const InteractiveMap = ({
-    onMenuToggle,
-    routePoints = [],
-    calculatedRoute = [],
-    pois = [],
-    isScenicRoute = false,
-    loading = false,
-    routeStats,
-    selectedPoi,
-    onPoiClick,
-    onAddPoiToRoute,
-    onRouteRendered,
-    mapLayer, // Nuova prop
-    onMapLayerChange, // Nuova prop
-}) => {
-    const [userLocation, setUserLocation] = useState(null);
-    const [centerTrigger, setCenterTrigger] = useState(0);
-    const hasInitializedRef = useRef(false);
-    const [mapillaryPoint, setMapillaryPoint] = useState(null);
-    const [mapillaryMode, setMapillaryMode] = useState(false);
+const InteractiveMap = forwardRef(
+    (
+        {
+            onMenuToggle,
+            routePoints = [],
+            calculatedRoute = [],
+            pois = [],
+            isScenicRoute = false,
+            loading = false,
+            routeStats,
+            selectedPoi,
+            onPoiClick,
+            onAddPoiToRoute,
+            onRouteRendered,
+            mapLayer,
+            onMapLayerChange,
+        },
+        ref
+    ) => {
+        const [userLocation, setUserLocation] = useState(null);
+        const [centerTrigger, setCenterTrigger] = useState(0);
+        const hasInitializedRef = useRef(false);
+        const [mapillaryPoint, setMapillaryPoint] = useState(null);
+        const [mapillaryMode, setMapillaryMode] = useState(false);
+        const mapRef = useRef(null);
 
-    const handleUserLocation = location => {
-        setUserLocation(location);
-        if (!hasInitializedRef.current) {
-            setCenterTrigger(1);
-            hasInitializedRef.current = true;
-        }
-    };
+        useImperativeHandle(ref, () => ({
+            centerOnRoute: routeCoords => {
+                if (mapRef.current && routeCoords?.length > 1) {
+                    const bounds = L.latLngBounds(routeCoords);
+                    mapRef.current.fitBounds(bounds, {
+                        padding: [30, 30],
+                        maxZoom: 15,
+                        animate: false,
+                    });
+                }
+            },
+            fitBoundsAsync: routeCoords => {
+                return new Promise(resolve => {
+                    if (!mapRef.current || routeCoords?.length <= 1) {
+                        resolve();
+                        return;
+                    }
+                    const bounds = L.latLngBounds(routeCoords);
+                    mapRef.current.fitBounds(bounds, {
+                        padding: [30, 30],
+                        maxZoom: 15,
+                        animate: false,
+                    });
+                    // Attendiamo che il movimento sia completato (anche senza animazione, moveend viene emesso)
+                    mapRef.current.once('moveend', () => {
+                        // Piccolo ritardo extra per sicurezza
+                        setTimeout(resolve, 100);
+                    });
+                });
+            },
+        }));
 
-    const centerOnUser = () => {
-        if (userLocation) {
-            setCenterTrigger(prev => prev + 1);
-        }
-    };
+        const handleUserLocation = location => {
+            setUserLocation(location);
+            if (!hasInitializedRef.current) {
+                setCenterTrigger(1);
+                hasInitializedRef.current = true;
+            }
+        };
 
-    const toggleMapLayer = () => {
-        onMapLayerChange(prev => (prev === 'standard' ? 'satellite' : 'standard'));
-    };
+        const centerOnUser = () => {
+            if (userLocation) {
+                setCenterTrigger(prev => prev + 1);
+            }
+        };
 
-    const routePointsWithLabels = useMemo(() => {
-        if (!calculatedRoute.length) return routePoints;
+        const toggleMapLayer = () => {
+            onMapLayerChange(prev => (prev === 'standard' ? 'satellite' : 'standard'));
+        };
 
-        const points = [];
+        const routePointsWithLabels = useMemo(() => {
+            if (!calculatedRoute.length) return routePoints;
 
-        points.push({
-            position: calculatedRoute[0],
-            label: 'Start',
-            description: 'Starting point',
-        });
+            const points = [];
 
-        points.push(...routePoints);
+            points.push({
+                position: calculatedRoute[0],
+                label: 'Start',
+                description: 'Starting point',
+            });
 
-        points.push({
-            position: calculatedRoute[calculatedRoute.length - 1],
-            label: 'Finish',
-            description: 'Destination',
-        });
+            points.push(...routePoints);
 
-        return points;
-    }, [calculatedRoute, routePoints]);
+            points.push({
+                position: calculatedRoute[calculatedRoute.length - 1],
+                label: 'Finish',
+                description: 'Destination',
+            });
 
-    const calculateTotalDistance = () => {
-        if (routeStats?.distance) return routeStats.distance;
+            return points;
+        }, [calculatedRoute, routePoints]);
 
-        if (calculatedRoute.length < 2) return null;
+        const calculateTotalDistance = () => {
+            if (routeStats?.distance) return routeStats.distance;
 
-        let total = 0;
-        for (let i = 1; i < calculatedRoute.length; i++) {
-            const [lat1, lon1] = calculatedRoute[i - 1];
-            const [lat2, lon2] = calculatedRoute[i];
-            const R = 6371;
-            const dLat = ((lat2 - lat1) * Math.PI) / 180;
-            const dLon = ((lon2 - lon1) * Math.PI) / 180;
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos((lat1 * Math.PI) / 180) *
-                    Math.cos((lat2 * Math.PI) / 180) *
-                    Math.sin(dLon / 2) *
-                    Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            total += R * c;
-        }
-        return `${total.toFixed(1)} km`;
-    };
+            if (calculatedRoute.length < 2) return null;
 
-    const distance = calculateTotalDistance();
+            let total = 0;
+            for (let i = 1; i < calculatedRoute.length; i++) {
+                const [lat1, lon1] = calculatedRoute[i - 1];
+                const [lat2, lon2] = calculatedRoute[i];
+                const R = 6371;
+                const dLat = ((lat2 - lat1) * Math.PI) / 180;
+                const dLon = ((lon2 - lon1) * Math.PI) / 180;
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos((lat1 * Math.PI) / 180) *
+                        Math.cos((lat2 * Math.PI) / 180) *
+                        Math.sin(dLon / 2) *
+                        Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                total += R * c;
+            }
+            return `${total.toFixed(1)} km`;
+        };
 
-    return (
-        <div className="relative w-full h-screen bg-gray-900">
-            {/* Overlay Controls */}
-            <div className="absolute top-24 left-6 z-[1000] flex flex-col gap-3">
-                <button
-                    onClick={onMenuToggle}
-                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+        const distance = calculateTotalDistance();
+
+        return (
+            <div className="relative w-full h-screen bg-gray-900">
+                {/* Overlay Controls */}
+                <div className="absolute top-24 left-6 z-[1000] flex flex-col gap-3">
+                    <button
+                        onClick={onMenuToggle}
+                        className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
                      hover:bg-orange-500 hover:text-white transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center"
-                    aria-label="Open planner"
-                >
-                    <FiMenu size={22} className="group-hover:scale-110 transition-transform" />
-                </button>
+                        aria-label="Open planner"
+                    >
+                        <FiMenu size={22} className="group-hover:scale-110 transition-transform" />
+                    </button>
 
-                <button
-                    onClick={toggleMapLayer}
-                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+                    <button
+                        onClick={toggleMapLayer}
+                        className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
                      hover:text-orange-600 transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center"
-                    aria-label="Toggle map layer"
-                >
-                    <FiLayers size={20} className="group-hover:scale-110 transition-transform" />
-                </button>
+                        aria-label="Toggle map layer"
+                    >
+                        <FiLayers
+                            size={20}
+                            className="group-hover:scale-110 transition-transform"
+                        />
+                    </button>
 
-                <button
-                    onClick={centerOnUser}
-                    disabled={!userLocation}
-                    className={`group w-12 h-12 rounded-2xl shadow-2xl transition-all duration-300 
+                    <button
+                        onClick={centerOnUser}
+                        disabled={!userLocation}
+                        className={`group w-12 h-12 rounded-2xl shadow-2xl transition-all duration-300 
                      flex items-center justify-center border ${
                          userLocation
                              ? 'bg-[#FAF7F2] text-gray-800 border-gray-200 hover:border-orange-400 hover:text-orange-600'
                              : 'bg-gray-200/50 text-gray-400 border-gray-300 cursor-not-allowed'
                      }`}
-                    aria-label="Center on my location"
-                >
-                    <FiNavigation
-                        size={20}
-                        className="group-hover:scale-110 transition-transform"
-                    />
-                </button>
-            </div>
+                        aria-label="Center on my location"
+                    >
+                        <FiNavigation
+                            size={20}
+                            className="group-hover:scale-110 transition-transform"
+                        />
+                    </button>
+                </div>
 
-            {/* Route Stats */}
-            {(distance || routeStats) && (
-                <div
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]
+                {/* Route Stats */}
+                {(distance || routeStats) && (
+                    <div
+                        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000]
                       bg-[#FAF7F2]/95 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-2xl
                       border border-gray-200 shadow-2xl"
-                >
-                    <div className="flex items-center gap-6">
-                        {distance && (
-                            <div className="flex items-center gap-2">
-                                <div
-                                    className={`w-2 h-2 rounded-full ${isScenicRoute ? 'bg-amber-500' : 'bg-orange-500'}`}
-                                />
-                                <span className="text-sm font-medium text-gray-800">
-                                    {distance}
-                                </span>
-                            </div>
-                        )}
-
-                        {routeStats?.duration && (
-                            <>
-                                <div className="w-px h-4 bg-gray-300" />
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-600">⏱️</span>
-                                    <span className="text-sm font-medium text-gray-800">
-                                        {routeStats.duration}
-                                    </span>
-                                </div>
-                            </>
-                        )}
-
-                        {routeStats?.scenicScore && routeStats.scenicScore !== 'N/A' && (
-                            <>
-                                <div className="w-px h-4 bg-gray-300" />
-                                <div className="flex items-center gap-1">
-                                    <span className="text-sm">🏔️</span>
-                                    <span className="text-sm font-medium text-amber-600">
-                                        {routeStats.scenicScore}
-                                    </span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Mapillary Mode Tooltip */}
-            {mapillaryMode && (
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
-                    <FiEye size={14} />
-                    Clicca sulla mappa per vedere le foto della zona
-                </div>
-            )}
-
-            {/* Map Container */}
-            <MapContainer
-                center={[45.4642, 9.19]}
-                zoom={13}
-                className="h-full w-full z-0"
-                scrollWheelZoom={true}
-                zoomControl={false}
-            >
-                <MapController
-                    center={userLocation}
-                    route={calculatedRoute}
-                    centerTrigger={centerTrigger}
-                    onRouteRendered={onRouteRendered}
-                />
-
-                <TileLayer
-                    url={
-                        mapLayer === 'standard'
-                            ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                            : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                    }
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                />
-
-                <MapUserLocation onLocationFound={handleUserLocation} />
-                <MapRoutePoints routePoints={routePointsWithLabels} />
-                <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
-                <MapPOIs pois={pois} onPoiClick={onPoiClick} />
-                <MapClickHandler onMapClick={setMapillaryPoint} mapillaryMode={mapillaryMode} />
-            </MapContainer>
-
-            {/* POI Card */}
-            {selectedPoi && (
-                <POICard
-                    poi={selectedPoi}
-                    onClose={() => onPoiClick(null)}
-                    onAddToRoute={onAddPoiToRoute}
-                />
-            )}
-
-            {/* Mapillary Panel */}
-            {mapillaryPoint && (
-                <MapillaryPanel
-                    lat={mapillaryPoint.lat}
-                    lon={mapillaryPoint.lng}
-                    onClose={() => setMapillaryPoint(null)}
-                />
-            )}
-
-            {/* Loading Overlay */}
-            {loading && (
-                <div
-                    className="absolute inset-0 z-[2000] bg-[#FAF7F2]/80 backdrop-blur-sm
-                      flex items-center justify-center"
-                >
-                    <div
-                        className="bg-[#FAF7F2] text-gray-800 px-6 py-4 rounded-2xl
-                        border border-gray-200 shadow-2xl"
                     >
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="w-5 h-5 border-2 border-orange-500 border-t-transparent
-                            rounded-full animate-spin"
-                            />
-                            <span className="text-sm font-medium text-gray-800">
-                                Calculating route...
-                            </span>
+                        <div className="flex items-center gap-6">
+                            {distance && (
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className={`w-2 h-2 rounded-full ${isScenicRoute ? 'bg-amber-500' : 'bg-orange-500'}`}
+                                    />
+                                    <span className="text-sm font-medium text-gray-800">
+                                        {distance}
+                                    </span>
+                                </div>
+                            )}
+
+                            {routeStats?.duration && (
+                                <>
+                                    <div className="w-px h-4 bg-gray-300" />
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">⏱️</span>
+                                        <span className="text-sm font-medium text-gray-800">
+                                            {routeStats.duration}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+
+                            {routeStats?.scenicScore && routeStats.scenicScore !== 'N/A' && (
+                                <>
+                                    <div className="w-px h-4 bg-gray-300" />
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-sm">🏔️</span>
+                                        <span className="text-sm font-medium text-amber-600">
+                                            {routeStats.scenicScore}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
-                </div>
-            )}
-            {/* Mapillary Toggle Button */}
-            <button
-                onClick={() => setMapillaryMode(prev => !prev)}
-                className={`absolute bottom-6 right-6 z-[1000] w-12 h-12 rounded-2xl shadow-2xl
+                )}
+
+                {/* Mapillary Mode Tooltip */}
+                {mapillaryMode && (
+                    <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
+                        <FiEye size={14} />
+                        Clicca sulla mappa per vedere le foto della zona
+                    </div>
+                )}
+
+                {/* Map Container */}
+                <MapContainer
+                    center={[45.4642, 9.19]}
+                    zoom={13}
+                    className="h-full w-full z-0"
+                    scrollWheelZoom={true}
+                    zoomControl={false}
+                    whenCreated={map => {
+                        mapRef.current = map;
+                    }}
+                >
+                    <MapController
+                        center={userLocation}
+                        route={calculatedRoute}
+                        centerTrigger={centerTrigger}
+                        onRouteRendered={onRouteRendered}
+                    />
+
+                    <TileLayer
+                        url={
+                            mapLayer === 'standard'
+                                ? 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                                : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+                        }
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    />
+
+                    <MapUserLocation onLocationFound={handleUserLocation} />
+                    <MapRoutePoints routePoints={routePointsWithLabels} />
+                    <MapPolyline calculatedRoute={calculatedRoute} isScenicRoute={isScenicRoute} />
+                    <MapPOIs pois={pois} onPoiClick={onPoiClick} />
+                    <MapClickHandler onMapClick={setMapillaryPoint} mapillaryMode={mapillaryMode} />
+                </MapContainer>
+
+                {/* POI Card */}
+                {selectedPoi && (
+                    <POICard
+                        poi={selectedPoi}
+                        onClose={() => onPoiClick(null)}
+                        onAddToRoute={onAddPoiToRoute}
+                    />
+                )}
+
+                {/* Mapillary Panel */}
+                {mapillaryPoint && (
+                    <MapillaryPanel
+                        lat={mapillaryPoint.lat}
+                        lon={mapillaryPoint.lng}
+                        onClose={() => setMapillaryPoint(null)}
+                    />
+                )}
+
+                {/* Loading Overlay */}
+                {loading && (
+                    <div
+                        className="absolute inset-0 z-[2000] bg-[#FAF7F2]/80 backdrop-blur-sm
+                      flex items-center justify-center"
+                    >
+                        <div
+                            className="bg-[#FAF7F2] text-gray-800 px-6 py-4 rounded-2xl
+                        border border-gray-200 shadow-2xl"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-5 h-5 border-2 border-orange-500 border-t-transparent
+                            rounded-full animate-spin"
+                                />
+                                <span className="text-sm font-medium text-gray-800">
+                                    Calculating route...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Mapillary Toggle Button */}
+                <button
+                    onClick={() => setMapillaryMode(prev => !prev)}
+                    className={`absolute bottom-6 right-6 z-[1000] w-12 h-12 rounded-2xl shadow-2xl
         transition-all duration-300 border flex items-center justify-center
         ${
             mapillaryMode
                 ? 'bg-blue-500 text-white border-blue-400'
                 : 'bg-[#FAF7F2] text-gray-800 border-gray-200 hover:border-blue-400 hover:text-blue-500'
         }`}
-                aria-label="Toggle Mapillary"
-            >
-                <FiEye size={20} />
-            </button>
-        </div>
-    );
-};
+                    aria-label="Toggle Mapillary"
+                >
+                    <FiEye size={20} />
+                </button>
+            </div>
+        );
+    }
+);
 
 export default InteractiveMap;

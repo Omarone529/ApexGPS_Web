@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
@@ -86,6 +86,7 @@ const Planner = () => {
     const [selectedPoi, setSelectedPoi] = useState(null);
     const [routeScreenshot, setRouteScreenshot] = useState(null);
     const [mapLayer, setMapLayer] = useState('standard');
+    const mapRef = useRef();
     // Map to normalize POI categories to expected POICard values
     const categoryMap = {
         // Restaurants and food
@@ -236,23 +237,23 @@ const Planner = () => {
         if (!calculatedRoute || calculatedRoute.length === 0) return;
 
         try {
-            // Salva il layer corrente per ripristinarlo dopo
             const previousLayer = mapLayer;
 
-            // Se non è già satellitare, passa a satellitare
             if (mapLayer !== 'satellite') {
                 setMapLayer('satellite');
-                // Attendere che il layer cambi (il tile layer si aggiorna)
                 await new Promise(resolve => setTimeout(resolve, 500)); // 500ms dovrebbero bastare
             }
 
+            if (mapRef.current) {
+                await mapRef.current.fitBoundsAsync(calculatedRoute);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
             const mapElement = document.querySelector('.leaflet-container');
             if (!mapElement) {
                 console.warn('Elemento mappa non trovato');
                 return;
             }
 
-            // Nascondi i marker POI
             const poiMarkers = document.querySelectorAll('.leaflet-marker-icon');
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'hidden';
@@ -269,7 +270,6 @@ const Planner = () => {
                 logging: false,
             });
 
-            // Ripristina i marker
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'visible';
             });
@@ -278,14 +278,13 @@ const Planner = () => {
             setRouteScreenshot(screenshotBase64);
             console.log('Screenshot catturato con mappa satellitare');
 
-            // Ripristina il layer precedente se diverso
             if (previousLayer !== 'satellite') {
                 setMapLayer(previousLayer);
             }
         } catch (error) {
             console.error('Errore nella cattura dello screenshot:', error);
         }
-    }, [calculatedRoute]);
+    }, [calculatedRoute, mapLayer]);
 
     const handleCalculateScenicRoute = async formData => {
         if (!formData.startPoint || !formData.endPoint) {
@@ -425,17 +424,6 @@ const Planner = () => {
                 throw new Error('Utente non autenticato. Effettua il login.');
             }
 
-            // Se c'è uno screenshot disponibile, scaricalo
-            if (routeScreenshot) {
-                const link = document.createElement('a');
-                link.download = `percorso-${new Date().toISOString().slice(0, 10)}.jpg`;
-                link.href = routeScreenshot;
-                link.click();
-                console.log('Screenshot scaricato');
-            } else {
-                console.warn('Nessuno screenshot disponibile per il download');
-            }
-
             const payload = {
                 name:
                     formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
@@ -514,6 +502,7 @@ const Planner = () => {
             )}
 
             <InteractiveMap
+                ref={mapRef}
                 onMenuToggle={() => setIsMenuOpen(!isMenuOpen)}
                 routePoints={[]}
                 calculatedRoute={calculatedRoute}
