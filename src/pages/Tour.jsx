@@ -3,31 +3,6 @@ import { gpxService } from '../services/gpxService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
-const GLOBAL_STYLES = `
-  .font-display { font-family: 'Playfair Display', serif; }
-  .font-body    { font-family: 'DM Sans', sans-serif; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes pillActivate {
-    0%   { transform: scale(1); }
-    45%  { transform: scale(1.07); }
-    75%  { transform: scale(0.97); }
-    100% { transform: scale(1); }
-  }
-
-  .animate-fadeUp { animation: fadeUp 0.45s ease both; }
-  .card-enter     { animation: fadeUp 0.45s cubic-bezier(0.25,0.46,0.45,0.94) both; }
-  .pill-activate  { animation: pillActivate 0.4s cubic-bezier(0.34,1.4,0.64,1) both; }
-
-  .pill-fill {
-    transition: transform 0.6s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s ease;
-    transform-origin: left center;
-  }
-`;
-
 function StatPill({ count, label, accent }) {
     const prevRef = useRef(count);
     const [bounce, setBounce] = useState(false);
@@ -74,12 +49,9 @@ function StatPill({ count, label, accent }) {
 
 function Tour() {
     return (
-        <>
-            <style>{GLOBAL_STYLES}</style>
-            <section className="font-body bg-[#F5F3EC] min-h-screen">
-                <RoutesGrid />
-            </section>
-        </>
+        <section className="font-body bg-[#F5F3EC] min-h-screen">
+            <RoutesGrid />
+        </section>
     );
 }
 
