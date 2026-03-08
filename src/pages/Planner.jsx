@@ -385,7 +385,9 @@ const Planner = () => {
     };
 
     const captureRouteScreenshot = useCallback(async () => {
-        if (!calculatedRoute || calculatedRoute.length === 0) return;
+        if (!calculatedRoute || calculatedRoute.length === 0) {
+            throw new Error('Il percorso selezionato non è valido o è vuoto.');
+        }
 
         try {
             // Salva il layer corrente per ripristinarlo dopo
