@@ -160,16 +160,6 @@ const Planner = () => {
         }
     }, [routeData]);
 
-  useEffect(() => {
-    if (calculatedRoute.length > 0 && !loading) {
-      // Attendere un breve momento per il rendering della mappa
-      const timer = setTimeout(() => {
-        captureRouteScreenshot();
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [calculatedRoute, loading]);
-
     const applyRouteData = data => {
         const coords = decodePolyline(data.polyline);
         setCalculatedRoute(coords);
@@ -343,7 +333,7 @@ const Planner = () => {
                 formData,
             });
 
-            // Geocodifica le tappe intermedie per ottenere le coordinate dei marker
+            // Geocode the intermediate stops to get the marker coordinates
             const nonEmptyWaypoints = filteredWaypoints;
             if (nonEmptyWaypoints.length > 0) {
                 const markers = await Promise.all(
@@ -390,14 +380,11 @@ const Planner = () => {
         }
 
         try {
-            // Salva il layer corrente per ripristinarlo dopo
             const previousLayer = mapLayer;
 
-            // Se non è già satellitare, passa a satellitare
             if (mapLayer !== 'satellite') {
                 setMapLayer('satellite');
-                // Attendere che il layer cambi (il tile layer si aggiorna)
-                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms dovrebbero bastare
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
 
             const mapElement = document.querySelector('.leaflet-container');
@@ -406,7 +393,7 @@ const Planner = () => {
                 return;
             }
 
-            // Nascondi i marker POI
+            // Hide markers POI
             const poiMarkers = document.querySelectorAll('.leaflet-marker-icon');
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'hidden';
@@ -423,7 +410,7 @@ const Planner = () => {
                 logging: false,
             });
 
-            // Ripristina i marker
+            // Restore markers
             poiMarkers.forEach(marker => {
                 marker.style.visibility = 'visible';
             });
@@ -432,7 +419,7 @@ const Planner = () => {
             setRouteScreenshot(screenshotBase64);
             console.log('Screenshot catturato con mappa satellitare');
 
-            // Ripristina il layer precedente se diverso
+            // Restore previous layer if different
             if (previousLayer !== 'satellite') {
                 setMapLayer(previousLayer);
             }
@@ -579,17 +566,6 @@ const Planner = () => {
                 throw new Error('Utente non autenticato. Effettua il login.');
             }
 
-            // Se c'è uno screenshot disponibile, scaricalo
-            if (routeScreenshot) {
-                const link = document.createElement('a');
-                link.download = `percorso-${new Date().toISOString().slice(0, 10)}.jpg`;
-                link.href = routeScreenshot;
-                link.click();
-                console.log('Screenshot scaricato');
-            } else {
-                console.warn('Nessuno screenshot disponibile per il download');
-            }
-
             const payload = {
                 name:
                     formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
@@ -650,6 +626,8 @@ const Planner = () => {
     const displayPois = getDisplayPois();
 
     const hasRoute = calculatedRoute.length > 0 || routeData !== null;
+
+    const shouldCenterOnUser = true;
 
     return (
         <div className="relative h-dvh overflow-hidden">

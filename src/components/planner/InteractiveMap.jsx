@@ -42,6 +42,8 @@ const MapAutoCenter = ({ userLocation }) => {
 const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
+    const hasCenteredOnRouteRef = useRef(false);
+    const timeoutRef = useRef();
 
     useEffect(() => {
         if (center && centerTrigger > lastTriggerRef.current) {
@@ -54,6 +56,10 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     }, [center, map, centerTrigger]);
 
     useEffect(() => {
+        hasCenteredOnRouteRef.current = false;
+    }, [route]);
+
+    useEffect(() => {
         if (route?.length > 1) {
             const bounds = L.latLngBounds(route);
             map.flyToBounds(bounds, {
@@ -62,11 +68,10 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
                 maxZoom: 14,
             });
             hasCenteredOnRouteRef.current = true;
-            let timeoutId;
 
             const onMoveEnd = () => {
                 map.off('moveend', onMoveEnd);
-                setTimeout(() => {
+                timeoutRef.current = setTimeout(() => {
                     if (onRouteRendered && typeof onRouteRendered === 'function') {
                         onRouteRendered();
                     }
@@ -76,16 +81,12 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
 
             return () => {
                 map.off('moveend', onMoveEnd);
-                if (timeoutId) clearTimeout(timeoutId);
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                }
             };
         }
     }, [route, map, onRouteRendered]);
-
-    useEffect(() => {
-
-            hasCenteredOnRouteRef.current = false;
-
-    }, [route]);
 
     return null;
 };
@@ -104,12 +105,9 @@ const InteractiveMap = ({
     onRouteRendered,
     mapLayer,
     onMapLayerChange,
-    centerOnUserLocation = true,
 }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
-    const [mapLayer, setMapLayer] = useState('standard');
-    const hasInitializedRef = useRef(false);
     const [mapillaryPoint, setMapillaryPoint] = useState(null);
     const [mapillaryMode, setMapillaryMode] = useState(false);
 

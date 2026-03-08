@@ -315,7 +315,9 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
     };
 
     const area = `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`;
-    const image = `https://picsum.photos/seed/${route.id}/300/400`;
+    const image = route.screenshot
+        ? new URL(route.screenshot, MEDIA_BASE_URL).toString()
+        : `https://picsum.photos/seed/${route.id}/300/400`;
     const owner = route.owner_username || 'Anonymous';
 
     return (
