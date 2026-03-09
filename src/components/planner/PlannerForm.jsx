@@ -339,7 +339,7 @@ const PlannerForm = ({
             />
 
             <div
-                className="absolute left-6 top-20 w-full sm:w-88 max-w-sm shadow-2xl overflow-y-auto rounded-3xl border border-gray-200 pointer-events-auto"
+                className="absolute inset-x-3 top-[5rem] sm:inset-x-auto sm:left-6 sm:top-20 sm:w-88 sm:max-w-sm shadow-2xl overflow-y-auto rounded-3xl border border-gray-200 pointer-events-auto"
                 style={{ backgroundColor: '#FAF7F2', maxHeight: 'calc(100vh - 6rem)' }}
                 ref={formRef}
             >

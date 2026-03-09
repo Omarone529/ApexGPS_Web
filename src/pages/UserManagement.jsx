@@ -165,7 +165,7 @@ function UserList() {
 
     return (
         <div className="bg-[#F5F3EC] min-h-screen py-16 sm:py-20 md:py-24">
-            <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-16">
+            <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-16 2xl:px-24">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-[#1C1A18] mb-8">
                     Gestione Utenti
                 </h1>

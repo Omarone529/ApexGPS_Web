@@ -78,7 +78,7 @@ const POICard = ({ poi, onClose }) => {
     if (!poi) return null;
 
     return (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[2000] w-full max-w-2xl px-4 animate-fade-up">
+        <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-[2000] w-full max-w-2xl px-2 sm:px-4 animate-fade-up">
             <div className="relative backdrop-blur-xl bg-gray-900/90 rounded-xl shadow-2xl overflow-hidden border border-gray-800/50">
                 {/* Close button */}
                 <button

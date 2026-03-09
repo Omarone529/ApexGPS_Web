@@ -40,11 +40,11 @@ function Home() {
 
                 <div className="absolute inset-0 bg-linear-to-r from-black/65 via-black/35 to-black/15" />
 
-                <div className="relative z-10 px-6 sm:px-10 md:px-16 max-w-2xl">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight">
+                <div className="relative z-10 px-6 sm:px-10 md:px-16 xl:px-24 max-w-2xl xl:max-w-3xl">
+                    <h1 className="text-3xl sm:text-5xl md:text-6xl xl:text-7xl font-semibold tracking-tight">
                         Scopri percorsi panoramici
                     </h1>
-                    <p className="mt-4 text-base sm:text-lg md:text-xl text-white/85">
+                    <p className="mt-4 text-base sm:text-lg md:text-xl xl:text-2xl text-white/85">
                         Viaggia meglio. Non più veloce.
                     </p>
 
@@ -74,14 +74,14 @@ function Home() {
                     <RouteCarousel />
                 </section>
 
-                <section className="px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
-                    <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-14 items-center">
+                <section className="px-6 sm:px-10 md:px-16 xl:px-24 py-16 sm:py-20 md:py-24 xl:py-32">
+                    <div className="mx-auto max-w-6xl xl:max-w-7xl grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-14 xl:gap-20 items-center">
                         <div>
-                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
+                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
                                 Pianifica il percorso perfetto
                             </h2>
 
-                            <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#1C1A18] max-w-xl">
+                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
                                 ApexGPS nasce per la moto: calcola percorsi panoramici privilegiando
                                 strade belle da guidare, curve e contesti naturali. Tu scegli
                                 l’obiettivo, noi ottimizziamo il piacere di guida.
@@ -113,9 +113,9 @@ function Home() {
                     </div>
                 </section>
 
-                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 xl:px-24 py-16 sm:py-20 md:py-24 xl:py-32">
                     {' '}
-                    <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 items-center">
+                    <div className="mx-auto max-w-6xl xl:max-w-7xl grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 lg:gap-14 xl:gap-20 items-center">
                         <div className="order-2 lg:order-1 flex justify-center lg:justify-start lg:-ml-12">
                             <img
                                 src="/planner-mockup-desktop.png"
@@ -126,11 +126,11 @@ function Home() {
                         </div>
 
                         <div className="order-1 lg:order-2">
-                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
+                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
                                 Trova l’ispirazione giusta
                             </h2>
 
-                            <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#1C1A18] max-w-xl">
+                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
                                 Scopri strade panoramiche e giri consigliati nella tua zona. Filtra
                                 per stile di guida e scegli se preferire panorama, curve o un mix
                                 bilanciato.
@@ -158,15 +158,15 @@ function Home() {
                     </div>
                 </section>
 
-                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 py-16 sm:py-20 md:py-24">
+                <section className="mt-16 md:mt-24 px-6 sm:px-10 md:px-16 xl:px-24 py-16 sm:py-20 md:py-24 xl:py-32">
                     {' '}
-                    <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 items-center">
+                    <div className="mx-auto max-w-6xl xl:max-w-7xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 xl:gap-20 items-center">
                         <div>
-                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
+                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
                                 Salva, riparti, condividi
                             </h2>
 
-                            <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#1C1A18] max-w-xl">
+                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
                                 Salva i tuoi giri preferiti e condividili con gli amici. ApexGPS è
                                 pensato per chi viaggia per piacere: meno stress, più strada bella.
                             </p>
