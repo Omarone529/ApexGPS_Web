@@ -3,6 +3,30 @@ import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
+function Toast({ message, type = 'success', onClose, duration = 3000 }) {
+    useEffect(() => {
+        const timer = setTimeout(onClose, duration);
+        return () => clearTimeout(timer);
+    }, [onClose, duration]);
+
+    const bgColor =
+        type === 'success'
+            ? 'bg-green-50 border-green-300 text-green-800'
+            : 'bg-red-50 border-red-300 text-red-800';
+    const icon = type === 'success' ? '✓' : '✗';
+
+    return (
+        <div
+            className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-xl border shadow-lg animate-slideUp ${bgColor}`}
+        >
+            <span className="text-lg font-bold">{icon}</span>
+            <span className="text-sm font-medium">{message}</span>
+            <button onClick={onClose} className="ml-4 text-gray-500 hover:text-gray-700">
+                ✕
+            </button>
+        </div>
+    );
+}
 function UserList() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10,7 +34,12 @@ function UserList() {
     const [banningUserId, setBanningUserId] = useState(null);
     const [showBanModal, setShowBanModal] = useState(false);
     const [userToBan, setUserToBan] = useState(null);
+    const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
     const navigate = useNavigate();
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type, visible: true });
+    };
 
     const fetchUsers = async () => {
         const token = sessionStorage.getItem('access_token');
@@ -59,7 +88,7 @@ function UserList() {
 
         const token = sessionStorage.getItem('access_token');
         if (!token) {
-            alert('Sessione scaduta. Effettua di nuovo il login.');
+            showToast('Sessione scaduta. Effettua di nuovo il login.', 'error');
             return;
         }
 
@@ -80,11 +109,11 @@ function UserList() {
                 throw new Error(errorData.detail || 'Errore durante la sospensione');
             }
 
-            alert(`Utente ${userToBan.username} sospeso con successo.`);
+            showToast(`Utente ${userToBan.username} sospeso con successo.`, 'success');
             await fetchUsers();
         } catch (err) {
             setError(err.message);
-            alert(`Errore: ${err.message}`);
+            showToast(`Errore: ${err.message}`, 'error');
         } finally {
             setBanningUserId(null);
             setUserToBan(null);
@@ -308,6 +337,14 @@ function UserList() {
                     </div>
                 )}
             </div>
+
+            {toast.visible && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(prev => ({ ...prev, visible: false }))}
+                />
+            )}
 
             {showBanModal && userToBan && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
