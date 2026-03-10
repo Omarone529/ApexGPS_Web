@@ -140,7 +140,7 @@ function RoutesGrid() {
     };
 
     const isAdmin = currentUser?.is_administrator === true;
-    const sectionPadding = 'clamp(1.5rem, 5vw, 4rem)';
+    const sectionPadding = 'clamp(1rem, 5vw, 5rem)';
 
     if (loading) {
         return (
@@ -189,7 +189,7 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl xl:max-w-screen-2xl mx-auto">
                     {routes.length === 0 && (
                         <div className="text-center py-20 animate-fadeUp">
                             <div className="w-14 h-14 rounded-2xl bg-[#EDE9DF] flex items-center justify-center mx-auto mb-4 text-[#9B958F]">
@@ -217,7 +217,7 @@ function RoutesGrid() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
                         {routes.map((route, idx) => (
                             <RouteCard
                                 key={route.id}

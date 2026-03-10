@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { FiMenu, FiNavigation, FiLayers } from 'react-icons/fi';
 import 'leaflet/dist/leaflet.css';
@@ -20,7 +20,25 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Componente per il centraggio della mappa
+// Auto-centers the map on the user's location once on first mount
+const MapAutoCenter = ({ userLocation }) => {
+    const map = useMap();
+    const hasCenteredRef = useRef(false);
+
+    useEffect(() => {
+        if (userLocation && !hasCenteredRef.current) {
+            map.flyTo(userLocation, 15, {
+                duration: 1.5,
+                easeLinearity: 0.25,
+            });
+            hasCenteredRef.current = true;
+        }
+    }, [userLocation, map]);
+
+    return null;
+};
+
+// Handles map centering on user location and route bounds
 const MapController = ({ center, route, centerTrigger }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
@@ -68,22 +86,16 @@ const InteractiveMap = ({
     selectedPoi,
     onPoiClick,
     onAddPoiToRoute,
-    centerOnUserLocation = true,
 }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
     const [mapLayer, setMapLayer] = useState('standard');
-    const hasInitializedRef = useRef(false);
     const [mapillaryPoint, setMapillaryPoint] = useState(null);
     const [mapillaryMode, setMapillaryMode] = useState(false);
 
-    const handleUserLocation = location => {
+    const handleUserLocation = useCallback(location => {
         setUserLocation(location);
-        if (centerOnUserLocation && !hasInitializedRef.current) {
-            setCenterTrigger(1);
-            hasInitializedRef.current = true;
-        }
-    };
+    }, []);
 
     const centerOnUser = () => {
         if (userLocation) {
@@ -140,14 +152,14 @@ const InteractiveMap = ({
     const distance = calculateTotalDistance();
 
     return (
-        <div className="relative w-full h-screen bg-gray-900">
+        <div className="relative w-full h-dvh bg-gray-900">
             {/* Overlay Controls */}
-            <div className="absolute top-24 left-6 z-1000 flex flex-col gap-3">
+            <div className="absolute top-20 sm:top-24 left-3 sm:left-6 z-1000 flex flex-col gap-2 sm:gap-3">
                 <button
                     onClick={onMenuToggle}
-                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+                    className="group w-10 h-10 sm:w-12 sm:h-12 bg-[#FAF7F2] text-gray-800 rounded-xl sm:rounded-2xl shadow-2xl
                      hover:bg-orange-500 hover:text-white transition-all duration-300 border border-gray-200
-                     hover:border-orange-400 flex items-center justify-center"
+                     hover:border-orange-400 flex items-center justify-center touch-manipulation"
                     aria-label="Open planner"
                 >
                     <FiMenu size={22} className="group-hover:scale-110 transition-transform" />
@@ -157,9 +169,9 @@ const InteractiveMap = ({
                     onClick={() =>
                         setMapLayer(prev => (prev === 'standard' ? 'satellite' : 'standard'))
                     }
-                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
+                    className="group w-10 h-10 sm:w-12 sm:h-12 bg-[#FAF7F2] text-gray-800 rounded-xl sm:rounded-2xl shadow-2xl
                      hover:text-orange-600 transition-all duration-300 border border-gray-200
-                     hover:border-orange-400 flex items-center justify-center"
+                     hover:border-orange-400 flex items-center justify-center touch-manipulation"
                     aria-label="Toggle map layer"
                 >
                     <FiLayers size={20} className="group-hover:scale-110 transition-transform" />
@@ -168,8 +180,8 @@ const InteractiveMap = ({
                 <button
                     onClick={centerOnUser}
                     disabled={!userLocation}
-                    className={`group w-12 h-12 rounded-2xl shadow-2xl transition-all duration-300 
-                     flex items-center justify-center border ${
+                    className={`group w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shadow-2xl transition-all duration-300
+                     flex items-center justify-center border touch-manipulation ${
                          userLocation
                              ? 'bg-[#FAF7F2] text-gray-800 border-gray-200 hover:border-orange-400 hover:text-orange-600'
                              : 'bg-gray-200/50 text-gray-400 border-gray-300 cursor-not-allowed'
@@ -187,10 +199,10 @@ const InteractiveMap = ({
             {(distance || routeStats) && (
                 <div
                     className="absolute bottom-6 left-1/2 -translate-x-1/2 z-1000
-                      bg-[#FAF7F2]/95 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-2xl
-                      border border-gray-200 shadow-2xl"
+                      bg-[#FAF7F2]/95 backdrop-blur-sm text-gray-800 px-3 py-2 sm:px-6 sm:py-3 rounded-2xl
+                      border border-gray-200 shadow-2xl whitespace-nowrap"
                 >
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 sm:gap-6">
                         {distance && (
                             <div className="flex items-center gap-2">
                                 <div
@@ -231,9 +243,9 @@ const InteractiveMap = ({
 
             {/* Mapillary Mode Tooltip */}
             {mapillaryMode && (
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-1000 bg-blue-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2">
-                    <FiEye size={14} />
-                    Clicca sulla mappa per vedere le foto della zona
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-1000 bg-blue-500 text-white px-3 py-2 rounded-xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 max-w-[calc(100vw-2rem)] text-center">
+                    <FiEye size={14} className="flex-shrink-0" />
+                    <span>Clicca sulla mappa per vedere le foto della zona</span>
                 </div>
             )}
 
@@ -245,6 +257,7 @@ const InteractiveMap = ({
                 scrollWheelZoom={true}
                 zoomControl={false}
             >
+                <MapAutoCenter userLocation={userLocation} />
                 <MapController
                     center={userLocation}
                     route={calculatedRoute}
@@ -310,8 +323,8 @@ const InteractiveMap = ({
             {/* Mapillary Toggle Button */}
             <button
                 onClick={() => setMapillaryMode(prev => !prev)}
-                className={`absolute bottom-6 right-6 z-1000 w-12 h-12 rounded-2xl shadow-2xl
-        transition-all duration-300 border flex items-center justify-center
+                className={`absolute bottom-6 right-3 sm:right-6 z-1000 w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl shadow-2xl
+        transition-all duration-300 border flex items-center justify-center touch-manipulation
         ${
             mapillaryMode
                 ? 'bg-blue-500 text-white border-blue-400'

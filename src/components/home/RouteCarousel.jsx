@@ -142,6 +142,7 @@ const loopRoutes = [...routes, ...routes];
 
 export default function RouteCarousel() {
     const trackRef = useRef(null);
+    const containerRef = useRef(null);
     const isDragging = useRef(false);
     const startX = useRef(0);
     const offset = useRef(0);
@@ -181,6 +182,41 @@ export default function RouteCarousel() {
         };
     }, []);
 
+    // Native touch listeners with { passive: false } to allow preventDefault on iOS Safari
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleTouchStart = e => {
+            if (!e.touches?.length) return;
+            isDragging.current = true;
+            touchStartX.current = e.touches[0].clientX;
+            touchStartOffset.current = offset.current;
+        };
+
+        const handleTouchMove = e => {
+            if (!isDragging.current || !e.touches?.length) return;
+            e.preventDefault();
+            const dx = e.touches[0].clientX - touchStartX.current;
+            offset.current = touchStartOffset.current - dx;
+            applyTransform();
+        };
+
+        const handleTouchEnd = () => {
+            isDragging.current = false;
+        };
+
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: false });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+        return () => {
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('touchend', handleTouchEnd);
+        };
+    }, []);
+
     const onMouseDown = e => {
         isDragging.current = true;
         startX.current = e.clientX;
@@ -211,40 +247,14 @@ export default function RouteCarousel() {
         applyTransform();
     };
 
-    const onTouchStart = e => {
-        if (!e.touches?.length) return;
-
-        isDragging.current = true;
-        trackRef.current?.classList.add('dragging');
-
-        touchStartX.current = e.touches[0].clientX;
-        touchStartOffset.current = offset.current;
-    };
-
-    const onTouchMove = e => {
-        if (!isDragging.current || !e.touches?.length) return;
-
-        e.preventDefault();
-        const x = e.touches[0].clientX;
-        const dx = x - touchStartX.current;
-
-        offset.current = touchStartOffset.current - dx;
-        applyTransform();
-    };
-
-    const onTouchEnd = () => {
-        isDragging.current = false;
-        trackRef.current?.classList.remove('dragging');
-    };
-
     return (
-        <section className="pt-28 sm:pt-32 md:pt-40 pb-16 px-6 sm:px-10 md:px-16 bg-[#F5F3EC] text-gray-900 overflow-hidden">
+        <section className="pt-28 sm:pt-32 md:pt-40 pb-16 px-4 sm:px-10 md:px-16 bg-[#F5F3EC] text-gray-900 overflow-hidden">
             {/* Title block (Komoot-like) + Lottie vicino al titolo */}
             <div className="mb-18">
                 <button
                     type="button"
-                    className="inline-flex items-center gap-3 text-orange-600 font-semibold tracking-tight leading-[0.95]
-                     text-[2rem] sm:text-[2.6rem] md:text-[3.2rem] lg:text-[3.6rem]"
+                    className="inline-flex items-center gap-2 sm:gap-3 text-orange-600 font-semibold tracking-tight leading-[0.95]
+                     text-[1.6rem] sm:text-[2.2rem] md:text-[3.2rem] lg:text-[3.6rem]"
                 >
                     Mototurismo
                     <span className="translate-y-1 opacity-90">
@@ -269,7 +279,7 @@ export default function RouteCarousel() {
                 <div className="relative mt-4">
                     <h2
                         className="text-[#141414] font-semibold tracking-tight leading-[0.95]
-                       text-[2.6rem] sm:text-[3.2rem] md:text-[3.6rem] lg:text-[3.5rem] xl:text-[3.6rem]"
+                       text-[2rem] sm:text-[2.8rem] md:text-[3.6rem] lg:text-[3.5rem] xl:text-[3.6rem]"
                     >
                         percorsi vicino a te
                     </h2>
@@ -292,22 +302,20 @@ export default function RouteCarousel() {
 
             {/* Track */}
             <div
+                ref={containerRef}
                 className="overflow-hidden cursor-grab select-none active:cursor-grabbing"
                 onMouseDown={onMouseDown}
                 onMouseMove={onMouseMove}
                 onMouseUp={onMouseUp}
                 onMouseLeave={onMouseUp}
                 onWheel={onWheel}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
                 style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
             >
-                <div className="flex gap-7 will-change-transform p-4" ref={trackRef}>
+                <div className="flex gap-4 sm:gap-7 will-change-transform p-4" ref={trackRef}>
                     {loopRoutes.map((r, i) => (
                         <div
                             key={`${r.id}-${i}`}
-                            className="group relative w-85 h-105 rounded-3xl overflow-hidden shrink-0
+                            className="group relative w-64 h-88 sm:w-85 sm:h-105 rounded-3xl overflow-hidden shrink-0
                          border border-black/10 bg-white shadow-none
                          transition-transform duration-500 ease-out
                          hover:-translate-y-2 hover:-rotate-1"

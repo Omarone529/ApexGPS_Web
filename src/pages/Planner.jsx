@@ -566,10 +566,9 @@ const Planner = () => {
     const displayPois = getDisplayPois();
 
     const hasRoute = calculatedRoute.length > 0 || routeData !== null;
-    const shouldCenterOnUser = !hasRoute;
 
     return (
-        <div className="relative h-screen">
+        <div className="relative h-dvh overflow-hidden">
             {loadingPois && (
                 <div className="absolute top-4 right-4 z-1500 bg-gray-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-gray-800 flex items-center gap-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
@@ -578,7 +577,7 @@ const Planner = () => {
             )}
 
             {successMessage && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-1500 bg-green-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-green-800 shadow-lg">
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-1500 bg-green-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-xl border border-green-800 shadow-lg text-sm text-center max-w-[calc(100vw-2rem)]">
                     {successMessage}
                 </div>
             )}
@@ -594,7 +593,6 @@ const Planner = () => {
                 selectedPoi={selectedPoi}
                 onPoiClick={handlePoiClick}
                 onAddPoiToRoute={handleAddPoiToRoute}
-                centerOnUserLocation={shouldCenterOnUser}
             />
 
             <PlannerForm

@@ -63,6 +63,7 @@ function RoutesGrid() {
     const [editingId, setEditingId] = useState(null);
     const [editValue, setEditValue] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
+    const [routeToDelete, setRouteToDelete] = useState(null);
 
     const getAuthHeaders = () => {
         let token = localStorage.getItem('access_token');
@@ -119,8 +120,15 @@ function RoutesGrid() {
         return `${diffHours} ${diffHours === 1 ? 'ora' : 'ore'}`;
     };
 
-    const handleDelete = async id => {
-        if (!window.confirm('Are you sure you want to delete this route?')) return;
+    const handleDelete = id => {
+        const route = routes.find(r => r.id === id);
+        if (route) setRouteToDelete(route);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!routeToDelete) return;
+        const id = routeToDelete.id;
+        setRouteToDelete(null);
         try {
             const response = await fetch(`${API_BASE_URL}/routes/${id}/`, {
                 method: 'DELETE',
@@ -129,7 +137,7 @@ function RoutesGrid() {
             if (!response.ok) throw new Error(`Delete failed: ${response.statusText}`);
             setRoutes(routes.filter(route => route.id !== id));
         } catch (err) {
-            alert(`Error deleting route: ${err.message}`);
+            alert(`Errore nell'eliminazione: ${err.message}`);
         }
     };
 
@@ -211,7 +219,7 @@ function RoutesGrid() {
         );
     }
 
-    const sectionPadding = 'clamp(1.5rem, 5vw, 4rem)';
+    const sectionPadding = 'clamp(1rem, 5vw, 5rem)';
 
     return (
         <>
@@ -246,7 +254,7 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-7xl xl:max-w-screen-2xl mx-auto">
                     {/* Suspension banner */}
                     {isUserSuspended && (
                         <div
@@ -262,7 +270,7 @@ function RoutesGrid() {
                     )}
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
                         {routes.length === 0 && (
                             <div className="col-span-full text-center py-20 animate-fadeUp">
                                 <div
@@ -321,6 +329,43 @@ function RoutesGrid() {
                     </div>
                 </div>
             </main>
+
+            {/* Delete confirmation modal */}
+            {routeToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#E2DDD3] animate-fadeUp">
+                        <h3 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                            Elimina percorso
+                        </h3>
+                        <p className="text-[13.5px] text-[#6B6460] font-body mb-6">
+                            Sei sicuro di voler eliminare{' '}
+                            <span className="font-semibold text-[#1A1814]">
+                                {routeToDelete.name}
+                            </span>
+                            ? Questa azione è irreversibile.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setRouteToDelete(null)}
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                           bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
+                                           hover:bg-[#EDE9DF] transition-all duration-200"
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                onClick={handleConfirmDelete}
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                           bg-red-500 text-white border border-red-500
+                                           hover:bg-red-600 hover:shadow-[0_6px_20px_rgba(239,68,68,0.3)]
+                                           transition-all duration-200"
+                            >
+                                Elimina
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
@@ -464,7 +509,7 @@ function RouteCard({
                         className={[
                             'w-8 h-8 rounded-full flex items-center justify-center',
                             'bg-white/90 backdrop-blur-sm border border-black/8 shadow-sm',
-                            'text-[#9B8880] opacity-0 group-hover:opacity-100 transition-all duration-200',
+                            'text-[#9B8880] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200',
                             !isRouteSuspended
                                 ? 'hover:bg-red-50 hover:text-red-500 hover:scale-110'
                                 : 'opacity-20 cursor-not-allowed',
@@ -527,7 +572,7 @@ function RouteCard({
                                     onClick={() => onEditStart(route)}
                                     title="Edit name"
                                     className="w-6.5 h-6.5 rounded-lg flex items-center justify-center shrink-0
-                                               opacity-0 group-hover:opacity-100 text-[#9B958F]
+                                               opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-[#9B958F]
                                                transition-all duration-200
                                                hover:bg-[#FDF0E8] hover:text-[#E8692A]"
                                 >

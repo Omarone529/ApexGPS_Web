@@ -99,7 +99,7 @@ function Register() {
             className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url('/register_login/background.webp')` }}
         >
-            <div className="w-full max-w-md bg-black/80 backdrop-blur-sm p-8 rounded-2xl border border-white/10 shadow-2xl">
+            <div className="w-full max-w-md bg-black/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl">
                 <h1 className="text-2xl mb-6 text-center font-semibold text-white">Registrati</h1>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -151,7 +151,7 @@ function Register() {
                         )}
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col xs:flex-row gap-3">
                         <div className="flex-1">
                             <input
                                 placeholder="Nome"

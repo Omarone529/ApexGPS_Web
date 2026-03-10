@@ -9,6 +9,20 @@
 
     body {
         @apply bg-[#0e0e0e] text-white font-sans;
+        overflow-x: clip;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improve touch targets globally */
+    button,
+    a,
+    [role='button'] {
+        touch-action: manipulation;
+    }
+
+    /* Ensure images never overflow their container */
+    img {
+        max-width: 100%;
     }
 }
 

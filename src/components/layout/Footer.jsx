@@ -638,7 +638,7 @@ export default function Footer() {
           overflow: hidden;
         }
         .apx-inner {
-          max-width: 1280px;
+          max-width: 1440px;
           margin: 0 auto;
           padding: 44px 48px 0;
         }
@@ -686,7 +686,7 @@ export default function Footer() {
         .apx-curve { width: 100%; overflow: hidden; line-height: 0; margin-top: 16px; }
         .apx-bottom-bg { background: #e4ddd6; }
         .apx-bottom-wrap {
-          max-width: 1280px; margin: 0 auto; padding: 18px 48px;
+          max-width: 1440px; margin: 0 auto; padding: 18px 48px;
           display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
         }
         .apx-bottom-left {
@@ -697,11 +697,16 @@ export default function Footer() {
         .apx-bottom-left a:hover { color: #2a3830; }
         .apx-locale { font-size: 11px; color: #8a9890; letter-spacing: 0.1em; text-transform: uppercase; }
         @media (max-width: 820px) {
-          .apx-inner { padding: 32px 24px 0; }
+          .apx-inner { padding: 28px 20px 0; }
           .apx-top { flex-direction: column; gap: 20px; }
           .apx-columns { display: none; }
           .apx-accordion { display: block; width: 100%; }
-          .apx-bottom-wrap { padding: 16px 24px; flex-direction: column; align-items: flex-start; }
+          .apx-bottom-wrap { padding: 16px 20px; flex-direction: column; align-items: flex-start; }
+        }
+        @media (max-width: 480px) {
+          .apx-inner { padding: 24px 16px 0; }
+          .apx-bottom-wrap { padding: 14px 16px; }
+          .apx-logo { font-size: 18px; }
         }
       `}</style>
 
