@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
 import { poiService } from '../components/planner/MapServices/POIService.jsx';
@@ -88,7 +89,8 @@ const Planner = () => {
     const [errorMessage, setErrorMessage] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [selectedPoi, setSelectedPoi] = useState(null);
-
+    const [routeScreenshot, setRouteScreenshot] = useState(null);
+    const [mapLayer, setMapLayer] = useState('standard');
     // Map to normalize POI categories to expected POICard values
     const categoryMap = {
         ristorante: 'restaurant',
@@ -331,7 +333,7 @@ const Planner = () => {
                 formData,
             });
 
-            // Geocodifica le tappe intermedie per ottenere le coordinate dei marker
+            // Geocode the intermediate stops to get the marker coordinates
             const nonEmptyWaypoints = filteredWaypoints;
             if (nonEmptyWaypoints.length > 0) {
                 const markers = await Promise.all(
@@ -372,6 +374,60 @@ const Planner = () => {
         }
     };
 
+    const captureRouteScreenshot = useCallback(async () => {
+        if (!calculatedRoute || calculatedRoute.length === 0) {
+            throw new Error('Il percorso selezionato non è valido o è vuoto.');
+        }
+
+        try {
+            const previousLayer = mapLayer;
+
+            if (mapLayer !== 'satellite') {
+                setMapLayer('satellite');
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            const mapElement = document.querySelector('.leaflet-container');
+            if (!mapElement) {
+                console.warn('Elemento mappa non trovato');
+                return;
+            }
+
+            // Hide markers POI
+            const poiMarkers = document.querySelectorAll('.leaflet-marker-icon');
+            poiMarkers.forEach(marker => {
+                marker.style.visibility = 'hidden';
+            });
+
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const canvas = await html2canvas(mapElement, {
+                scale: 1.5,
+                backgroundColor: '#1a1a1a',
+                allowTaint: false,
+                useCORS: true,
+                logging: false,
+            });
+
+            // Restore markers
+            poiMarkers.forEach(marker => {
+                marker.style.visibility = 'visible';
+            });
+
+            const screenshotBase64 = canvas.toDataURL('image/jpeg', 0.9);
+            setRouteScreenshot(screenshotBase64);
+            console.log('Screenshot catturato con mappa satellitare');
+
+            // Restore previous layer if different
+            if (previousLayer !== 'satellite') {
+                setMapLayer(previousLayer);
+            }
+        } catch (error) {
+            console.error('Errore nella cattura dello screenshot:', error);
+        }
+    }, [calculatedRoute]);
+
     const handleCalculateScenicRoute = async formData => {
         if (!formData.startPoint || !formData.endPoint) {
             showError('Inserisci punto di partenza e arrivo');
@@ -381,6 +437,7 @@ const Planner = () => {
         if (loading) return;
         setLoading(true);
         setErrorMessage(null);
+        setRouteScreenshot(null);
 
         try {
             setIsScenicRoute(true);
@@ -523,6 +580,9 @@ const Planner = () => {
                     total_scenic_score: routeDetails.scenic_route?.scenic_score || 0,
                 },
             };
+            if (routeScreenshot) {
+                payload.screenshot = routeScreenshot;
+            }
 
             const response = await fetch(`${API_BASE_URL}/api/routes/save-calculated/`, {
                 method: 'POST',
@@ -567,6 +627,8 @@ const Planner = () => {
 
     const hasRoute = calculatedRoute.length > 0 || routeData !== null;
 
+    const shouldCenterOnUser = true;
+
     return (
         <div className="relative h-dvh overflow-hidden">
             {loadingPois && (
@@ -593,6 +655,10 @@ const Planner = () => {
                 selectedPoi={selectedPoi}
                 onPoiClick={handlePoiClick}
                 onAddPoiToRoute={handleAddPoiToRoute}
+                onRouteRendered={captureRouteScreenshot}
+                mapLayer={mapLayer}
+                onMapLayerChange={setMapLayer}
+                centerOnUserLocation={shouldCenterOnUser}
             />
 
             <PlannerForm

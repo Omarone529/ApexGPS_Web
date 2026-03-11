@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gpxService } from '../services/gpxService';
 
+const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 function StatPill({ count, label, accent }) {
@@ -144,7 +145,7 @@ function RoutesGrid() {
     const handleTogglePublic = async id => {
         const route = routes.find(r => r.id === id);
         if (!route) return;
-        if (route.hidden_until && new Date(route.hidden_until) > new Date()) {
+        if (route.hiddenUntil && new Date(route.hiddenUntil) > new Date()) {
             alert('Questo percorso è sospeso e non può essere reso pubblico.');
             return;
         }
@@ -195,9 +196,9 @@ function RoutesGrid() {
     };
 
     const isUserSuspended =
-        currentUser?.hidden_until && new Date(currentUser.hidden_until) > new Date();
+        currentUser?.hiddenUntil && new Date(currentUser.hiddenUntil) > new Date();
     const userSuspensionTime = isUserSuspended
-        ? renderTimeRemaining(currentUser.hidden_until)
+        ? renderTimeRemaining(currentUser.hiddenUntil)
         : null;
 
     const publicCount = routes.filter(r => r.visibility === 'public').length;
@@ -303,9 +304,9 @@ function RoutesGrid() {
 
                         {routes.map((route, idx) => {
                             const isRouteSuspended =
-                                route.hidden_until && new Date(route.hidden_until) > new Date();
+                                route.hiddenUntil && new Date(route.hiddenUntil) > new Date();
                             const routeSuspensionTime = isRouteSuspended
-                                ? renderTimeRemaining(route.hidden_until)
+                                ? renderTimeRemaining(route.hiddenUntil)
                                 : null;
 
                             return (
@@ -424,7 +425,9 @@ function RouteCard({
     };
 
     const area = `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`;
-    const image = `https://picsum.photos/seed/${route.id}/300/400`;
+    const image = route.screenshot
+        ? new URL(route.screenshot, MEDIA_BASE_URL).toString()
+        : `https://picsum.photos/seed/${route.id}/300/400`;
     const isPublic = route.visibility === 'public';
 
     return (

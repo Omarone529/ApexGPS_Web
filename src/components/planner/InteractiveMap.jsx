@@ -39,10 +39,11 @@ const MapAutoCenter = ({ userLocation }) => {
 };
 
 // Handles map centering on user location and route bounds
-const MapController = ({ center, route, centerTrigger }) => {
+const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     const map = useMap();
     const lastTriggerRef = useRef(0);
     const hasCenteredOnRouteRef = useRef(false);
+    const timeoutRef = useRef();
 
     useEffect(() => {
         if (center && centerTrigger > lastTriggerRef.current) {
@@ -55,7 +56,11 @@ const MapController = ({ center, route, centerTrigger }) => {
     }, [center, map, centerTrigger]);
 
     useEffect(() => {
-        if (route?.length > 1 && !hasCenteredOnRouteRef.current) {
+        hasCenteredOnRouteRef.current = false;
+    }, [route]);
+
+    useEffect(() => {
+        if (route?.length > 1) {
             const bounds = L.latLngBounds(route);
             map.flyToBounds(bounds, {
                 padding: [50, 50],
@@ -63,14 +68,25 @@ const MapController = ({ center, route, centerTrigger }) => {
                 maxZoom: 14,
             });
             hasCenteredOnRouteRef.current = true;
-        }
-    }, [route, map]);
 
-    useEffect(() => {
-        if (route?.length === 0) {
-            hasCenteredOnRouteRef.current = false;
+            const onMoveEnd = () => {
+                map.off('moveend', onMoveEnd);
+                timeoutRef.current = setTimeout(() => {
+                    if (onRouteRendered && typeof onRouteRendered === 'function') {
+                        onRouteRendered();
+                    }
+                }, 200);
+            };
+            map.on('moveend', onMoveEnd);
+
+            return () => {
+                map.off('moveend', onMoveEnd);
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                }
+            };
         }
-    }, [route]);
+    }, [route, map, onRouteRendered]);
 
     return null;
 };
@@ -86,10 +102,12 @@ const InteractiveMap = ({
     selectedPoi,
     onPoiClick,
     onAddPoiToRoute,
+    onRouteRendered,
+    mapLayer,
+    onMapLayerChange,
 }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [centerTrigger, setCenterTrigger] = useState(0);
-    const [mapLayer, setMapLayer] = useState('standard');
     const [mapillaryPoint, setMapillaryPoint] = useState(null);
     const [mapillaryMode, setMapillaryMode] = useState(false);
 
@@ -101,6 +119,10 @@ const InteractiveMap = ({
         if (userLocation) {
             setCenterTrigger(prev => prev + 1);
         }
+    };
+
+    const toggleMapLayer = () => {
+        onMapLayerChange(mapLayer === 'standard' ? 'satellite' : 'standard');
     };
 
     const routePointsWithLabels = useMemo(() => {
@@ -166,10 +188,8 @@ const InteractiveMap = ({
                 </button>
 
                 <button
-                    onClick={() =>
-                        setMapLayer(prev => (prev === 'standard' ? 'satellite' : 'standard'))
-                    }
-                    className="group w-10 h-10 sm:w-12 sm:h-12 bg-[#FAF7F2] text-gray-800 rounded-xl sm:rounded-2xl shadow-2xl
+                    onClick={toggleMapLayer}
+                    className="group w-12 h-12 bg-[#FAF7F2] text-gray-800 rounded-2xl shadow-2xl
                      hover:text-orange-600 transition-all duration-300 border border-gray-200
                      hover:border-orange-400 flex items-center justify-center touch-manipulation"
                     aria-label="Toggle map layer"
@@ -262,6 +282,7 @@ const InteractiveMap = ({
                     center={userLocation}
                     route={calculatedRoute}
                     centerTrigger={centerTrigger}
+                    onRouteRendered={onRouteRendered}
                 />
 
                 <TileLayer
