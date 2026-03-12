@@ -124,13 +124,7 @@ function useDragToReorder(items, onChange) {
     return { dragging, startDrag, listRef, getVisualOrder };
 }
 
-const PlannerForm = ({
-    isOpen,
-    onClose,
-    onCalculateRoute,
-    onSaveRoute,
-    onCalculateScenicRoute,
-}) => {
+const PlannerForm = ({ isOpen, onClose, onSaveRoute, onCalculateScenicRoute }) => {
     const [formData, setFormData] = useState({
         startPoint: '',
         endPoint: '',
@@ -252,19 +246,6 @@ const PlannerForm = ({
         }
         setSuggestions([]);
         setActiveField(null);
-    };
-
-    const handleCalculate = async () => {
-        if (!formData.startPoint || !formData.endPoint) return;
-        setIsSubmitting(true);
-        onClose();
-        try {
-            await onCalculateRoute?.(formData);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     const handleCalculateScenic = async () => {
@@ -492,28 +473,15 @@ const PlannerForm = ({
 
                         <div className="border-t border-gray-300 my-4"></div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={handleCalculate}
-                                disabled={
-                                    isSubmitting || !formData.startPoint || !formData.endPoint
-                                }
-                                className="px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 hover:border-orange-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
-                            >
-                                Manuale
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCalculateScenic}
-                                disabled={
-                                    isSubmitting || !formData.startPoint || !formData.endPoint
-                                }
-                                className={`px-4 py-3 rounded-lg bg-orange-500 text-white border border-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium ${isScenicMode ? 'ring-2 ring-orange-300' : ''}`}
-                            >
-                                Panoramico
-                            </button>
-                        </div>
+                        {/* Button for Scenic Route */}
+                        <button
+                            type="button"
+                            onClick={handleCalculateScenic}
+                            disabled={isSubmitting || !formData.startPoint || !formData.endPoint}
+                            className={`w-full px-4 py-3 rounded-lg bg-orange-500 text-white border border-orange-500 hover:bg-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium ${isScenicMode ? 'ring-2 ring-orange-300' : ''}`}
+                        >
+                            Calcola percorso
+                        </button>
 
                         <button
                             type="button"
