@@ -255,7 +255,7 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-7xl xl:max-w-screen-2xl mx-auto">
+                <div className="max-w-4xl mx-auto">
                     {/* Suspension banner */}
                     {isUserSuspended && (
                         <div
@@ -271,7 +271,7 @@ function RoutesGrid() {
                     )}
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         {routes.length === 0 && (
                             <div className="col-span-full text-center py-20 animate-fadeUp">
                                 <div
@@ -425,9 +425,7 @@ function RouteCard({
     };
 
     const area = `${route.start_location_name || '?'} → ${route.end_location_name || '?'}`;
-    const image = route.screenshot
-        ? new URL(route.screenshot, MEDIA_BASE_URL).toString()
-        : `https://picsum.photos/seed/${route.id}/300/400`;
+    const image = route.screenshot ? new URL(route.screenshot, MEDIA_BASE_URL).toString() : null;
     const isPublic = route.visibility === 'public';
 
     return (
@@ -443,12 +441,14 @@ function RouteCard({
             style={{ animationDelay: `${idx * 0.05}s` }}
         >
             {/* Image */}
-            <div className="relative aspect-4/3 overflow-hidden bg-[#EDE9DF]">
-                <img
-                    src={image}
-                    alt={route.name}
-                    className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
-                />
+            <div className="relative aspect-video overflow-hidden bg-[#EDE9DF]">
+                {image && (
+                    <img
+                        src={image}
+                        alt={route.name}
+                        className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.04]"
+                    />
+                )}
                 <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/25 pointer-events-none" />
 
                 {/* Toggle */}

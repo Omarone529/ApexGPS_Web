@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import html2canvas from 'html2canvas';
 import InteractiveMap from '../components/planner/InteractiveMap';
 import PlannerForm from '../components/planner/PlannerForm';
 import { poiService } from '../components/planner/MapServices/POIService.jsx';
@@ -159,6 +158,12 @@ const Planner = () => {
             applyRouteData(routeData);
         }
     }, [routeData]);
+
+    useEffect(() => {
+        if (calculatedRoute.length > 0) {
+            captureRouteScreenshot();
+        }
+    }, [calculatedRoute, isScenicRoute]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const applyRouteData = data => {
         const coords = decodePolyline(data.polyline);
@@ -375,58 +380,122 @@ const Planner = () => {
     };
 
     const captureRouteScreenshot = useCallback(async () => {
-        if (!calculatedRoute || calculatedRoute.length === 0) {
-            throw new Error('Il percorso selezionato non è valido o è vuoto.');
-        }
+        if (!calculatedRoute || calculatedRoute.length === 0) return;
+
+        const W = 600;
+        const H = 400;
+        const mainColor = isScenicRoute ? '#2563eb' : '#f97316';
+        const outlineColor = isScenicRoute ? '#1e3a8a' : '#c2410c';
 
         try {
-            const previousLayer = mapLayer;
+            const lats = calculatedRoute.map(([lat]) => lat);
+            const lons = calculatedRoute.map(([, lon]) => lon);
+            const minLat = Math.min(...lats);
+            const maxLat = Math.max(...lats);
+            const minLon = Math.min(...lons);
+            const maxLon = Math.max(...lons);
+            const latPad = (maxLat - minLat) * 0.25;
+            const lonPad = (maxLon - minLon) * 0.25;
+            let bMinLon = minLon - lonPad;
+            let bMinLat = minLat - latPad;
+            let bMaxLon = maxLon + lonPad;
+            let bMaxLat = maxLat + latPad;
 
-            if (mapLayer !== 'satellite') {
-                setMapLayer('satellite');
-                await new Promise(resolve => setTimeout(resolve, 500));
+            // Adjust bbox to match canvas aspect ratio to avoid distortion
+            const cosLat = Math.cos(((bMinLat + bMaxLat) / 2) * (Math.PI / 180));
+            const bboxAspect = ((bMaxLon - bMinLon) * cosLat) / (bMaxLat - bMinLat);
+            const canvasAspect = W / H;
+            if (bboxAspect > canvasAspect) {
+                const newLatSpan = ((bMaxLon - bMinLon) * cosLat) / canvasAspect;
+                const latCenter = (bMinLat + bMaxLat) / 2;
+                bMinLat = latCenter - newLatSpan / 2;
+                bMaxLat = latCenter + newLatSpan / 2;
+            } else {
+                const newLonSpan = ((bMaxLat - bMinLat) * canvasAspect) / cosLat;
+                const lonCenter = (bMinLon + bMaxLon) / 2;
+                bMinLon = lonCenter - newLonSpan / 2;
+                bMaxLon = lonCenter + newLonSpan / 2;
             }
 
-            const mapElement = document.querySelector('.leaflet-container');
-            if (!mapElement) {
-                console.warn('Elemento mappa non trovato');
-                return;
-            }
-
-            // Hide markers POI
-            const poiMarkers = document.querySelectorAll('.leaflet-marker-icon');
-            poiMarkers.forEach(marker => {
-                marker.style.visibility = 'hidden';
+            const bboxStr = `${bMinLon},${bMinLat},${bMaxLon},${bMaxLat}`;
+            const res = await fetch(
+                `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?bbox=${bboxStr}&bboxSR=4326&size=${W},${H}&imageSR=4326&format=jpg&f=image`
+            );
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const img = new Image();
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = objectUrl;
             });
+            URL.revokeObjectURL(objectUrl);
 
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, W, H);
 
-            const canvas = await html2canvas(mapElement, {
-                scale: 1.5,
-                backgroundColor: '#1a1a1a',
-                allowTaint: false,
-                useCORS: true,
-                logging: false,
-            });
+            const toPixel = (lat, lon) => [
+                ((lon - bMinLon) / (bMaxLon - bMinLon)) * W,
+                ((bMaxLat - lat) / (bMaxLat - bMinLat)) * H,
+            ];
 
-            // Restore markers
-            poiMarkers.forEach(marker => {
-                marker.style.visibility = 'visible';
-            });
+            const traceRoute = () => {
+                ctx.beginPath();
+                calculatedRoute.forEach(([lat, lon], i) => {
+                    const [x, y] = toPixel(lat, lon);
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+            };
 
-            const screenshotBase64 = canvas.toDataURL('image/jpeg', 0.9);
-            setRouteScreenshot(screenshotBase64);
-            console.log('Screenshot catturato con mappa satellitare');
+            // Outline then main line
+            traceRoute();
+            ctx.strokeStyle = outlineColor;
+            ctx.lineWidth = 6;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.stroke();
 
-            // Restore previous layer if different
-            if (previousLayer !== 'satellite') {
-                setMapLayer(previousLayer);
-            }
-        } catch (error) {
-            console.error('Errore nella cattura dello screenshot:', error);
+            traceRoute();
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Start / end markers
+            const drawMarker = (lat, lon, label) => {
+                const [x, y] = toPixel(lat, lon);
+                const r = 12;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.strokeStyle = mainColor;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                ctx.fillStyle = mainColor;
+                ctx.font = `bold ${r}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y);
+            };
+
+            const [startLat, startLon] = calculatedRoute[0];
+            const [endLat, endLon] = calculatedRoute[calculatedRoute.length - 1];
+            drawMarker(startLat, startLon, 'A');
+            drawMarker(endLat, endLon, 'B');
+
+            const base64 = canvas.toDataURL('image/jpeg', 0.7);
+            setRouteScreenshot(base64);
+            return base64;
+        } catch (err) {
+            console.error('Screenshot error:', err);
+            return null;
         }
-    }, [calculatedRoute]);
+    }, [calculatedRoute, isScenicRoute]);
 
     const handleCalculateScenicRoute = async formData => {
         if (!formData.startPoint || !formData.endPoint) {
@@ -566,6 +635,8 @@ const Planner = () => {
                 throw new Error('Utente non autenticato. Effettua il login.');
             }
 
+            const screenshot = routeScreenshot || (await captureRouteScreenshot());
+
             const payload = {
                 name:
                     formData.routeName || `Percorso panoramico ${new Date().toLocaleDateString()}`,
@@ -580,8 +651,8 @@ const Planner = () => {
                     total_scenic_score: routeDetails.scenic_route?.scenic_score || 0,
                 },
             };
-            if (routeScreenshot) {
-                payload.screenshot = routeScreenshot;
+            if (screenshot) {
+                payload.screenshot = screenshot;
             }
 
             const response = await fetch(`${API_BASE_URL}/api/routes/save-calculated/`, {
@@ -597,15 +668,15 @@ const Planner = () => {
 
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('Save route response:', response.status, errorText);
                 let errorMessage = 'Errore nel salvataggio del percorso';
                 try {
                     const errorData = JSON.parse(errorText);
-                    errorMessage = errorData.error || errorData.detail || errorMessage;
-                } catch (parseError) {
-                    console.error('Error parsing save response:', parseError);
-                }
-                if (response.status === 409) {
-                    errorMessage = 'Percorso già salvato in precedenza.';
+                    const nonFieldErrors = errorData.non_field_errors?.[0];
+                    errorMessage =
+                        nonFieldErrors || errorData.error || errorData.detail || errorMessage;
+                } catch {
+                    errorMessage = errorText || errorMessage;
                 }
                 throw new Error(errorMessage);
             }
@@ -655,7 +726,7 @@ const Planner = () => {
                 selectedPoi={selectedPoi}
                 onPoiClick={handlePoiClick}
                 onAddPoiToRoute={handleAddPoiToRoute}
-                onRouteRendered={captureRouteScreenshot}
+                onRouteRendered={null}
                 mapLayer={mapLayer}
                 onMapLayerChange={setMapLayer}
                 centerOnUserLocation={shouldCenterOnUser}

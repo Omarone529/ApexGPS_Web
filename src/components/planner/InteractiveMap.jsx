@@ -21,19 +21,23 @@ L.Icon.Default.mergeOptions({
 });
 
 // Auto-centers the map on the user's location once on first mount
-const MapAutoCenter = ({ userLocation }) => {
+const MapAutoCenter = ({ userLocation, hasRoute }) => {
     const map = useMap();
     const hasCenteredRef = useRef(false);
 
     useEffect(() => {
-        if (userLocation && !hasCenteredRef.current) {
+        if (!hasRoute) hasCenteredRef.current = false;
+    }, [hasRoute]);
+
+    useEffect(() => {
+        if (userLocation && !hasCenteredRef.current && !hasRoute) {
             map.flyTo(userLocation, 15, {
                 duration: 1.5,
                 easeLinearity: 0.25,
             });
             hasCenteredRef.current = true;
         }
-    }, [userLocation, map]);
+    }, [userLocation, map, hasRoute]);
 
     return null;
 };
@@ -44,6 +48,11 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
     const lastTriggerRef = useRef(0);
     const hasCenteredOnRouteRef = useRef(false);
     const timeoutRef = useRef();
+    const onRouteRenderedRef = useRef(onRouteRendered);
+
+    useEffect(() => {
+        onRouteRenderedRef.current = onRouteRendered;
+    }, [onRouteRendered]);
 
     useEffect(() => {
         if (center && centerTrigger > lastTriggerRef.current) {
@@ -72,9 +81,7 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
             const onMoveEnd = () => {
                 map.off('moveend', onMoveEnd);
                 timeoutRef.current = setTimeout(() => {
-                    if (onRouteRendered && typeof onRouteRendered === 'function') {
-                        onRouteRendered();
-                    }
+                    onRouteRenderedRef.current?.();
                 }, 200);
             };
             map.on('moveend', onMoveEnd);
@@ -86,7 +93,7 @@ const MapController = ({ center, route, centerTrigger, onRouteRendered }) => {
                 }
             };
         }
-    }, [route, map, onRouteRendered]);
+    }, [route, map]);
 
     return null;
 };
@@ -277,7 +284,7 @@ const InteractiveMap = ({
                 scrollWheelZoom={true}
                 zoomControl={false}
             >
-                <MapAutoCenter userLocation={userLocation} />
+                <MapAutoCenter userLocation={userLocation} hasRoute={calculatedRoute.length > 0} />
                 <MapController
                     center={userLocation}
                     route={calculatedRoute}
@@ -292,6 +299,7 @@ const InteractiveMap = ({
                             : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
                     }
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    crossOrigin="anonymous"
                 />
 
                 <MapUserLocation onLocationFound={handleUserLocation} />
