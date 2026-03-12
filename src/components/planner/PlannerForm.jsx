@@ -513,8 +513,10 @@ const PlannerForm = ({ isOpen, onClose, onSaveRoute, onCalculateScenicRoute }) =
                     </form>
 
                     <div className="mt-6 pt-4 border-t border-gray-300 text-xs text-gray-600 space-y-1">
-                        <p>Manuale: Crea itinerari con tappe personalizzate.</p>
-                        <p>Panoramico: percorso suggestivo automatico.</p>
+                        <p>
+                            Calcola percorso: percorso suggestivo calcolato automaticamente dal
+                            sistema.
+                        </p>
                     </div>
                 </div>
             </div>
