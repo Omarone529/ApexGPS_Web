@@ -132,6 +132,7 @@ const PlannerForm = ({ isOpen, onClose, onSaveRoute, onCalculateScenicRoute }) =
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isScenicMode, setIsScenicMode] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [activeField, setActiveField] = useState(null);
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -275,12 +276,15 @@ const PlannerForm = ({ isOpen, onClose, onSaveRoute, onCalculateScenicRoute }) =
     };
 
     const clearForm = () => {
-        if (window.confirm('Vuoi cancellare tutti i dati inseriti?')) {
-            setFormData({ startPoint: '', endPoint: '', waypoints: [''] });
-            setIsScenicMode(false);
-            setSuggestions([]);
-            setActiveField(null);
-        }
+        setShowClearConfirm(true);
+    };
+
+    const confirmClearForm = () => {
+        setFormData({ startPoint: '', endPoint: '', waypoints: [''] });
+        setIsScenicMode(false);
+        setSuggestions([]);
+        setActiveField(null);
+        setShowClearConfirm(false);
     };
 
     const getCurrentLocation = field => {
@@ -520,6 +524,35 @@ const PlannerForm = ({ isOpen, onClose, onSaveRoute, onCalculateScenicRoute }) =
                     </div>
                 </div>
             </div>
+
+            {showClearConfirm &&
+                createPortal(
+                    <div className="fixed inset-0 z-[3000] bg-black/50 flex items-center justify-center">
+                        <div className="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-sm w-full border border-gray-200">
+                            <h3 className="text-base font-semibold text-gray-800 mb-2">
+                                Cancella tutto
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-5">
+                                Vuoi cancellare tutti i dati inseriti?
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowClearConfirm(false)}
+                                    className="flex-1 py-2 rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                    Annulla
+                                </button>
+                                <button
+                                    onClick={confirmClearForm}
+                                    className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
+                                >
+                                    Cancella
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
 
             {dragging &&
                 createPortal(
