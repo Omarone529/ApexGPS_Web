@@ -255,7 +255,7 @@ function RoutesGrid() {
                 className="py-10 pb-20"
                 style={{ paddingLeft: sectionPadding, paddingRight: sectionPadding }}
             >
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Suspension banner */}
                     {isUserSuspended && (
                         <div
@@ -270,8 +270,7 @@ function RoutesGrid() {
                         </div>
                     )}
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {routes.length === 0 && (
                             <div className="col-span-full text-center py-20 animate-fadeUp">
                                 <div
