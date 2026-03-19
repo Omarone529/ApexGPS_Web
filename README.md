@@ -1,5 +1,7 @@
 # ApexGPS_Web
 
+![Logo](assets/readme_logo/ApexGPS_logo.jpg)
+
 ApexGPS_Web è il frontend web del progetto **ApexGPS**, un servizio per la creazione
 e visualizzazione di itinerari turistici panoramici.
 
