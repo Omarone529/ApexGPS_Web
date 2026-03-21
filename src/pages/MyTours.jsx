@@ -4,6 +4,7 @@ import { gpxService } from '../services/gpxService';
 
 const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
+const inter = { fontFamily: "'Inter', sans-serif" };
 
 function StatPill({ count, label, accent }) {
     const prevRef = useRef(count);
@@ -21,7 +22,7 @@ function StatPill({ count, label, accent }) {
         <span
             className={[
                 'relative overflow-hidden inline-flex items-center rounded-full px-4 py-2',
-                'text-[13px] font-medium font-body border select-none cursor-default',
+                'text-[13px] font-medium border select-none cursor-default',
                 'shadow-sm transition-all duration-500',
                 isActive
                     ? 'bg-[#FDF0E8] border-orange-300/50 text-[#E8692A] shadow-[0_0_0_3px_rgba(232,105,42,0.07)]'
@@ -30,6 +31,7 @@ function StatPill({ count, label, accent }) {
             ]
                 .filter(Boolean)
                 .join(' ')}
+            style={inter}
             onAnimationEnd={() => setBounce(false)}
         >
             {accent && (
@@ -51,7 +53,7 @@ function StatPill({ count, label, accent }) {
 
 function MyTours() {
     return (
-        <section className="font-body bg-[#F5F3EC] min-h-screen">
+        <section className="bg-[#F5F3EC] min-h-screen" style={inter}>
             <RoutesGrid />
         </section>
     );
@@ -207,14 +209,16 @@ function RoutesGrid() {
         return (
             <div className="flex items-center justify-center gap-3 min-h-[60vh] text-[#9B958F]">
                 <div className="w-5 h-5 rounded-full border-2 border-[#E2DDD3] border-t-[#E8692A] animate-spin" />
-                <span className="text-[13px] font-body">Caricamento percorsi…</span>
+                <span className="text-[13px]" style={inter}>
+                    Caricamento percorsi…
+                </span>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="text-center text-red-400 p-8 font-body text-sm">
+            <div className="text-center text-red-400 p-8 text-sm" style={inter}>
                 Errore nel caricamento: {error}
             </div>
         );
@@ -224,6 +228,7 @@ function RoutesGrid() {
 
     return (
         <>
+            {/* Header */}
             {/* Header */}
             <header
                 className="bg-[#F5F3EC] border-b border-[#E2DDD3]"
@@ -242,10 +247,14 @@ function RoutesGrid() {
                         </div>
                     </div>
                     <h1
-                        className="font-display text-[clamp(2rem,3.5vw,2.75rem)] font-medium
-                                   text-[#1A1814] leading-[1.15] tracking-[-0.02em]"
+                        className="text-[clamp(2rem,3.5vw,2.75rem)] font-bold
+                       text-[#1A1814] leading-[1.05] tracking-[-0.03em]"
+                        style={inter}
                     >
-                        I tuoi percorsi
+                        I tuoi{' '}
+                        <span className="text-orange-500 font-bold tracking-[-0.03em]">
+                            percorsi
+                        </span>
                     </h1>
                 </div>
             </header>
@@ -263,7 +272,7 @@ function RoutesGrid() {
                                     bg-[#FEF2EE] border border-orange-200/60 animate-fadeUp"
                         >
                             <span className="text-[15px] shrink-0">⏸</span>
-                            <p className="text-[13.5px] font-medium text-[#E8692A] font-body">
+                            <p className="text-[13.5px] font-medium text-[#E8692A]" style={inter}>
                                 Il tuo account è sospeso per {userSuspensionTime}. Durante questo
                                 periodo non puoi rendere pubblici nuovi percorsi.
                             </p>
@@ -292,10 +301,13 @@ function RoutesGrid() {
                                         />
                                     </svg>
                                 </div>
-                                <h2 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                                <h2
+                                    className="text-[20px] font-bold tracking-[-0.02em] text-[#1A1814] mb-2"
+                                    style={inter}
+                                >
                                     Nessun percorso ancora
                                 </h2>
-                                <p className="text-[13px] text-[#9B958F] font-body">
+                                <p className="text-[13px] text-[#9B958F]" style={inter}>
                                     I tuoi percorsi creati appariranno qui.
                                 </p>
                             </div>
@@ -334,10 +346,13 @@ function RoutesGrid() {
             {routeToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#E2DDD3] animate-fadeUp">
-                        <h3 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                        <h3
+                            className="text-[20px] font-bold tracking-[-0.02em] text-[#1A1814] mb-2"
+                            style={inter}
+                        >
                             Elimina percorso
                         </h3>
-                        <p className="text-[13.5px] text-[#6B6460] font-body mb-6">
+                        <p className="text-[13.5px] text-[#6B6460] mb-6" style={inter}>
                             Sei sicuro di voler eliminare{' '}
                             <span className="font-semibold text-[#1A1814]">
                                 {routeToDelete.name}
@@ -347,18 +362,20 @@ function RoutesGrid() {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setRouteToDelete(null)}
-                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium
                                            bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
                                            hover:bg-[#EDE9DF] transition-all duration-200"
+                                style={inter}
                             >
                                 Annulla
                             </button>
                             <button
                                 onClick={handleConfirmDelete}
-                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium
                                            bg-red-500 text-white border border-red-500
                                            hover:bg-red-600 hover:shadow-[0_6px_20px_rgba(239,68,68,0.3)]
                                            transition-all duration-200"
+                                style={inter}
                             >
                                 Elimina
                             </button>
@@ -487,16 +504,20 @@ function RouteCard({
                         </span>
                         <span
                             className={[
-                                'text-[11px] font-semibold tracking-[0.03em] font-body min-w-8',
+                                'text-[11px] font-semibold tracking-[0.03em] min-w-8',
                                 'transition-colors duration-300',
                                 isPublic ? 'text-[#E8692A]' : 'text-[#9B958F]',
                             ].join(' ')}
+                            style={inter}
                         >
                             {isPublic ? 'Pubblico' : 'Privato'}
                         </span>
                     </label>
                     {isRouteSuspended && (
-                        <div className="absolute top-8 left-0 text-[11px] font-medium text-[#E8692A] whitespace-nowrap font-body">
+                        <div
+                            className="absolute top-8 left-0 text-[11px] font-medium text-[#E8692A] whitespace-nowrap"
+                            style={inter}
+                        >
                             ⏳ Sospeso {routeSuspensionTime}
                         </div>
                     )}
@@ -540,7 +561,8 @@ function RouteCard({
                         className="absolute top-12 right-3 z-10 flex items-center gap-1.5
                                     bg-red-500/80 backdrop-blur-sm text-white
                                     text-[10px] font-semibold tracking-widest uppercase
-                                    px-2.5 py-1 rounded-full font-body"
+                                    px-2.5 py-1 rounded-full"
+                        style={inter}
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
                         Sospeso
@@ -559,14 +581,18 @@ function RouteCard({
                             onChange={e => setEditValue(e.target.value)}
                             onBlur={() => onEditSave(route.id)}
                             onKeyDown={e => onKeyDown(e, route.id)}
-                            className="w-full font-display text-[17px] font-medium text-[#1A1814]
+                            className="w-full text-[17px] font-medium text-[#1A1814]
                                        bg-[#F5F3EC] border border-[#E8692A] rounded-lg px-2.5 py-1
                                        outline-none shadow-[0_0_0_3px_rgba(232,105,42,0.1)]"
+                            style={inter}
                             autoFocus
                         />
                     ) : (
                         <>
-                            <h3 className="flex-1 font-display text-[17px] font-medium text-[#1A1814] leading-snug">
+                            <h3
+                                className="flex-1 text-[17px] font-semibold text-[#1A1814] leading-snug"
+                                style={inter}
+                            >
                                 {route.name}
                             </h3>
                             {!isRouteSuspended && (
@@ -599,7 +625,10 @@ function RouteCard({
                 </div>
 
                 {/* Area */}
-                <p className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-4 font-body">
+                <p
+                    className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-4"
+                    style={inter}
+                >
                     <svg
                         width="11"
                         height="11"
@@ -653,12 +682,13 @@ function RouteCard({
                 {/* CTA */}
                 <button
                     onClick={handleViewDetails}
-                    className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
-                                   bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
-                                   transition-all duration-200
-                                   hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
-                                   hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
-                                   active:scale-[0.99]"
+                    className="w-full py-2.5 rounded-xl text-[13px] font-medium
+                               bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
+                               transition-all duration-200
+                               hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
+                               hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
+                               active:scale-[0.99]"
+                    style={inter}
                 >
                     Vai al Percorso
                 </button>
