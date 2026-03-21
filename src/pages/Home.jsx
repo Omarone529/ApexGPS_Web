@@ -1,10 +1,79 @@
-import RouteCarousel from '../components/home/RouteCarousel';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useRef, useEffect } from 'react';
+import RouteCarousel from '../components/home/RouteCarousel';
 import RouteMiniPreview from '../components/home/RouteMiniPreview';
+import { apiFetch } from '../services/api';
+
+function CountUp({ end, duration = 500 }) {
+    const [count, setCount] = useState(0);
+    const elementRef = useRef(null);
+    const animatedRef = useRef(false);
+    const animationRef = useRef(null);
+
+    useEffect(() => {
+        const resetCount = () => {
+            if (!animatedRef.current) {
+                setCount(0);
+            }
+        };
+        resetCount();
+
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+        }
+
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && !animatedRef.current && end) {
+                    animatedRef.current = true;
+                    const startTime = performance.now();
+                    const startValue = 0;
+                    const endValue = end;
+                    const totalDuration = duration;
+
+                    const animate = currentTime => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / totalDuration, 1);
+                        const currentCount = Math.floor(
+                            startValue + (endValue - startValue) * progress
+                        );
+                        setCount(currentCount);
+
+                        if (progress < 1) {
+                            animationRef.current = requestAnimationFrame(animate);
+                        } else {
+                            setCount(endValue);
+                            animationRef.current = null;
+                        }
+                    };
+
+                    animationRef.current = requestAnimationFrame(animate);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (elementRef.current) {
+            observer.observe(elementRef.current);
+        }
+
+        return () => {
+            observer.disconnect();
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+            }
+        };
+    }, [end, duration]);
+
+    return <span ref={elementRef}>{count.toLocaleString()}</span>;
+}
 
 function Home() {
     const videoRef = useRef(null);
+    const [stats, setStats] = useState({ poi_count: null, segment_count: null });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
     const scrollToNearby = () => {
         document
@@ -17,6 +86,16 @@ function Home() {
         if (video) {
             video.play();
         }
+
+        apiFetch('/gis/stats/')
+            .then(data => {
+                setStats(data);
+                setLoading(false);
+            })
+            .catch(() => {
+                setError(true);
+                setLoading(false);
+            });
     }, []);
 
     return (
@@ -131,9 +210,23 @@ function Home() {
                             </h2>
 
                             <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
-                                Scopri strade panoramiche e giri consigliati nella tua zona. Filtra
-                                per stile di guida e scegli se preferire panorama, curve o un mix
-                                bilanciato.
+                                {loading ? (
+                                    'Caricamento dati...'
+                                ) : error ? (
+                                    'Dati momentaneamente non disponibili.'
+                                ) : (
+                                    <>
+                                        Oltre{' '}
+                                        <strong className="text-orange-500">
+                                            <CountUp end={stats.poi_count} duration={1000} />
+                                        </strong>{' '}
+                                        punti di interesse e{' '}
+                                        <strong className="text-orange-500">
+                                            <CountUp end={stats.segment_count} duration={1000} />
+                                        </strong>{' '}
+                                        segmenti stradali da esplorare
+                                    </>
+                                )}
                             </p>
 
                             <div className="mt-7 flex flex-wrap gap-3">
