@@ -9,6 +9,7 @@ import Tour from './pages/Tour';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MyTours from './pages/MyTours';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import ProtectedRoute from './components/routeguards/ProtectedRoute.jsx';
 import UserManagement from './pages/UserManagement.jsx';
 import AdminRoute from './components/routeguards/AdminRoute.jsx';
@@ -75,6 +76,14 @@ function App() {
                                     }
                                 />
                             </Route>
+                            <Route
+                                path="/privacy"
+                                element={
+                                    <MainLayout>
+                                        <PrivacyPolicy />
+                                    </MainLayout>
+                                }
+                            />
                             <Route path="/register" element={<Register />} />
                         </Routes>
                     </div>
