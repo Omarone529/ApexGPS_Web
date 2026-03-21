@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyTours from './pages/MyTours';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from './components/routeguards/ProtectedRoute.jsx';
 import UserManagement from './pages/UserManagement.jsx';
 import AdminRoute from './components/routeguards/AdminRoute.jsx';
@@ -22,6 +23,7 @@ function App() {
             {' '}
             <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
                 <BrowserRouter>
+                    <ScrollToTop />
                     <div className="min-h-screen w-full">
                         <Routes>
                             <Route
