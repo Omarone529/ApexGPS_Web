@@ -163,7 +163,7 @@ function Home() {
                             <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
                                 ApexGPS nasce per la moto: calcola percorsi panoramici privilegiando
                                 strade belle da guidare, curve e contesti naturali. Tu scegli
-                                l’obiettivo, noi ottimizziamo il piacere di guida.
+                                l'obiettivo, noi ottimizziamo il piacere di guida.
                             </p>
 
                             <div className="mt-7 flex flex-wrap gap-3">
@@ -205,29 +205,69 @@ function Home() {
                         </div>
 
                         <div className="order-1 lg:order-2">
-                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
-                                Trova l’ispirazione giusta
-                            </h2>
+                            <div
+                                className="order-1 lg:order-2"
+                                style={{ fontFamily: "'Lexend', sans-serif" }}
+                            >
+                                <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.1em] uppercase text-orange-600 mb-4">
+                                    <span className="relative flex h-2.5 w-2.5">
+                                        <span
+                                            className="absolute inline-flex h-full w-full rounded-full bg-orange-600 opacity-40 animate-ping"
+                                            style={{ animationDuration: '2.5s' }}
+                                        />
+                                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-600" />
+                                    </span>
+                                    Live data
+                                </span>
 
-                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
+                                <h2
+                                    className="text-4xl sm:text-5xl leading-[1.05] tracking-[-0.03em]
+                                    text-[#1C1A18] mb-8 font-extrabold"
+                                    style={{ fontFamily: "'Lexend', sans-serif" }}
+                                >
+                                    I dati che fanno la&nbsp;
+                                    <span className="text-orange-600 font-light tracking-[-0.01em]">
+                                        differenza
+                                    </span>
+                                </h2>
+
                                 {loading ? (
-                                    'Caricamento dati...'
+                                    <p className="text-[#9A9590]">Caricamento dati...</p>
                                 ) : error ? (
-                                    'Dati momentaneamente non disponibili.'
+                                    <p className="text-[#9A9590]">Dati stradali non disponibili.</p>
                                 ) : (
-                                    <>
-                                        Oltre{' '}
-                                        <strong className="text-orange-500">
-                                            <CountUp end={stats.poi_count} duration={1000} />
-                                        </strong>{' '}
-                                        punti di interesse e{' '}
-                                        <strong className="text-orange-500">
-                                            <CountUp end={stats.segment_count} duration={1000} />
-                                        </strong>{' '}
-                                        segmenti stradali da esplorare
-                                    </>
+                                    <div className="flex gap-9 items-start">
+                                        <div className="flex flex-col gap-1.5">
+                                            <span
+                                                className="text-[42px] sm:text-[46px] font-bold text-orange-600 leading-none tracking-[-0.03em]"
+                                                style={{ fontFamily: "'Lexend', sans-serif" }}
+                                            >
+                                                <CountUp end={stats.poi_count} duration={1000} />
+                                                <span className="text-[#1C1A18]">+</span>
+                                            </span>
+                                            <span className="text-[10px] font-semibold text-[#B0ABA4] uppercase tracking-[0.1em]">
+                                                Punti di interesse
+                                            </span>
+                                        </div>
+                                        <div className="w-px h-14 bg-[#E0DDD6] self-center" />
+                                        <div className="flex flex-col gap-1.5">
+                                            <span
+                                                className="text-[42px] sm:text-[46px] font-bold text-orange-600 leading-none tracking-[-0.03em]"
+                                                style={{ fontFamily: "'Lexend', sans-serif" }}
+                                            >
+                                                <CountUp
+                                                    end={stats.segment_count}
+                                                    duration={1000}
+                                                />
+                                                <span className="text-[#1C1A18]">+</span>
+                                            </span>
+                                            <span className="text-[10px] font-semibold text-[#B0ABA4] uppercase tracking-[0.1em]">
+                                                Segmenti stradali
+                                            </span>
+                                        </div>
+                                    </div>
                                 )}
-                            </p>
+                            </div>
 
                             <div className="mt-7 flex flex-wrap gap-3">
                                 <button
