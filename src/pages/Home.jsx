@@ -156,14 +156,18 @@ function Home() {
                 <section className="px-6 sm:px-10 md:px-16 xl:px-24 py-16 sm:py-20 md:py-24 xl:py-32">
                     <div className="mx-auto max-w-6xl xl:max-w-7xl grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-14 xl:gap-20 items-center">
                         <div>
-                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
-                                Pianifica il percorso perfetto
+                            <h2
+                                className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-extrabold tracking-[-0.03em] leading-[1.05] text-[#1C1A18]"
+                                style={{ fontFamily: "'Lexend', sans-serif" }}
+                            >
+                                Pianifica.{' '}
+                                <span className="text-orange-500 font-light tracking-[-0.01em]">
+                                    Esplora.
+                                </span>
                             </h2>
 
-                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
-                                ApexGPS nasce per la moto: calcola percorsi panoramici privilegiando
-                                strade belle da guidare, curve e contesti naturali. Tu scegli
-                                l'obiettivo, noi ottimizziamo il piacere di guida.
+                            <p className="mt-5 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
+                                Percorsi pensati per chi guida per piacere, non per arrivare.
                             </p>
 
                             <div className="mt-7 flex flex-wrap gap-3">
@@ -179,7 +183,7 @@ function Home() {
                                     type="button"
                                     onClick={scrollToNearby}
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-             border border-[#E0DACB] bg-[#EDE9DE] text-[#1C1A18] hover:bg-[#E6E1D4] transition"
+                                    border border-[#E0DACB] bg-[#EDE9DE] text-[#1C1A18] hover:bg-[#E6E1D4] transition"
                                 >
                                     Vedi percorsi vicino a te
                                 </button>
