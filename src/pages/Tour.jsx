@@ -4,6 +4,7 @@ import { gpxService } from '../services/gpxService';
 
 const MEDIA_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api';
+const inter = { fontFamily: "'Inter', sans-serif" };
 
 function StatPill({ count, label, accent }) {
     const prevRef = useRef(count);
@@ -21,7 +22,7 @@ function StatPill({ count, label, accent }) {
         <span
             className={[
                 'relative overflow-hidden inline-flex items-center rounded-full px-4 py-2',
-                'text-[13px] font-medium font-body border select-none cursor-default',
+                'text-[13px] font-medium border select-none cursor-default',
                 'shadow-sm transition-all duration-500',
                 isActive
                     ? 'bg-[#FDF0E8] border-orange-300/50 text-[#E8692A] shadow-[0_0_0_3px_rgba(232,105,42,0.07)]'
@@ -30,6 +31,7 @@ function StatPill({ count, label, accent }) {
             ]
                 .filter(Boolean)
                 .join(' ')}
+            style={inter}
             onAnimationEnd={() => setBounce(false)}
         >
             {accent && (
@@ -51,7 +53,7 @@ function StatPill({ count, label, accent }) {
 
 function Tour() {
     return (
-        <section className="font-body bg-[#F5F3EC] min-h-screen">
+        <section className="bg-[#F5F3EC] min-h-screen" style={inter}>
             <RoutesGrid />
         </section>
     );
@@ -147,14 +149,16 @@ function RoutesGrid() {
         return (
             <div className="flex items-center justify-center gap-3 min-h-[60vh] text-[#9B958F]">
                 <div className="w-5 h-5 rounded-full border-2 border-[#E2DDD3] border-t-[#E8692A] animate-spin" />
-                <span className="text-[13px] font-body">Caricamento percorsi…</span>
+                <span className="text-[13px]" style={inter}>
+                    Caricamento percorsi…
+                </span>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="text-center text-red-400 p-8 font-body text-sm">
+            <div className="text-center text-red-400 p-8 text-sm" style={inter}>
                 Errore nel caricamento: {error}
             </div>
         );
@@ -177,10 +181,14 @@ function RoutesGrid() {
                         <StatPill count={routes.length} label="percorsi" accent={false} />
                     </div>
                     <h1
-                        className="font-display text-[clamp(2rem,3.5vw,2.75rem)] font-medium
-                                   text-[#1A1814] leading-[1.15] tracking-[-0.02em]"
+                        className="text-[clamp(2rem,3.5vw,2.75rem)] font-extrabold
+                                   text-[#1A1814] leading-[1.05] tracking-[-0.03em]"
+                        style={inter}
                     >
-                        Scopri i percorsi degli utenti
+                        Scopri i percorsi{' '}
+                        <span className="text-orange-500 font-light tracking-[-0.01em]">
+                            degli utenti
+                        </span>
                     </h1>
                 </div>
             </header>
@@ -209,10 +217,13 @@ function RoutesGrid() {
                                     />
                                 </svg>
                             </div>
-                            <h2 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                            <h2
+                                className="text-[20px] font-extrabold tracking-[-0.02em] text-[#1A1814] mb-2"
+                                style={inter}
+                            >
                                 Nessun percorso disponibile
                             </h2>
-                            <p className="text-[13px] text-[#9B958F] font-body">
+                            <p className="text-[13px] text-[#9B958F]" style={inter}>
                                 I percorsi pubblici degli utenti appariranno qui.
                             </p>
                         </div>
@@ -240,10 +251,13 @@ function RoutesGrid() {
             {showBanModal && routeToBan && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#E2DDD3] animate-fadeUp">
-                        <h3 className="font-display text-[20px] font-medium text-[#1A1814] mb-2">
+                        <h3
+                            className="text-[20px] font-extrabold tracking-[-0.02em] text-[#1A1814] mb-2"
+                            style={inter}
+                        >
                             Conferma rimozione
                         </h3>
-                        <p className="text-[13.5px] text-[#6B6460] font-body mb-6">
+                        <p className="text-[13.5px] text-[#6B6460] mb-6" style={inter}>
                             Sei sicuro di voler rendere privato il percorso{' '}
                             <span className="font-semibold text-[#1A1814]">{routeToBan.name}</span>?
                             Non sarà più visibile pubblicamente.
@@ -251,18 +265,20 @@ function RoutesGrid() {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={handleCancelBan}
-                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium
                                            bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
                                            hover:bg-[#EDE9DF] transition-all duration-200"
+                                style={inter}
                             >
                                 Annulla
                             </button>
                             <button
                                 onClick={handleConfirmBan}
-                                className="px-5 py-2 rounded-xl text-[13px] font-medium font-body
+                                className="px-5 py-2 rounded-xl text-[13px] font-medium
                                            bg-red-500 text-white border border-red-500
                                            hover:bg-red-600 hover:shadow-[0_6px_20px_rgba(239,68,68,0.3)]
                                            transition-all duration-200"
+                                style={inter}
                             >
                                 Conferma
                             </button>
@@ -400,11 +416,17 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
 
             {/* Body */}
             <div className="p-5">
-                <h3 className="font-display text-[17px] font-medium text-[#1A1814] leading-snug mb-1.5">
+                <h3
+                    className="text-[17px] font-bold tracking-[-0.02em] text-[#1A1814] leading-snug mb-1.5"
+                    style={inter}
+                >
                     {route.name}
                 </h3>
 
-                <p className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-1 font-body">
+                <p
+                    className="flex items-center gap-1.5 text-[12.5px] text-[#9B958F] mb-1"
+                    style={inter}
+                >
                     <svg
                         width="11"
                         height="11"
@@ -430,7 +452,9 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
                 </p>
 
                 <div className="flex items-center justify-between mb-4">
-                    <p className="text-[11.5px] text-[#B0AAA4] font-body">by {owner}</p>
+                    <p className="text-[11.5px] text-[#B0AAA4]" style={inter}>
+                        by {owner}
+                    </p>
                     <button
                         onClick={handleDownload}
                         title="Scarica GPX"
@@ -458,12 +482,13 @@ function RouteCard({ route, idx, isAdmin, banningRouteId, onBan }) {
 
                 <button
                     onClick={handleViewDetails}
-                    className="w-full py-2.5 rounded-xl text-[13px] font-medium font-body
+                    className="w-full py-2.5 rounded-xl text-[13px] font-medium
                                bg-[#F5F3EC] border border-[#E2DDD3] text-[#6B6460]
                                transition-all duration-200
                                hover:bg-[#E8692A] hover:border-[#E8692A] hover:text-white
                                hover:shadow-[0_6px_20px_rgba(232,105,42,0.22)]
                                active:scale-[0.99]"
+                    style={inter}
                 >
                     Vai al Percorso
                 </button>
