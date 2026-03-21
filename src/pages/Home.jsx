@@ -298,13 +298,19 @@ function Home() {
                     {' '}
                     <div className="mx-auto max-w-6xl xl:max-w-7xl grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-14 xl:gap-20 items-center">
                         <div>
-                            <h2 className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight text-[#1C1A18]">
-                                Salva, riparti, condividi
+                            <h2
+                                className="text-2xl sm:text-4xl md:text-5xl xl:text-6xl font-extrabold tracking-[-0.03em] leading-[1.05] text-[#1C1A18]"
+                                style={{ fontFamily: "'Lexend', sans-serif" }}
+                            >
+                                Salva. Riparti.{' '}
+                                <span className="text-orange-500 font-light tracking-[-0.01em]">
+                                    Condividi.
+                                </span>
                             </h2>
 
-                            <p className="mt-4 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
-                                Salva i tuoi giri preferiti e condividili con gli amici. ApexGPS è
-                                pensato per chi viaggia per piacere: meno stress, più strada bella.
+                            <p className="mt-5 text-base sm:text-lg xl:text-xl leading-relaxed text-[#1C1A18] max-w-xl xl:max-w-2xl">
+                                I tuoi giri preferiti sempre a portata di mano, pronti da rivivere o
+                                condividere con chi vuoi.
                             </p>
 
                             <div className="mt-7 flex flex-wrap gap-3">
