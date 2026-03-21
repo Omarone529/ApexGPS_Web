@@ -274,14 +274,13 @@ function Home() {
                             </div>
 
                             <div className="mt-7 flex flex-wrap gap-3">
-                                <button
-                                    type="button"
-                                    onClick={scrollToNearby}
+                                <Link
+                                    to="/tour"
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
                            bg-orange-500 text-white hover:bg-orange-600 transition"
                                 >
                                     Esplora percorsi
-                                </button>
+                                </Link>
 
                                 <Link
                                     to="/planner"
