@@ -10,7 +10,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyTours from './pages/MyTours';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
 import ScrollToTop from './components/ScrollToTop';
+import CookieBanner from './components/CookieBanner';
 import ProtectedRoute from './components/routeguards/ProtectedRoute.jsx';
 import UserManagement from './pages/UserManagement.jsx';
 import AdminRoute from './components/routeguards/AdminRoute.jsx';
@@ -86,9 +88,18 @@ function App() {
                                     </MainLayout>
                                 }
                             />
+                            <Route
+                                path="/cookies"
+                                element={
+                                    <MainLayout>
+                                        <CookiePolicy />
+                                    </MainLayout>
+                                }
+                            />
                             <Route path="/register" element={<Register />} />
                         </Routes>
                     </div>
+                    <CookieBanner />
                 </BrowserRouter>
             </GoogleOAuthProvider>
         </AuthProvider>
