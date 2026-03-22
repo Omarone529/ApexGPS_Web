@@ -285,7 +285,7 @@ function Home() {
                                 <Link
                                     to="/planner"
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-                           border border-white/60 text-[#1C1A18] hover:bg-white/10 transition"
+                           border border-[#E0DACB] bg-[#EDE9DE] text-[#1C1A18] hover:bg-[#E6E1D4] transition"
                                 >
                                     Pianifica ora
                                 </Link>
@@ -326,7 +326,7 @@ function Home() {
                                     type="button"
                                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                                     className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm sm:text-base font-medium
-                           border border-white/60 text-[#1C1A18] hover:bg-white/10 transition"
+                           border border-[#E0DACB] bg-[#EDE9DE] text-[#1C1A18] hover:bg-[#E6E1D4] transition"
                                 >
                                     Torna su
                                 </button>
