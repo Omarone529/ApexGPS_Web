@@ -247,12 +247,12 @@ function RoutesGrid() {
                         </div>
                     </div>
                     <h1
-                        className="text-[clamp(2rem,3.5vw,2.75rem)] font-bold
+                        className="text-[clamp(2rem,3.5vw,2.75rem)] font-extrabold
                        text-[#1A1814] leading-[1.05] tracking-[-0.03em]"
                         style={inter}
                     >
                         I tuoi{' '}
-                        <span className="text-orange-500 font-bold tracking-[-0.03em]">
+                        <span className="text-orange-500 font-light tracking-[-0.01em]">
                             percorsi
                         </span>
                     </h1>
